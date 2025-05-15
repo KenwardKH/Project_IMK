@@ -5,26 +5,43 @@ import { RiBarChart2Fill } from 'react-icons/ri';
 import { TbCashRegister } from 'react-icons/tb';
 import { MdOutlineFactory } from "react-icons/md";
 import { Menu } from 'lucide-react';
+import { router } from '@inertiajs/react';
 
-interface SidebarItemProps {
+export interface SidebarItemProps {
     icon: React.ReactNode;
     label: string;
-    href: string;
-    active: boolean;
+    href?: string;
+    active?: boolean;
     collapsed?: boolean;
+    onClick?: () => void;
 }
 
-const SidebarItem: FC<SidebarItemProps> = ({ icon, label, href, active, collapsed }) => (
-    <a
-        href={href}
-        className={`flex items-center gap-3 rounded-md px-4 py-2 transition hover:bg-[#4A90E2] ${
-            active ? 'bg-blue-700 text-white' : 'text-white'
-        }`}
-    >
-        <div className="flex-shrink-0">{icon}</div>
-        {!collapsed && <span className="truncate">{label}</span>}
-    </a>
-);
+const SidebarItem: FC<SidebarItemProps> = ({ icon, label, href, active, collapsed, onClick }) => {
+    const baseClass = `block w-full flex items-center gap-3 rounded-md px-4 py-2 transition hover:bg-[#4A90E2] ${
+        active ? 'bg-blue-700 text-white' : 'text-white'
+    }`;
+
+    if (onClick) {
+        return (
+            <button
+                onClick={onClick}
+                className={baseClass}
+                type="button"
+            >
+                <div className="flex-shrink-0">{icon}</div>
+                {!collapsed && <span className="truncate">{label}</span>}
+            </button>
+        );
+    }
+
+    return (
+        <a href={href} className={baseClass}>
+            <div className="flex-shrink-0">{icon}</div>
+            {!collapsed && <span className="truncate">{label}</span>}
+        </a>
+    );
+};
+
 
 interface SidebarGroupProps {
     icon: React.ReactNode;
@@ -129,7 +146,7 @@ const Sidebar: FC = () => {
             </SidebarGroup>
 
             <div className="border-t border-blue-700 pt-4">
-                <SidebarItem icon={<LogOut size={20} />} label="Logout" href="/logout" active={currentPath === '/logout'} collapsed={collapsed} />
+                <SidebarItem icon={<LogOut size={20} />} label="Logout" onClick={() => router.post(route('logout'))} active={currentPath === '/logout'} collapsed={collapsed} />
             </div>
         </>
     );

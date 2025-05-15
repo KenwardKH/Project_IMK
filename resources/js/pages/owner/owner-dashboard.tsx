@@ -2,6 +2,8 @@ import OwnerLayout from '@/components/owner/owner-layout';
 import { Box, ClipboardList, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { usePage } from '@inertiajs/react'; //untuk data dari controller
+
 
 interface FinancialData {
     month: string;
@@ -11,6 +13,10 @@ interface FinancialData {
 }
 
 const OwnerDashboard = () => {
+    const { props } = usePage();       //test untuk product count
+    const productCount = props.productCount as number;
+    const customerCount = props.customerCount as number; 
+    const transactionCount = props.transactionCount as number;//jangan dihapus bujank
     const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
 
     useEffect(() => {
@@ -55,7 +61,7 @@ const OwnerDashboard = () => {
                         <p className="text-xl font-medium sm:text-2xl lg:text-4xl">Banyak Produk</p>
                         <div className="flex w-full flex-row items-center justify-around">
                             <Box className="size-12 sm:size-16 lg:size-20 xl:size-24" />
-                            <p className="text-4xl font-bold sm:text-5xl lg:text-7xl">12</p>
+                            <p className="text-4xl font-bold sm:text-5xl lg:text-7xl">{productCount}</p>
                         </div>
                     </div>
                     <div
@@ -64,7 +70,7 @@ const OwnerDashboard = () => {
                         <p className="text-xl font-medium sm:text-2xl lg:text-4xl">Banyak Pelanggan</p>
                         <div className="flex w-full flex-row items-center justify-around">
                             <Users className="size-12 sm:size-16 lg:size-20 xl:size-24" />
-                            <p className="text-4xl font-bold sm:text-5xl lg:text-7xl">22</p>
+                            <p className="text-4xl font-bold sm:text-5xl lg:text-7xl">{customerCount}</p>
                         </div>
                     </div>
                     <div
@@ -73,7 +79,7 @@ const OwnerDashboard = () => {
                         <p className="text-xl font-medium sm:text-2xl lg:text-4xl">Banyak Transaksi</p>
                         <div className="flex w-full flex-row items-center justify-around">
                             <ClipboardList className="size-12 sm:size-16 lg:size-20 xl:size-24" />
-                            <p className="text-4xl font-bold sm:text-5xl lg:text-7xl">18</p>
+                            <p className="text-4xl font-bold sm:text-5xl lg:text-7xl">{transactionCount}</p>
                         </div>
                     </div>
                 </section>

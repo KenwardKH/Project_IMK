@@ -112,35 +112,35 @@ const Sidebar: FC = () => {
             </a>
 
             <SidebarGroup title="Manajemen Produk" icon={<AiFillProduct size={20} />} collapsed={collapsed}>
-                <SidebarItem icon={<Box size={20} />} label="Produk" href="/produk" active={currentPath === '/produk'} collapsed={collapsed} />
-                <SidebarItem icon={<Truck size={20} />} label="Supplier" href="/supplier" active={currentPath === '/supplier'} collapsed={collapsed} />
+                <SidebarItem icon={<Box size={20} />} label="Produk" href="/owner-produk" active={currentPath === '/owner-produk' || currentPath === '/owner-produk/tambah'} collapsed={collapsed} />
+                <SidebarItem icon={<Truck size={20} />} label="Supplier" href="/owner-supplier" active={currentPath === '/owner-supplier'} collapsed={collapsed} />
                 <SidebarItem
                     icon={<MdOutlineFactory size={20} />}
                     label="Pembelian Supply"
-                    href="/pembelian-supply"
-                    active={currentPath === '/pembelian-supply'}
+                    href="/owner-pembelian-supply" 
+                    active={currentPath === '/owner-pembelian-supply'}
                     collapsed={collapsed}
                 />
             </SidebarGroup>
 
             <SidebarGroup title="Pengguna" icon={<Users size={20} />} collapsed={collapsed}>
-                <SidebarItem icon={<User size={20} />} label="Pelanggan" href="/pelanggan" active={currentPath === '/pelanggan'} collapsed={collapsed} />
-                <SidebarItem icon={<TbCashRegister size={20} />} label="Kasir" href="/kasir" active={currentPath === '/kasir'} collapsed={collapsed} />
+                <SidebarItem icon={<User size={20} />} label="Pelanggan" href="/owner-pelanggan" active={currentPath === '/ownerpelanggan'} collapsed={collapsed} />
+                <SidebarItem icon={<TbCashRegister size={20} />} label="Kasir" href="/owner-kasir" active={currentPath === '/owner-kasir'} collapsed={collapsed} />
             </SidebarGroup>
 
             <SidebarGroup title="Penjualan" icon={<RiBarChart2Fill size={20} />} collapsed={collapsed}>
                 <SidebarItem
                     icon={<ClipboardList size={20} />}
                     label="Jumlah Transaksi"
-                    href="/jumlah-transaksi"
-                    active={currentPath === '/jumlah-transaksi'}
+                    href="/owner-jumlah-transaksi"
+                    active={currentPath === '/owner-jumlah-transaksi'}
                     collapsed={collapsed}
                 />
                 <SidebarItem
                     icon={<BarChart3 size={20} />}
                     label="Laporan Penjualan"
-                    href="/laporan-penjualan"
-                    active={currentPath === '/laporan-penjualan'}
+                    href="/owner-laporan-penjualan"
+                    active={currentPath === '/owner-laporan-penjualan'}
                     collapsed={collapsed}
                 />
             </SidebarGroup>

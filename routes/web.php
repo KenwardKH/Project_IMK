@@ -13,6 +13,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
     Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
+    Route::get('owner-produk', function () {
+        return Inertia::render('owner/owner-produk');
+    })->name('owner-produk');
+    Route::get('owner-produk/tambah', function () {
+        return Inertia::render('owner/owner-tambahproduk');
+    })->name('owner-editproduk');Route::get('owner-produk/edit', function () {
+        return Inertia::render('owner/owner-editproduk');
+    })->name('owner-editproduk');
 });
 
 require __DIR__.'/settings.php';

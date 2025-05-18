@@ -10,8 +10,8 @@ export function NavbarSection() {
 
     const navLinks = [
         { title: 'Home', href: '/' },
-        { title: 'Products', href: '/produk' },
-        { title: 'Contacts', href: '/kontak' },
+        { title: 'Products', href: '#produk' },
+        { title: 'Contacts', href: '#footer' },
     ];
 
     return (
@@ -43,9 +43,15 @@ export function NavbarSection() {
 
                 {/* Cart & Auth */}
                 <div className="hidden items-center gap-4 md:flex">
-                    <Button variant="ghost" size="icon" className="text-gray-600 hover:text-green-700">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-11 w-11 rounded-full text-gray-700 transition-colors duration-200 hover:bg-green-100 hover:text-green-800 focus:ring-2 focus:ring-green-500 focus:outline-none hover:border"
+                        aria-label="Keranjang Belanja"
+                    >
                         <ShoppingCart className="h-5 w-5" />
                     </Button>
+
                     <Separator orientation="vertical" className="h-6" />
                     <Link href="/login">
                         <Button variant="outline" className="bg-white text-sm font-semibold text-green-700 hover:bg-green-800">

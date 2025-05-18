@@ -2,7 +2,7 @@ import { Separator } from '@/components/ui/separator';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1c283f] text-white px-6 py-12 md:px-12 lg:px-32">
+    <footer className="bg-[#1c283f] text-white px-6 py-12 md:px-12 lg:px-32" id="footer">
       <div className="mx-auto max-w-7xl space-y-10">
         {/* Bagian Atas: Logo dan Navigasi */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

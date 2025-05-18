@@ -2,10 +2,11 @@ import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from '@inertiajs/react';
 
 const OwnerProduct = () => {
     interface RiwayatHarga {
-        tanggal: string;
+        tanggal: Date;
         harga: number;
     }
 
@@ -78,9 +79,9 @@ const OwnerProduct = () => {
             satuan: 'kotak',
             deskripsi: 'Pulpen hitam yang nyaman digunakan',
             riwayat_harga: [
-                { tanggal: '2025-01-01', harga: 30000 },
-                { tanggal: '2025-03-15', harga: 34000 },
-                { tanggal: '2025-05-01', harga: 36000 },
+                { tanggal: new Date('2025-05-01'), harga: 30000 },
+                { tanggal: new Date('2025-05-01'), harga: 34000 },
+                { tanggal: new Date('2025-05-01'), harga: 36000 },
             ],
         },
         {
@@ -91,8 +92,8 @@ const OwnerProduct = () => {
             satuan: 'rim',
             deskripsi: 'Kertas dengan ukuran A4 dengan isi 500 lembar',
             riwayat_harga: [
-                { tanggal: '2024-12-01', harga: 52000 },
-                { tanggal: '2025-04-10', harga: 55000 },
+                { tanggal: new Date('2025-05-01'), harga: 52000 },
+                { tanggal: new Date('2025-05-01'), harga: 55000 },
             ],
         },
         {
@@ -103,8 +104,8 @@ const OwnerProduct = () => {
             satuan: 'lusin',
             deskripsi: 'Spidol permanen berwarna hitam dengan isi 12',
             riwayat_harga: [
-                { tanggal: '2025-02-10', harga: 40000 },
-                { tanggal: '2025-05-01', harga: 45000 },
+                { tanggal: new Date('2025-05-01'), harga: 40000 },
+                { tanggal: new Date('2025-05-01'), harga: 45000 },
             ],
         },
     ];
@@ -121,11 +122,11 @@ const OwnerProduct = () => {
                             className="h-12 w-full rounded-md border border-gray-600 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
                     </div>
-                    <a href={'/owner-produk/tambah'}>
+                    <Link href={'/owner-produk/tambah'}>
                         <button className="flex h-12 w-45 cursor-pointer items-center justify-center rounded-lg bg-[#009a00] text-lg font-bold text-[#ffffff] hover:bg-[#008000]">
                             <Plus size={25} /> Tambah Produk
                         </button>
-                    </a>
+                    </Link>
                 </section>
                 <section>
                     <div className="relative overflow-hidden rounded-lg shadow-md">
@@ -165,20 +166,20 @@ const OwnerProduct = () => {
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <Button
                                                     onClick={() => openRiwayatModal(item.riwayat_harga, item.nama_produk)}
-                                                    className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600"
+                                                    className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600 hover:cursor-pointer"
                                                 >
                                                     Riwayat Harga
                                                 </Button>
                                             </td>
                                             <td className="border border-gray-200 p-4 text-center">
-                                                <a href="/owner-produk/edit">
+                                                <Link href="/owner-produk/edit">
                                                     <Button
                                                         className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
                                                         size="icon"
                                                     >
                                                         <SquarePen className="h-4 w-4" />
                                                     </Button>
-                                                </a>
+                                                </Link>
                                             </td>
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <Button
@@ -230,7 +231,7 @@ const OwnerProduct = () => {
                         <ul className="space-y-2">
                             {selectedRiwayat.map((riwayat, idx) => (
                                 <li key={idx} className="flex justify-between border-b pb-1 text-sm text-gray-700">
-                                    <span>{riwayat.tanggal}</span>
+                                    <span>{riwayat.tanggal.toLocaleDateString('id-ID')}</span>
                                     <span>{formatCurrency(riwayat.harga)}</span>
                                 </li>
                             ))}

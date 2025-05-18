@@ -18,9 +18,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('owner-produk');
     Route::get('owner-produk/tambah', function () {
         return Inertia::render('owner/owner-tambahproduk');
-    })->name('owner-editproduk');Route::get('owner-produk/edit', function () {
+    })->name('owner-tambah-produk');
+    Route::get('owner-produk/edit', function () {
         return Inertia::render('owner/owner-editproduk');
-    })->name('owner-editproduk');
+    })->name('owner-edit-produk');
+    Route::get('owner-supplier', function () {
+        return Inertia::render('owner/owner-supplier');
+    })->name('owner-supplier');
+    Route::get('owner-supplier/tambah', function () {
+        return Inertia::render('owner/owner-tambah-supplier');
+    })->name('owner-tambah-supplier');
+    Route::get('owner-supplier/edit', function () {
+        return Inertia::render('owner/owner-edit-supplier');
+    })->name('owner-edit-supplier');
+    Route::get('owner-pembelian-supply', function () {
+        return Inertia::render('owner/owner-pembelian-supply');
+    })->name('owner-pembelian-supply');
 });
 
 require __DIR__.'/settings.php';

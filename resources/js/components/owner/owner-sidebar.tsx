@@ -1,11 +1,10 @@
-import { BarChart3, Box, ChevronRight, ClipboardList, LayoutDashboard, LogOut, Truck, User, Users } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import { BarChart3, Box, ChevronRight, ClipboardList, LayoutDashboard, LogOut, Menu, Truck, User, Users } from 'lucide-react';
 import { FC, useState } from 'react';
 import { AiFillProduct } from 'react-icons/ai';
+import { MdOutlineFactory } from 'react-icons/md';
 import { RiBarChart2Fill } from 'react-icons/ri';
 import { TbCashRegister } from 'react-icons/tb';
-import { MdOutlineFactory } from "react-icons/md";
-import { Menu } from 'lucide-react';
-import { router } from '@inertiajs/react';
 
 export interface SidebarItemProps {
     icon: React.ReactNode;
@@ -23,11 +22,7 @@ const SidebarItem: FC<SidebarItemProps> = ({ icon, label, href, active, collapse
 
     if (onClick) {
         return (
-            <button
-                onClick={onClick}
-                className={baseClass}
-                type="button"
-            >
+            <button onClick={onClick} className={baseClass} type="button">
                 <div className="flex-shrink-0">{icon}</div>
                 {!collapsed && <span className="truncate">{label}</span>}
             </button>
@@ -35,13 +30,12 @@ const SidebarItem: FC<SidebarItemProps> = ({ icon, label, href, active, collapse
     }
 
     return (
-        <a href={href} className={baseClass}>
+        <Link href={href!} className={baseClass}>
             <div className="flex-shrink-0">{icon}</div>
             {!collapsed && <span className="truncate">{label}</span>}
-        </a>
+        </Link>
     );
 };
-
 
 interface SidebarGroupProps {
     icon: React.ReactNode;
@@ -56,9 +50,7 @@ const SidebarGroup: FC<SidebarGroupProps> = ({ icon, title, children, collapsed 
     if (collapsed) {
         return (
             <div className="py-2">
-                <div className="mb-1 flex w-full items-center justify-center text-white">
-                    {icon}
-                </div>
+                <div className="mb-1 flex w-full items-center justify-center text-white">{icon}</div>
                 <div className="space-y-1">{children}</div>
             </div>
         );
@@ -68,20 +60,15 @@ const SidebarGroup: FC<SidebarGroupProps> = ({ icon, title, children, collapsed 
         <div>
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="mb-1 flex w-full items-center justify-between text-sm md:text-base lg:text-xl font-semibold text-white transition hover:text-gray-200"
+                className="mb-1 flex w-full items-center justify-between text-sm font-semibold text-white transition hover:text-gray-200 md:text-base lg:text-xl"
             >
-                <div className='flex items-center gap-3'>
+                <div className="flex items-center gap-3">
                     {icon}
                     <span className="truncate">{title}</span>
                 </div>
-                <ChevronRight
-                    size={16}
-                    className={`transition-transform ${expanded ? 'rotate-90' : ''}`}
-                />
+                <ChevronRight size={16} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
             </button>
-            <div className={`space-y-1 pl-4 ${!expanded ? 'hidden' : ''}`}>
-                {children}
-            </div>
+            <div className={`space-y-1 pl-4 ${!expanded ? 'hidden' : ''}`}>{children}</div>
         </div>
     );
 };
@@ -101,31 +88,55 @@ const Sidebar: FC = () => {
 
     const sidebarContent = (
         <>
-            <a
-                href={'/owner-dashboard'}
-                className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} rounded-md px-4 py-2 text-md md:text-lg lg:text-xl font-semibold transition hover:bg-[#4A90E2] ${
+            <Link
+                href="/owner-dashboard"
+                className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} text-md rounded-md px-4 py-2 font-semibold transition hover:bg-[#4A90E2] md:text-lg lg:text-xl ${
                     currentPath === '/owner-dashboard' ? 'bg-blue-700 text-white' : 'text-white'
                 }`}
             >
                 <LayoutDashboard size={20} />
                 {!collapsed && <span className="truncate">Dashboard</span>}
-            </a>
+            </Link>
 
             <SidebarGroup title="Manajemen Produk" icon={<AiFillProduct size={20} />} collapsed={collapsed}>
-                <SidebarItem icon={<Box size={20} />} label="Produk" href="/owner-produk" active={currentPath === '/owner-produk' || currentPath === '/owner-produk/tambah'} collapsed={collapsed} />
-                <SidebarItem icon={<Truck size={20} />} label="Supplier" href="/owner-supplier" active={currentPath === '/owner-supplier'} collapsed={collapsed} />
+                <SidebarItem
+                    icon={<Box size={20} />}
+                    label="Produk"
+                    href="/owner-produk"
+                    active={currentPath === '/owner-produk' || currentPath === '/owner-produk/tambah' || currentPath === '/owner-produk/edit'}
+                    collapsed={collapsed}
+                />
+                <SidebarItem
+                    icon={<Truck size={20} />}
+                    label="Supplier"
+                    href="/owner-supplier"
+                    active={currentPath === '/owner-supplier' || currentPath === '/owner-supplier/tambah' || currentPath === '/owner-supplier/edit'}
+                    collapsed={collapsed}
+                />
                 <SidebarItem
                     icon={<MdOutlineFactory size={20} />}
                     label="Pembelian Supply"
-                    href="/owner-pembelian-supply" 
-                    active={currentPath === '/owner-pembelian-supply'}
+                    href="/owner-pembelian-supply"
+                    active={currentPath === '/owner-pembelian-supply' || currentPath === '/owner-pembelian-supply/tambah'}
                     collapsed={collapsed}
                 />
             </SidebarGroup>
 
             <SidebarGroup title="Pengguna" icon={<Users size={20} />} collapsed={collapsed}>
-                <SidebarItem icon={<User size={20} />} label="Pelanggan" href="/owner-pelanggan" active={currentPath === '/ownerpelanggan'} collapsed={collapsed} />
-                <SidebarItem icon={<TbCashRegister size={20} />} label="Kasir" href="/owner-kasir" active={currentPath === '/owner-kasir'} collapsed={collapsed} />
+                <SidebarItem
+                    icon={<User size={20} />}
+                    label="Pelanggan"
+                    href="/owner-pelanggan"
+                    active={currentPath === '/ownerpelanggan'}
+                    collapsed={collapsed}
+                />
+                <SidebarItem
+                    icon={<TbCashRegister size={20} />}
+                    label="Kasir"
+                    href="/owner-kasir"
+                    active={currentPath === '/owner-kasir'}
+                    collapsed={collapsed}
+                />
             </SidebarGroup>
 
             <SidebarGroup title="Penjualan" icon={<RiBarChart2Fill size={20} />} collapsed={collapsed}>
@@ -146,51 +157,46 @@ const Sidebar: FC = () => {
             </SidebarGroup>
 
             <div className="border-t border-blue-700 pt-4">
-                <SidebarItem icon={<LogOut size={20} />} label="Logout" onClick={() => router.post(route('logout'))} active={currentPath === '/logout'} collapsed={collapsed} />
+                <SidebarItem
+                    icon={<LogOut size={20} />}
+                    label="Logout"
+                    onClick={() => router.post(route('logout'))}
+                    active={currentPath === '/logout'}
+                    collapsed={collapsed}
+                />
             </div>
         </>
     );
 
     // Only shown on desktop
     const desktopSidebar = (
-        <div 
-            className={`hidden md:block h-full ${
-                collapsed ? 'w-16' : 'w-1/6'
-            } transition-all duration-300 ease-in-out bg-blue-900 p-4 text-white`}
-        >
-            <div className="flex justify-end mb-4 md:hidden">
-                <button onClick={toggleSidebar} className="text-white p-1 rounded">
+        <div className={`hidden h-full md:block ${collapsed ? 'w-16' : 'w-1/6'} bg-blue-900 p-4 text-white transition-all duration-300 ease-in-out`}>
+            <div className="mb-4 flex justify-end md:hidden">
+                <button onClick={toggleSidebar} className="rounded p-1 text-white">
                     {collapsed ? <ChevronRight size={24} /> : <ChevronRight className="rotate-180" size={24} />}
                 </button>
             </div>
-            <div className="space-y-6">
-                {sidebarContent}
-            </div>
+            <div className="space-y-6">{sidebarContent}</div>
         </div>
     );
 
     // Mobile sidebar toggle button
     const mobileSidebarToggle = (
-        <button 
-            onClick={toggleMobileSidebar}
-            className="md:hidden fixed z-50 bottom-4 right-4 bg-blue-700 text-white p-3 rounded-full shadow-lg"
-        >
+        <button onClick={toggleMobileSidebar} className="fixed right-4 bottom-4 z-50 rounded-full bg-blue-700 p-3 text-white shadow-lg md:hidden">
             <Menu size={24} />
         </button>
     );
 
     // Mobile sidebar (shown when toggled)
     const mobileSidebar = showMobileSidebar && (
-        <div className="md:hidden fixed inset-0 z-40 bg-gray-900 bg-opacity-50 flex">
-            <div className="w-64 h-full bg-blue-900 p-4 text-white overflow-y-auto">
-                <div className="flex justify-end mb-4">
-                    <button onClick={toggleMobileSidebar} className="text-white p-1 rounded">
+        <div className="bg-opacity-50 fixed inset-0 z-40 flex bg-gray-900 md:hidden">
+            <div className="h-full w-64 overflow-y-auto bg-blue-900 p-4 text-white">
+                <div className="mb-4 flex justify-end">
+                    <button onClick={toggleMobileSidebar} className="rounded p-1 text-white">
                         <ChevronRight className="rotate-180" size={24} />
                     </button>
                 </div>
-                <div className="space-y-6">
-                    {sidebarContent}
-                </div>
+                <div className="space-y-6">{sidebarContent}</div>
             </div>
             <div className="flex-1" onClick={toggleMobileSidebar}></div>
         </div>

@@ -1,5 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@headlessui/react';
+import { Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { FiArrowLeftCircle } from "react-icons/fi";
 
@@ -44,9 +45,9 @@ const OwnerEditProduk = () => {
         <OwnerLayout>
             <div className="flex justify-center py-8 text-black">
                 <div className="mx-auto w-11/12 rounded-lg bg-white p-6 shadow-md">
-                    <a href="/owner-produk" className="mb-4 inline-block text-blue-600 hover:underline">
+                    <Link href="/owner-produk" className="mb-4 inline-block text-blue-600 hover:underline">
                         <FiArrowLeftCircle size={50} className='text-black' />
-                    </a>
+                    </Link>
 
                     <h1 className="mb-6 text-center text-2xl font-bold">Edit Produk</h1>
 

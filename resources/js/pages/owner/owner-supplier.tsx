@@ -1,43 +1,27 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/react';
+import { Link,usePage,router } from '@inertiajs/react';
 import { Plus, Search, SquarePen, Trash2 } from 'lucide-react';
 
-const OwnerSupplier = () => {
+interface Supplier {
+    SupplierID: number;
+    SupplierName: string;
+    SupplierContact: string;
+    SupplierAddress: string;
+}
 
-    interface supplierData {
-        nama_supplier: string;
-        kontak_supplier: string;
-        alamat_supplier: string;
+interface PageProps {
+    suppliers: Supplier[];
+    [key: string]: any; 
+}
+
+const handleDelete = (id: number) => {
+    if (confirm('Yakin ingin menghapus supplier ini?')) {
+        router.delete(`/owner-supplier/${id}`);
     }
-
-    const supplierData: supplierData[] = [
-        {
-            nama_supplier: 'ATK Medan Jaya',
-            kontak_supplier: '081234567890',
-            alamat_supplier: 'Jl. Raya No. 1, Medan',
-        },
-        {
-            nama_supplier: 'PT Sumber Makmur',
-            kontak_supplier: '084656245656',
-            alamat_supplier: 'Jl. Melawai No. 2, Medan',
-        },
-        {
-            nama_supplier: 'ATK Sumber Rezeki',
-            kontak_supplier: '081209385935',
-            alamat_supplier: 'Jl. Dr Mansyur No. 3, Medan',
-        },
-        {
-            nama_supplier: 'PT Perkasa Abadi',
-            kontak_supplier: '083473467273',
-            alamat_supplier: 'Jl. Alam No. 4, Medan',
-        },
-        {
-            nama_supplier: 'PT Mandiri Jaya',
-            kontak_supplier: '081394782742',
-            alamat_supplier: 'Jl. Perkasa No. 5, Medan',
-        },
-    ];
+};
+const OwnerSupplier = () => {
+    const { suppliers } = usePage<PageProps>().props;
 
     return (
         <OwnerLayout>
@@ -72,32 +56,36 @@ const OwnerSupplier = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
-                                    {supplierData.map((item, index) => (
-                                        <tr key={index} className="transition duration-200 hover:bg-gray-100">
-                                            <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
-                                            <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nama_supplier}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.kontak_supplier}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.alamat_supplier}</td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                <Link href="/owner-supplier/edit">
+                                    {suppliers.map((supplier, index) => {
+                                        const supplierID= supplier.SupplierID;
+                                        return( 
+                                            <tr key={index} className="transition duration-200 hover:bg-gray-100">
+                                                <td className="border border-gray-200 p-4 text-center">{supplier.SupplierID}</td>
+                                                <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{supplier.SupplierName}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{supplier.SupplierContact}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{supplier.SupplierAddress}</td>
+                                                <td className="border border-gray-200 p-4 text-center">
+                                                    <Link href={`/owner-supplier/edit/${supplierID}`}>
+                                                        <Button
+                                                            className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
+                                                            size="icon"
+                                                        >
+                                                            <SquarePen className="h-4 w-4" />
+                                                        </Button>
+                                                    </Link>
+                                                </td>
+                                                <td className="border border-gray-200 p-4 text-center">
                                                     <Button
-                                                        className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
+                                                        onClick={() => handleDelete(supplierID)}
+                                                        className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
                                                         size="icon"
                                                     >
-                                                        <SquarePen className="h-4 w-4" />
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                </Link>
-                                            </td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                <Button
-                                                    className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
-                                                    size="icon"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

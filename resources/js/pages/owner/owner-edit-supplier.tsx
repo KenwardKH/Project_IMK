@@ -1,21 +1,36 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@headlessui/react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { FiArrowLeftCircle } from "react-icons/fi";
 
-const OwnerEditSupplier = () => {
-    // Dummy data untuk contoh, bisa diganti dengan data dari props atau API
-    const dummyProduk = {
-        nama_supplier: "ATK Medan Jaya",
-        kontak_supplier: "081234567890",
-        alamat_supplier: "Jl. Raya No. 1, Medan",
-    };
+interface Supplier {
+    SupplierID: number;
+    SupplierName: string;
+    SupplierContact: string;
+    SupplierAddress: string;
+}
+interface PageProps {
+    supplier: Supplier;
+    [key: string]: any; 
+}
 
-    //
-    const [nama_supplier, setNamaSupplier] = useState(dummyProduk.nama_supplier);
-    const [kontak_supplier, setKontakSupplier] = useState(dummyProduk.kontak_supplier);
-    const [alamat_supplier, setAlamatSupplier] = useState(dummyProduk.alamat_supplier);
+const OwnerEditSupplier = () => {
+    const { supplier } = usePage<PageProps>().props;
+
+    const [nama_supplier, setNamaSupplier] = useState(supplier.SupplierName);
+    const [kontak_supplier, setKontakSupplier] = useState(supplier.SupplierContact);
+    const [alamat_supplier, setAlamatSupplier] = useState(supplier.SupplierAddress);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        router.put(`/owner-supplier/${supplier.SupplierID}`, {
+            SupplierName: nama_supplier,
+            SupplierContact: kontak_supplier,
+            SupplierAddress: alamat_supplier,
+        });
+    };
 
     return (
         <OwnerLayout>
@@ -27,7 +42,7 @@ const OwnerEditSupplier = () => {
 
                     <h1 className="mb-6 text-center text-2xl font-bold">Edit Supplier</h1>
 
-                    <form className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="mb-1 block font-semibold">Nama Supplier</label>
                             <input
@@ -58,8 +73,8 @@ const OwnerEditSupplier = () => {
                             ></textarea>
                         </div>
 
-                        <Button className="mt-4 w-full rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700 hover:cursor-pointer">
-                            Update Produk
+                        <Button type="submit" className="mt-4 w-full bg-blue-600 text-white hover:bg-blue-700">
+                            Update Supplier
                         </Button>
                     </form>
                 </div>

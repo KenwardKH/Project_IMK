@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
+use App\Http\Controllers\ownerProduct;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -33,6 +34,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         [ownerSupplier::class, 'edit']
     )->name('owner-edit-supplier');
     Route::put('/owner-supplier/{id}',[ownerSupplier::class,'update']);
+
+    Route::resource('/owner-produk', ownerProduct::class)->names('owner.produk');
 
     Route::get('owner-pembelian-supply', function () {
         return Inertia::render('owner/owner-pembelian-supply');

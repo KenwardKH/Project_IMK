@@ -40,6 +40,7 @@ class Product extends Model
 		'Description',
 		'ProductUnit',
 		'CurrentStock',
+		'ProductPrice',
 		'image'
 	];
 
@@ -53,8 +54,4 @@ class Product extends Model
 		return $this->hasMany(CustomerCart::class, 'ProductID');
 	}
 
-	public function pricings()
-	{
-		return $this->hasMany(Pricing::class, 'ProductID');
-	}
 }

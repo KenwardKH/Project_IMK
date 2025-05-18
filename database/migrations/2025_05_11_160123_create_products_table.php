@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('Description')->nullable();
             $table->string('ProductUnit');
             $table->integer('CurrentStock')->nullable()->default(0);
+            $table->integer('ProductPrice')->nullable()->default(0);
             $table->text('image')->nullable();
         });
     }

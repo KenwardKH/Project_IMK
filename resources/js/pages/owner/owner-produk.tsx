@@ -2,7 +2,9 @@ import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+
+
 
 const OwnerProduct = () => {
     interface RiwayatHarga {
@@ -10,16 +12,21 @@ const OwnerProduct = () => {
         harga: number;
     }
 
-    interface productData {
+    interface ProductData {
+        id: number;
         gambar_produk: string;
         nama_produk: string;
         harga_jual: number;
         stock: number;
         satuan: string;
         deskripsi: string;
-        riwayat_harga: RiwayatHarga[];
+        riwayat_harga?: RiwayatHarga[];
     }
-
+    interface Props {
+        products: ProductData[];
+        [key: string]: any;
+    }
+    const { products } = usePage<Props>().props;
     const [modalImage, setModalImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -70,45 +77,6 @@ const OwnerProduct = () => {
         }).format(value);
     };
 
-    const productData: productData[] = [
-        {
-            gambar_produk: 'pen.jpg',
-            nama_produk: 'Pen Standard Hitam',
-            harga_jual: 36000,
-            stock: 50,
-            satuan: 'kotak',
-            deskripsi: 'Pulpen hitam yang nyaman digunakan',
-            riwayat_harga: [
-                { tanggal: new Date('2025-05-01'), harga: 30000 },
-                { tanggal: new Date('2025-05-01'), harga: 34000 },
-                { tanggal: new Date('2025-05-01'), harga: 36000 },
-            ],
-        },
-        {
-            gambar_produk: 'kertas.jpg',
-            nama_produk: 'Kertas A4',
-            harga_jual: 55000,
-            stock: 150,
-            satuan: 'rim',
-            deskripsi: 'Kertas dengan ukuran A4 dengan isi 500 lembar',
-            riwayat_harga: [
-                { tanggal: new Date('2025-05-01'), harga: 52000 },
-                { tanggal: new Date('2025-05-01'), harga: 55000 },
-            ],
-        },
-        {
-            gambar_produk: 'spidol.jpg',
-            nama_produk: 'Spidol Snowman Hitam',
-            harga_jual: 45000,
-            stock: 150,
-            satuan: 'lusin',
-            deskripsi: 'Spidol permanen berwarna hitam dengan isi 12',
-            riwayat_harga: [
-                { tanggal: new Date('2025-05-01'), harga: 40000 },
-                { tanggal: new Date('2025-05-01'), harga: 45000 },
-            ],
-        },
-    ];
 
     return (
         <OwnerLayout>
@@ -147,7 +115,7 @@ const OwnerProduct = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
-                                    {productData.map((item, index) => (
+                                    {products.map((item, index) => (
                                         <tr key={index} className="transition duration-200 hover:bg-gray-100">
                                             <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
                                             <td className="border border-gray-200 p-4 text-center">
@@ -165,7 +133,7 @@ const OwnerProduct = () => {
                                             <td className="border border-gray-200 p-4 text-center">{item.deskripsi}</td>
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <Button
-                                                    onClick={() => openRiwayatModal(item.riwayat_harga, item.nama_produk)}
+                                                    // onClick={() => openRiwayatModal(item.riwayat_harga, item.nama_produk)}
                                                     className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600 hover:cursor-pointer"
                                                 >
                                                     Riwayat Harga

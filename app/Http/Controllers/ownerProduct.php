@@ -6,31 +6,42 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Product;
+use App\Models\PricingLog;
 
 class ownerProduct extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+        public function index()
     {
-        $products = Product::select([
+        $products = Product::select(
                 'ProductID as id',
                 'ProductName as nama_produk',
                 'Description as deskripsi',
                 'ProductUnit as satuan',
                 'CurrentStock as stock',
                 'ProductPrice as harga_jual',
-                'image as gambar_produk',
-            ])
-            // ->with(['priceHistory']) // optional jika ada relasi harga
+                'image as gambar_produk'
+            )
             ->get();
+        
+        // Load price history for each product
+        foreach ($products as $product) {
+            $priceHistory = PricingLog::where('ProductID', $product->id)
+                ->select('id', 'NewPrice as harga', 'TimeChanged as tanggal')
+                ->orderBy('TimeChanged', 'desc')
+                ->limit(10)
+                ->get()
+                ->toArray();
+            
+            $product->riwayat_harga = $priceHistory;
+        }
 
         return Inertia::render('owner/owner-produk', [
             'products' => $products
         ]);
     }
-
     /**
      * Show the form for creating a new resource.
      */

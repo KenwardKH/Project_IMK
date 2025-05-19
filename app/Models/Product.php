@@ -53,5 +53,9 @@ class Product extends Model
 	{
 		return $this->hasMany(CustomerCart::class, 'ProductID');
 	}
-
+	public function price_history()
+	{
+		return $this->hasMany(PricingLog::class, 'ProductID')
+            ->orderBy('TimeChanged', 'desc');
+	}
 }

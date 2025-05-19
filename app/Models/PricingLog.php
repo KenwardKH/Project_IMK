@@ -38,4 +38,8 @@ class PricingLog extends Model
 		'NewPrice',
 		'TimeChanged'
 	];
+	public function product()
+    {
+        return $this->belongsTo(Product::class, 'ProductID', 'ProductID');
+    }
 }

@@ -4,12 +4,9 @@ import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 
-
-
-
 const OwnerProduct = () => {
     interface RiwayatHarga {
-        tanggal: Date;
+        tanggal: string; // Changed from Date to string as it will come from the API as string
         harga: number;
     }
 
@@ -21,12 +18,14 @@ const OwnerProduct = () => {
         stock: number;
         satuan: string;
         deskripsi: string;
-        riwayat_harga?: RiwayatHarga[];
+        riwayat_harga: RiwayatHarga[];
     }
+    
     interface Props {
         products: ProductData[];
         [key: string]: any;
     }
+    
     const { products } = usePage<Props>().props;
     const [modalImage, setModalImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,6 +33,7 @@ const OwnerProduct = () => {
     const [showPriceModal, setShowPriceModal] = useState(false);
     const [selectedRiwayat, setSelectedRiwayat] = useState<RiwayatHarga[] | null>(null);
     const [selectedNamaProduk, setSelectedNamaProduk] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState<string>('');
 
     const openModal = (imageUrl: string) => {
         setModalImage(imageUrl);
@@ -56,23 +56,12 @@ const OwnerProduct = () => {
         setSelectedRiwayat(null);
         setSelectedNamaProduk('');
     };
+    
     const handleDelete = (id: number) => {
         if (confirm('Yakin ingin menghapus produk ini?')) {
             router.delete(`/owner-produk/${id}`);
         }
     };
-
-    // State to manage window width for responsive design
-    // const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
-
-    // useEffect(() => {
-    //     const handleResize = () => {
-    //         setWindowWidth(window.innerWidth);
-    //     };
-
-    //     window.addEventListener('resize', handleResize);
-    //     return () => window.removeEventListener('resize', handleResize);
-    // }, []);
 
     // Format numbers for display
     const formatCurrency = (value: number): string => {
@@ -83,6 +72,19 @@ const OwnerProduct = () => {
         }).format(value);
     };
 
+    // Format date
+    const formatDate = (dateString: string): string => {
+        return new Date(dateString).toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    // Filter products based on search term
+    const filteredProducts = products.filter(product => 
+        product.nama_produk.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <OwnerLayout>
@@ -94,6 +96,8 @@ const OwnerProduct = () => {
                             type="text"
                             placeholder="Cari Produk"
                             className="h-12 w-full rounded-md border border-gray-600 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <Link href={'/owner-produk/tambah'}>
@@ -121,28 +125,39 @@ const OwnerProduct = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
-                                    {products.map((item, index) => (
+                                    {filteredProducts.map((item, index) => (
                                         <tr key={index} className="transition duration-200 hover:bg-gray-100">
                                             <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
                                             <td className="border border-gray-200 p-4 text-center">
-                                                <img
-                                                    src={`/storage/${item.gambar_produk}`}
-                                                    alt={item.nama_produk}
-                                                    className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
-                                                    onClick={() => openModal(`/storage/${item.gambar_produk}`)}
-                                                />
+                                                {item.gambar_produk ? (
+                                                    <img
+                                                        src={`/storage/${item.gambar_produk}`}
+                                                        alt={item.nama_produk}
+                                                        className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
+                                                        onClick={() => openModal(`/storage/${item.gambar_produk}`)}
+                                                    />
+                                                ) : (
+                                                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-md bg-gray-200 text-xs text-gray-500">
+                                                        No Image
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nama_produk}</td>
                                             <td className="border border-gray-200 p-4 text-center">{formatCurrency(item.harga_jual)}</td>
                                             <td className="border border-gray-200 p-4 text-center">{item.stock}</td>
                                             <td className="border border-gray-200 p-4 text-center">{item.satuan}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.deskripsi}</td>
+                                            <td className="border border-gray-200 p-4 text-center">
+                                                {item.deskripsi ? item.deskripsi : '-'}
+                                            </td>
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <Button
-                                                    // onClick={() => openRiwayatModal(item.riwayat_harga, item.nama_produk)}
+                                                    onClick={() => openRiwayatModal(item.riwayat_harga || [], item.nama_produk)}
                                                     className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600 hover:cursor-pointer"
+                                                    disabled={!item.riwayat_harga || item.riwayat_harga.length === 0}
                                                 >
-                                                    Riwayat Harga
+                                                    {item.riwayat_harga && item.riwayat_harga.length > 0 
+                                                        ? `Riwayat Harga (${item.riwayat_harga.length})` 
+                                                        : 'Tidak Ada Riwayat'}
                                                 </Button>
                                             </td>
                                             <td className="border border-gray-200 p-4 text-center">
@@ -166,6 +181,13 @@ const OwnerProduct = () => {
                                             </td>
                                         </tr>
                                     ))}
+                                    {filteredProducts.length === 0 && (
+                                        <tr>
+                                            <td colSpan={10} className="border border-gray-200 p-8 text-center text-gray-500">
+                                                Tidak ada produk yang ditemukan
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -174,12 +196,12 @@ const OwnerProduct = () => {
             </div>
             {isModalOpen && modalImage && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" // lebih terang dari bg-black/70
-                    onClick={closeModal} // klik di background menutup modal
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+                    onClick={closeModal}
                 >
                     <div
                         className="relative w-full max-w-lg rounded-lg bg-white p-4 shadow-lg"
-                        onClick={(e) => e.stopPropagation()} // mencegah modal menutup saat klik gambar/modal
+                        onClick={(e) => e.stopPropagation()}
                     >
                         <button
                             onClick={closeModal}
@@ -203,14 +225,24 @@ const OwnerProduct = () => {
                             <X size={20} />
                         </button>
                         <h2 className="mb-4 text-xl font-semibold text-gray-800">Riwayat Harga - {selectedNamaProduk}</h2>
-                        <ul className="space-y-2">
-                            {selectedRiwayat.map((riwayat, idx) => (
-                                <li key={idx} className="flex justify-between border-b pb-1 text-sm text-gray-700">
-                                    <span>{riwayat.tanggal.toLocaleDateString('id-ID')}</span>
-                                    <span>{formatCurrency(riwayat.harga)}</span>
-                                </li>
-                            ))}
-                        </ul>
+                        {selectedRiwayat.length > 0 ? (
+                            <div className="max-h-96 overflow-y-auto">
+                                <div className="mb-2 grid grid-cols-2 font-semibold">
+                                    <div>Tanggal</div>
+                                    <div className="text-right">Harga</div>
+                                </div>
+                                <ul className="space-y-2">
+                                    {selectedRiwayat.map((riwayat, idx) => (
+                                        <li key={idx} className="flex justify-between border-b pb-1 text-sm text-gray-700">
+                                            <span>{formatDate(riwayat.tanggal)}</span>
+                                            <span>{formatCurrency(riwayat.harga)}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : (
+                            <p className="text-center text-gray-500">Tidak ada riwayat harga</p>
+                        )}
                     </div>
                 </div>
             )}

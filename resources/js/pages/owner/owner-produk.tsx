@@ -2,7 +2,8 @@ import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
+
 
 
 
@@ -54,6 +55,11 @@ const OwnerProduct = () => {
         setShowPriceModal(false);
         setSelectedRiwayat(null);
         setSelectedNamaProduk('');
+    };
+    const handleDelete = (id: number) => {
+        if (confirm('Yakin ingin menghapus produk ini?')) {
+            router.delete(`/owner-produk/${id}`);
+        }
     };
 
     // State to manage window width for responsive design
@@ -120,10 +126,10 @@ const OwnerProduct = () => {
                                             <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <img
-                                                    src={`/images/products/${item.gambar_produk}`}
+                                                    src={`/storage/${item.gambar_produk}`}
                                                     alt={item.nama_produk}
                                                     className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
-                                                    onClick={() => openModal(`/images/products/${item.gambar_produk}`)}
+                                                    onClick={() => openModal(`/storage/${item.gambar_produk}`)}
                                                 />
                                             </td>
                                             <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nama_produk}</td>
@@ -140,7 +146,7 @@ const OwnerProduct = () => {
                                                 </Button>
                                             </td>
                                             <td className="border border-gray-200 p-4 text-center">
-                                                <Link href="/owner-produk/edit">
+                                                <Link href={`/owner-produk/edit/${item.id}`}>
                                                     <Button
                                                         className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
                                                         size="icon"
@@ -151,6 +157,7 @@ const OwnerProduct = () => {
                                             </td>
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <Button
+                                                    onClick={() => handleDelete(item.id)}
                                                     className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
                                                     size="icon"
                                                 >

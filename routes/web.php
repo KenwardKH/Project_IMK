@@ -37,6 +37,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('/owner-produk', ownerProduct::class)->names('owner.produk');
 
+    Route::get('/owner-produk/edit/{id}', [ownerProduct::class, 'edit'])->name('owner.produk.edit');
+    Route::post('/owner-produk/update/{id}', [ownerProduct::class, 'update'])->name('owner.produk.update');
+    Route::delete('/owner-produk/{id}', [OwnerProdukController::class, 'destroy'])->name('owner.produk.destroy');
+
     Route::get('owner-pembelian-supply', function () {
         return Inertia::render('owner/owner-pembelian-supply');
     })->name('owner-pembelian-supply');

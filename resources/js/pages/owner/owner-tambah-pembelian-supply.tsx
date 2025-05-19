@@ -143,7 +143,7 @@ const OwnerTambahPembelianSupply = () => {
                         <div>
                             <label className="mb-1 block font-semibold">Tanggal Supply</label>
                             <input
-                                type="text"
+                                type="date"
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 placeholder="Tanggal Supply"
                             />

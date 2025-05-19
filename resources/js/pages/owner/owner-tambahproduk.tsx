@@ -154,7 +154,7 @@ const OwnerTambahProduk = () => {
                             )}
                         </div>
 
-                        <Button className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:bg-green-700" type='submit'>Simpan Produk</Button>
+                        <Button className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:bg-green-700 hover:cursor-pointer" type='submit'>Simpan Produk</Button>
                     </form>
                 </div>
             </div>

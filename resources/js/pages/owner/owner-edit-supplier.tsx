@@ -73,7 +73,7 @@ const OwnerEditSupplier = () => {
                             ></textarea>
                         </div>
 
-                        <Button type="submit" className="mt-4 w-full bg-blue-600 text-white hover:bg-blue-700">
+                        <Button type="submit" className="mt-4 w-full bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer rounded px-4 py-2 font-bold">
                             Update Supplier
                         </Button>
                     </form>

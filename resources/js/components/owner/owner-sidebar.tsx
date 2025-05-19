@@ -126,15 +126,15 @@ const Sidebar: FC = () => {
                 <SidebarItem
                     icon={<User size={20} />}
                     label="Pelanggan"
-                    href="/owner-pelanggan"
-                    active={currentPath === '/ownerpelanggan'}
+                    href="/owner-daftar-pelanggan"
+                    active={currentPath === '/owner-daftar-pelanggan'}
                     collapsed={collapsed}
                 />
                 <SidebarItem
                     icon={<TbCashRegister size={20} />}
                     label="Kasir"
-                    href="/owner-kasir"
-                    active={currentPath === '/owner-kasir'}
+                    href="/owner-daftar-kasir"
+                    active={currentPath === '/owner-daftar-kasir' || currentPath === '/owner-daftar-kasir/tambah' || currentPath === '/owner-daftar-kasir/edit'}
                     collapsed={collapsed}
                 />
             </SidebarGroup>

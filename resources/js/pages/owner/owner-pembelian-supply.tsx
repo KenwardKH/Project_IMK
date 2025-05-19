@@ -1,7 +1,7 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
-import { Plus, SquarePen, Trash2 } from 'lucide-react';
+import { Plus, Search, SquarePen, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 const OwnerPembelianSupply = () => {
@@ -92,7 +92,7 @@ const OwnerPembelianSupply = () => {
         }).format(value);
     };
 
-    const productData: pembelianSupplyData[] = [
+    const pembelianSupplyData: pembelianSupplyData[] = [
         {
             id_invoice: '1',
             gambar_invoice: 'kwitansi.jpg',
@@ -137,6 +137,42 @@ const OwnerPembelianSupply = () => {
     return (
         <OwnerLayout>
             <div>
+                <section className="flex w-full flex-col gap-4 rounded-md border-b-2 border-gray-300 bg-[#FFD9B3] px-6 py-4 shadow-sm md:flex-row md:items-center md:justify-between">
+                    {/* Start Date */}
+                    <div className="flex flex-col md:w-1/3 md:flex-row md:items-center md:gap-2">
+                        <label htmlFor="startDate" className="mb-1 text-sm font-semibold whitespace-nowrap md:mb-0">
+                            Tanggal Mulai:
+                        </label>
+                        <input
+                            type="date"
+                            id="startDate"
+                            className="h-9 w-full rounded-md border border-gray-400 px-3 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        />
+                    </div>
+
+                    {/* Search */}
+                    <div className="relative w-full md:w-1/3">
+                        <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Cari Produk"
+                            className="h-9 w-full rounded-md border border-gray-400 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        />
+                    </div>
+
+                    {/* End Date */}
+                    <div className="flex flex-col md:w-1/3 md:flex-row md:items-center md:gap-2">
+                        <label htmlFor="endDate" className="mb-1 text-sm font-semibold whitespace-nowrap md:mb-0">
+                            Tanggal Akhir:
+                        </label>
+                        <input
+                            type="date"
+                            id="endDate"
+                            className="h-9 w-full rounded-md border border-gray-400 px-3 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        />
+                    </div>
+                </section>
+
                 <section className="flex w-full items-center justify-end px-4 py-3">
                     <Link href={'/owner-pembelian-supply/tambah'}>
                         <button className="flex h-12 w-45 cursor-pointer items-center justify-center rounded-lg bg-[#009a00] text-lg font-bold text-[#ffffff] hover:bg-[#008000]">
@@ -163,7 +199,7 @@ const OwnerPembelianSupply = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
-                                    {productData.map((item, index) => (
+                                    {pembelianSupplyData.map((item, index) => (
                                         <tr key={index} className="transition duration-200 hover:bg-gray-100">
                                             <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
                                             <td className="border border-gray-200 p-4 text-center">
@@ -184,7 +220,7 @@ const OwnerPembelianSupply = () => {
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <Button
                                                     onClick={() => openDetailModal(item.detail_pesanan, item.id_invoice)}
-                                                    className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600 hover:cursor-pointer"
+                                                    className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:cursor-pointer hover:bg-blue-600"
                                                 >
                                                     Detail Harga
                                                 </Button>

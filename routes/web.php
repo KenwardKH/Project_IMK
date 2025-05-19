@@ -50,6 +50,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('owner-pembelian-supply/edit', function () {
         return Inertia::render('owner/owner-edit-pembelian-supply');
     })->name('owner-edit-pembelian-supply');
+
+    Route::get('owner-daftar-pelanggan', function () {
+        return Inertia::render('owner/owner-daftar-pelanggan');
+    })->name('owner-daftar-pelanggan');
+    Route::get('owner-daftar-kasir', function () {
+        return Inertia::render('owner/owner-daftar-kasir');
+    })->name('owner-daftar-kasir');
+    Route::get('owner-daftar-kasir/tambah', function () {
+        return Inertia::render('owner/owner-tambah-kasir');
+    })->name('owner-tambah-kasir');
+    Route::get('owner-daftar-kasir/edit', function () {
+        return Inertia::render('owner/owner-edit-kasir');
+    })->name('owner-edit-kasir');
 });
 
 require __DIR__.'/settings.php';

@@ -64,7 +64,7 @@ const OwnerTambahSupplier = () => {
                             {errors.SupplierAddress && <div className="text-red-600 text-sm">{errors.SupplierAddress}</div>}
                         </div>
 
-                        <Button type="submit" className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:bg-green-700">
+                        <Button type="submit" className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:bg-green-700 hover:cursor-pointer">
                             Simpan Supplier
                         </Button>
                     </form>

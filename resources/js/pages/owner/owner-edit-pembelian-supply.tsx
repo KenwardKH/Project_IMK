@@ -172,7 +172,7 @@ const OwnerTambahPembelianSupply = () => {
                         <div>
                             <label className="mb-1 block font-semibold">Tanggal Supply</label>
                             <input
-                                type="text"
+                                type="date"
                                 value={tanggalSupply}
                                 onChange={(e) => setTanggalSupply(e.target.value)}
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -339,9 +339,9 @@ const OwnerTambahPembelianSupply = () => {
 
                         <Button
                             type="submit"
-                            className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:cursor-pointer hover:bg-green-700"
+                            className="mt-4 w-full rounded bg-blue-600 px-4 py-2 font-bold text-white hover:cursor-pointer hover:bg-blue-700"
                         >
-                            Ubah Pesanan
+                            Update Pesanan
                         </Button>
                     </form>
                 </div>

@@ -117,7 +117,7 @@ const Sidebar: FC = () => {
                     icon={<MdOutlineFactory size={20} />}
                     label="Pembelian Supply"
                     href="/owner-pembelian-supply"
-                    active={currentPath === '/owner-pembelian-supply' || currentPath === '/owner-pembelian-supply/tambah'}
+                    active={currentPath === '/owner-pembelian-supply' || currentPath === '/owner-pembelian-supply/tambah' || currentPath === '/owner-pembelian-supply/edit'}
                     collapsed={collapsed}
                 />
             </SidebarGroup>

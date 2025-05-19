@@ -99,11 +99,10 @@ const OwnerPembelianSupply = () => {
             nomor_invoice: 'AMJ-101',
             nama_supplier: 'ATK Medan Jaya',
             jumlah_produk: 3,
-            harga_total: 32346000,
+            harga_total: 19413000,
             tanggal_invoice: new Date('2025-05-01'),
             detail_pesanan: [
                 { nama_produk: 'Pensil 2B', harga: 24000, jumlah: 400, diskon: 10 },
-                { nama_produk: 'Spidol Snowman Merah', harga: 36000, jumlah: 350, diskon: '10+5' },
                 { nama_produk: 'Spidol Snowman Merah', harga: 36000, jumlah: 350, diskon: '10+5' },
             ],
         },
@@ -113,12 +112,11 @@ const OwnerPembelianSupply = () => {
             nomor_invoice: 'AMJ-101',
             nama_supplier: 'ATK Medan Jaya',
             jumlah_produk: 3,
-            harga_total: 32346000,
+            harga_total: 19413000,
             tanggal_invoice: new Date('2025-05-01'),
             detail_pesanan: [
                 { nama_produk: 'Pensil 2B', harga: 24000, jumlah: 400, diskon: 10 },
                 { nama_produk: 'Spidol Snowman Merah', harga: 36000, jumlah: 350, diskon: '10+5' },
-                { nama_produk: 'Pensil 2B', harga: 24000, jumlah: 400, diskon: 10 },
             ],
         },
         {
@@ -127,12 +125,11 @@ const OwnerPembelianSupply = () => {
             nomor_invoice: 'AMJ-101',
             nama_supplier: 'ATK Medan Jaya',
             jumlah_produk: 3,
-            harga_total: 32346000,
+            harga_total: 19413000,
             tanggal_invoice: new Date('2025-05-01'),
             detail_pesanan: [
                 { nama_produk: 'Pensil 2B', harga: 24000, jumlah: 400, diskon: 10 },
                 { nama_produk: 'Spidol Snowman Merah', harga: 36000, jumlah: 350, diskon: '10+5' },
-                { nama_produk: 'Pensil 2B', harga: 24000, jumlah: 400, diskon: 10 },
             ],
         },
     ];
@@ -187,7 +184,7 @@ const OwnerPembelianSupply = () => {
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <Button
                                                     onClick={() => openDetailModal(item.detail_pesanan, item.id_invoice)}
-                                                    className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600"
+                                                    className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600 hover:cursor-pointer"
                                                 >
                                                     Detail Harga
                                                 </Button>

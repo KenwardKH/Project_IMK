@@ -40,6 +40,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('owner-pembelian-supply', function () {
         return Inertia::render('owner/owner-pembelian-supply');
     })->name('owner-pembelian-supply');
+    Route::get('owner-pembelian-supply/tambah', function () {
+        return Inertia::render('owner/owner-tambah-pembelian-supply');
+    })->name('owner-tambah-pembelian-supply');
+    Route::get('owner-pembelian-supply/edit', function () {
+        return Inertia::render('owner/owner-edit-pembelian-supply');
+    })->name('owner-edit-pembelian-supply');
 });
 
 require __DIR__.'/settings.php';

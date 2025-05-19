@@ -102,6 +102,7 @@ class ownerProduct extends Controller
             'satuan' => 'required|string|max:50',
             'deskripsi' => 'nullable|string',
             'gambar' => 'nullable|image|max:2048',
+            'current_image' => 'nullable|string', // Added validation for current_image
         ]);
 
         $product = Product::findOrFail($id);
@@ -119,15 +120,14 @@ class ownerProduct extends Controller
             // Simpan gambar baru
             $path = $request->file('gambar')->store('products', 'public');
             $product->image = $path;
-        } elseif ($request->gambar === null) {
+        } elseif ($request->gambar === null && $request->current_image === null) {
             // Gambar dihapus oleh user
             if ($product->image && \Storage::disk('public')->exists($product->image)) {
                 \Storage::disk('public')->delete($product->image);
             }
-
             $product->image = null;
         }
-
+        // Jika tidak ada file baru dan current_image ada, biarkan image tetap sama
 
         $product->save();
 

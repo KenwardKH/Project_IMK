@@ -19,26 +19,27 @@ const OwnerEditProduk = ({ product }: { product: Product }) => {
     harga: product.harga,
     satuan: product.satuan,
     deskripsi: product.deskripsi,
-    gambar: product.gambar,
+    gambar: null, // Changed: Start with null instead of product.gambar
+    _method: 'POST', // Added: For Laravel method spoofing
+    current_image: product.gambar, // Added: Track the current image separately
   });
 
-    const baseImageUrl = '/storage/'; // ganti dengan path yang sesuai
-    const [preview, setPreview] = useState<string | null>(
+  const baseImageUrl = '/storage/';
+  const [preview, setPreview] = useState<string | null>(
     product.gambar ? `${baseImageUrl}${product.gambar}` : null
-    );
+  );
 
   const [isLoading, setIsLoading] = useState(false);
 
-const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0] ?? null;
-  setData('gambar', file);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setData('gambar', file);
 
-  const reader = new FileReader();
-  reader.onloadend = () => setPreview(reader.result as string);
+    const reader = new FileReader();
+    reader.onloadend = () => setPreview(reader.result as string);
 
-  file && reader.readAsDataURL(file); // hanya baca jika ada file
-};
-
+    file && reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,6 +52,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const removeImage = () => {
     setPreview(null);
     setData('gambar', null);
+    setData('current_image', null); // Added: Also update current_image when removing
   };
 
   return (
@@ -72,7 +74,6 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 onChange={(e) => setData('nama', e.target.value)}
                 className="w-full rounded border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              
             </div>
 
             <div>
@@ -115,7 +116,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 </div>
               ) : preview ? (
                 <div className="relative mx-auto w-full max-w-xs">
-                  <img src={typeof preview === 'string' ? preview : ''} alt="Preview"  className="rounded-md border shadow-md" />
+                  <img src={typeof preview === 'string' ? preview : ''} alt="Preview" className="rounded-md border shadow-md" />
                   <button
                     type="button"
                     onClick={removeImage}
@@ -169,4 +170,3 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 };
 
 export default OwnerEditProduk;
-

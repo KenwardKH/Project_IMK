@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
+use App\Http\Controllers\ownerDaftarKasir;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -36,7 +37,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/owner-supplier/{id}',[ownerSupplier::class,'update']);
 
     Route::resource('/owner-produk', ownerProduct::class)->names('owner.produk');
-
     Route::get('/owner-produk/edit/{id}', [ownerProduct::class, 'edit'])->name('owner.produk.edit');
     Route::post('/owner-produk/update/{id}', [ownerProduct::class, 'update'])->name('owner.produk.update');
     Route::delete('/owner-produk/{id}', [OwnerProdukController::class, 'destroy'])->name('owner.produk.destroy');
@@ -54,15 +54,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('owner-daftar-pelanggan', function () {
         return Inertia::render('owner/owner-daftar-pelanggan');
     })->name('owner-daftar-pelanggan');
-    Route::get('owner-daftar-kasir', function () {
-        return Inertia::render('owner/owner-daftar-kasir');
-    })->name('owner-daftar-kasir');
-    Route::get('owner-daftar-kasir/tambah', function () {
-        return Inertia::render('owner/owner-tambah-kasir');
-    })->name('owner-tambah-kasir');
-    Route::get('owner-daftar-kasir/edit', function () {
-        return Inertia::render('owner/owner-edit-kasir');
-    })->name('owner-edit-kasir');
+    
+    // Owner Daftar Kasir Routes
+    Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
+    Route::get('owner-daftar-kasir/riwayat', function () {
+        return Inertia::render('owner/owner-riwayat-kasir');
+    })->name('owner-riwayat-kasir');
 });
 
 require __DIR__.'/settings.php';

@@ -2,34 +2,41 @@ import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
 import { History, Plus, Search, SquarePen, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { router } from '@inertiajs/react';
 
-const OwnerDaftarKasir = () => {
-    interface kasirData {
-        nama: string;
-        email: string;
-        kontak: string;
-        alamat: string;
-    }
-    const kasirData: kasirData[] = [
-        {
-            nama: 'John Doe',
-            email: 'john@gmail.com',
-            kontak: '08123456789',
-            alamat: 'Jl. Merdeka No. 1, Medan',
-        },
-        {
-            nama: 'Jane Doe',
-            email: 'jane@gmail.com',
-            kontak: '08987654321',
-            alamat: 'Jl. Perpustakaan No. 2, Medan',
-        },
-        {
-            nama: 'James Doe',
-            email: 'james@gmail.com',
-            kontak: '08192837465',
-            alamat: 'Jl. Bahagia No. 3, Medan',
-        },
-    ];
+// Define the interface for kasir data
+interface KasirData {
+  id: number;
+  nama: string;
+  email: string;
+  kontak: string;
+  alamat: string;
+  userId?: number;
+}
+
+// Define props interface for the component
+interface OwnerDaftarKasirProps {
+  kasirData: KasirData[];
+}
+
+const OwnerDaftarKasir = ({ kasirData }: OwnerDaftarKasirProps) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    
+    // Filter cashiers based on search term
+    const filteredKasirs = kasirData ? kasirData.filter(kasir => 
+        kasir.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        kasir.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        kasir.kontak.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        kasir.alamat.toLowerCase().includes(searchTerm.toLowerCase())
+    ) : [];
+
+    // Handle delete kasir
+    const handleDeleteKasir = (id: number) => {
+        if (confirm('Anda yakin ingin menghapus kasir ini?')) {
+            router.delete(`/owner-daftar-kasir/${id}`);
+        }
+    };
 
     return (
         <OwnerLayout>
@@ -41,15 +48,17 @@ const OwnerDaftarKasir = () => {
                             type="text"
                             placeholder="Cari kasir"
                             className="h-12 w-full rounded-md border border-gray-600 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link href={'/owner-daftar-kasir/riwayat/tambah'}>
+                        <Link href={'/owner-daftar-kasir/riwayat'}>
                             <button className="flex h-12 w-45 cursor-pointer items-center justify-center rounded-lg bg-gray-500 text-lg font-bold text-[#ffffff] hover:bg-gray-600 gap-1">
                                <History size={25}/> Riwayat Kasir
                             </button>
                         </Link>
-                        <Link href={'/owner-daftar-kasir/tambah'}>
+                        <Link href={'/owner-daftar-kasir/create'}>
                             <button className="flex h-12 w-45 cursor-pointer items-center justify-center rounded-lg bg-[#009a00] text-lg font-bold text-[#ffffff] hover:bg-[#008000]">
                                 <Plus size={25} /> Tambah Kasir
                             </button>
@@ -72,33 +81,42 @@ const OwnerDaftarKasir = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
-                                    {kasirData.map((item, index) => (
-                                        <tr key={index} className="transition duration-200 hover:bg-gray-100">
-                                            <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
-                                            <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nama}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.email}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.kontak}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.alamat}</td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                <Link href="/owner-daftar-kasir/edit">
+                                    {filteredKasirs.length > 0 ? (
+                                        filteredKasirs.map((item, index) => (
+                                            <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
+                                                <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
+                                                <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nama}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.email}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.kontak}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.alamat}</td>
+                                                <td className="border border-gray-200 p-4 text-center">
+                                                    <Link href={`/owner-daftar-kasir/${item.id}/edit`}>
+                                                        <Button
+                                                            className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
+                                                            size="icon"
+                                                        >
+                                                            <SquarePen className="h-4 w-4" />
+                                                        </Button>
+                                                    </Link>
+                                                </td>
+                                                <td className="border border-gray-200 p-4 text-center">
                                                     <Button
-                                                        className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
+                                                        className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
                                                         size="icon"
+                                                        onClick={() => handleDeleteKasir(item.id)}
                                                     >
-                                                        <SquarePen className="h-4 w-4" />
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                </Link>
-                                            </td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                <Button
-                                                    className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
-                                                    size="icon"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className="border border-gray-200 p-4 text-center">
+                                                {searchTerm ? 'Data tidak ditemukan' : 'Belum ada data kasir'}
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -108,4 +126,5 @@ const OwnerDaftarKasir = () => {
         </OwnerLayout>
     );
 };
+
 export default OwnerDaftarKasir;

@@ -37,7 +37,7 @@ export default function Register() {
                 {/* Back Button */}
                 <button
                     onClick={() => window.history.back()}
-                    className="absolute top-4 left-4 flex cursor-pointer items-center text-sm font-medium text-[#2563eb] transition-colors hover:text-[#1e40af]"
+                    className="absolute top-4 left-4 flex cursor-pointer items-center text-sm font-medium text-[#2563eb] transition-colors hover:text-[#1e40af]"    
                 >
                     <ArrowLeft className="mr-1 h-4 w-4" />
                     Back

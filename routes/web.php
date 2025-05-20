@@ -8,13 +8,41 @@ use App\Http\Controllers\ownerProduct;
 use App\Http\Controllers\ownerDaftarKasir;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    return Inertia::render('LandingPage', [
+        'auth' => [
+            'user' => Auth::user(),
+        ],
+    ]);
 })->name('home');
+
+// Route::get("tes", function(){
+//     return Inertia::render("dashboard");
+// });
+
+Route::get("cart", function(){
+    return Inertia::render("CartPage");
+});
+
+Route::get('order/{status}', function ($status) {
+    $allowedStatuses = ['belum-bayar', 'sedang-proses', 'selesai', 'dibatalkan'];
+
+    if (!in_array($status, $allowedStatuses)) {
+        abort(404);
+    }
+
+    return Inertia::render('orders/OrderPage', [
+        'status' => $status,
+    ]);
+});
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        return Inertia::render('LandingPage', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
     })->name('dashboard');
     Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
     Route::get('owner-produk', function () {

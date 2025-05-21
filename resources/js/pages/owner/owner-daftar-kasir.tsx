@@ -1,35 +1,37 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/react';
-import { History, Plus, Search, SquarePen, Trash2 } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import { Plus, Search, SquarePen, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { router } from '@inertiajs/react';
 
 // Define the interface for kasir data
 interface KasirData {
-  id: number;
-  nama: string;
-  email: string;
-  kontak: string;
-  alamat: string;
-  userId?: number;
+    id: number;
+    nama: string;
+    email: string;
+    kontak: string;
+    alamat: string;
+    userId?: number;
 }
 
 // Define props interface for the component
 interface OwnerDaftarKasirProps {
-  kasirData: KasirData[];
+    kasirData: KasirData[];
 }
 
 const OwnerDaftarKasir = ({ kasirData }: OwnerDaftarKasirProps) => {
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     // Filter cashiers based on search term
-    const filteredKasirs = kasirData ? kasirData.filter(kasir => 
-        kasir.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        kasir.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        kasir.kontak.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        kasir.alamat.toLowerCase().includes(searchTerm.toLowerCase())
-    ) : [];
+    const filteredKasirs = kasirData
+        ? kasirData.filter(
+              (kasir) =>
+                  kasir.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  kasir.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  kasir.kontak.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  kasir.alamat.toLowerCase().includes(searchTerm.toLowerCase()),
+          )
+        : [];
 
     // Handle delete kasir
     const handleDeleteKasir = (id: number) => {
@@ -52,18 +54,11 @@ const OwnerDaftarKasir = ({ kasirData }: OwnerDaftarKasirProps) => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex items-center gap-4">
-                        <Link href={'/owner-daftar-kasir/riwayat'}>
-                            <button className="flex h-12 w-45 cursor-pointer items-center justify-center rounded-lg bg-gray-500 text-lg font-bold text-[#ffffff] hover:bg-gray-600 gap-1">
-                               <History size={25}/> Riwayat Kasir
-                            </button>
-                        </Link>
-                        <Link href={'/owner-daftar-kasir/create'}>
-                            <button className="flex h-12 w-45 cursor-pointer items-center justify-center rounded-lg bg-[#009a00] text-lg font-bold text-[#ffffff] hover:bg-[#008000]">
-                                <Plus size={25} /> Tambah Kasir
-                            </button>
-                        </Link>
-                    </div>
+                    <Link href={'/owner-daftar-kasir/create'}>
+                        <button className="flex h-12 w-45 cursor-pointer items-center justify-center rounded-lg bg-[#009a00] text-lg font-bold text-[#ffffff] hover:bg-[#008000]">
+                            <Plus size={25} /> Tambah Kasir
+                        </button>
+                    </Link>
                 </section>
                 <section>
                     <div className="relative overflow-hidden rounded-lg shadow-md">

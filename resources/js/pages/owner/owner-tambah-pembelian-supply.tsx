@@ -1,10 +1,9 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Link, useForm } from '@inertiajs/react';
-import React, { useState, useEffect, useRef } from 'react';
-import { FaTrash } from 'react-icons/fa';
+import React, { useEffect, useRef, useState } from 'react';
+import { FaSearch, FaTrash } from 'react-icons/fa';
 import { FiArrowLeftCircle } from 'react-icons/fi';
-import { FaSearch } from 'react-icons/fa';
 
 const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
     // Form state using Inertia useForm
@@ -20,15 +19,15 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                 jumlah: '',
                 harga: '',
                 diskon: '',
-                unit: ''
-            }
-        ]
+                unit: '',
+            },
+        ],
     });
 
     // UI State
     const [preview, setPreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [searchInputs, setSearchInputs] = useState([""]);
+    const [searchInputs, setSearchInputs] = useState(['']);
     const [dropdownOpen, setDropdownOpen] = useState([false]);
     const [filteredProducts, setFilteredProducts] = useState([[]]);
     const dropdownRefs = useRef([]);
@@ -39,23 +38,27 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
 
     // Initialize dropdown refs
     useEffect(() => {
-        dropdownRefs.current = Array(data.produk.length).fill().map((_, i) => dropdownRefs.current[i] || React.createRef());
-        searchInputRefs.current = Array(data.produk.length).fill().map((_, i) => searchInputRefs.current[i] || React.createRef());
-        
+        dropdownRefs.current = Array(data.produk.length)
+            .fill()
+            .map((_, i) => dropdownRefs.current[i] || React.createRef());
+        searchInputRefs.current = Array(data.produk.length)
+            .fill()
+            .map((_, i) => searchInputRefs.current[i] || React.createRef());
+
         // Calculate positions for each dropdown
         updateDropdownPositions();
     }, [data.produk.length]);
-    
+
     // Function to update dropdown positions
     const updateDropdownPositions = () => {
         setTimeout(() => {
-            const newPositions = dropdownRefs.current.map(ref => {
+            const newPositions = dropdownRefs.current.map((ref) => {
                 if (ref.current) {
                     const rect = ref.current.getBoundingClientRect();
                     return {
                         left: rect.left,
                         top: rect.bottom,
-                        width: ref.current.offsetWidth
+                        width: ref.current.offsetWidth,
                     };
                 }
                 return null;
@@ -69,7 +72,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
         const handleClickOutside = (event) => {
             dropdownRefs.current.forEach((ref, index) => {
                 if (ref.current && !ref.current.contains(event.target)) {
-                    setDropdownOpen(prev => {
+                    setDropdownOpen((prev) => {
                         const newState = [...prev];
                         newState[index] = false;
                         return newState;
@@ -78,20 +81,19 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
             });
         };
 
-        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside);
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
 
     // Filter products based on search input
     useEffect(() => {
-        const newFilteredProducts = searchInputs.map(search => {
-            if (!search.trim()) return [];
+        const newFilteredProducts = searchInputs.map((search) => {
             const searchLower = search.toLowerCase();
-            return products.filter(product => 
-                product.ProductName.toLowerCase().includes(searchLower)
-            ).slice(0, 10); // Limit to 10 results
+            return search.trim()
+                ? products.filter((product) => product.ProductName.toLowerCase().includes(searchLower)).slice(0, 10)
+                : products.slice(0, 10);
         });
         setFilteredProducts(newFilteredProducts);
     }, [searchInputs, products]);
@@ -132,17 +134,17 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
         const newSearchInputs = [...searchInputs];
         newSearchInputs[index] = value;
         setSearchInputs(newSearchInputs);
-        
+
         // Always open dropdown when typing and there are search results
         const newDropdownOpen = [...dropdownOpen];
         newDropdownOpen[index] = true;
         setDropdownOpen(newDropdownOpen);
-        
+
         // Update the display name in the form
         const updatedProduk = [...data.produk];
         updatedProduk[index].produk_name = value;
         setData('produk', updatedProduk);
-        
+
         // Update dropdown positions
         updateDropdownPositions();
     };
@@ -153,31 +155,41 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
         updatedProduk[index].produk_name = product.ProductName;
         updatedProduk[index].unit = product.ProductUnit;
         setData('produk', updatedProduk);
-        
+
         // Close dropdown and update search input
         const newSearchInputs = [...searchInputs];
         newSearchInputs[index] = product.ProductName;
         setSearchInputs(newSearchInputs);
-        
+
         const newDropdownOpen = [...dropdownOpen];
         newDropdownOpen[index] = false;
         setDropdownOpen(newDropdownOpen);
-        
+
         // Focus on the quantity field after selecting a product
         const nextRow = document.querySelector(`input[name="jumlah-${index}"]`);
         if (nextRow) nextRow.focus();
     };
 
     const handleFocusSearch = (index) => {
-        // Open dropdown when input is focused if there's text
-        if (searchInputs[index] && searchInputs[index].trim() !== '') {
-            const newDropdownOpen = [...dropdownOpen];
-            newDropdownOpen[index] = true;
-            setDropdownOpen(newDropdownOpen);
-            
-            // Update dropdown positions
-            updateDropdownPositions();
-        }
+        const newDropdownOpen = [...dropdownOpen];
+        newDropdownOpen[index] = true;
+        setDropdownOpen(newDropdownOpen);
+
+        // Jika input kosong, tampilkan semua produk
+        const currentSearch = searchInputs[index] || '';
+        const newSearchInputs = [...searchInputs];
+        newSearchInputs[index] = currentSearch;
+        setSearchInputs(newSearchInputs);
+
+        const filtered = currentSearch.trim()
+            ? products.filter((product) => product.ProductName.toLowerCase().includes(currentSearch.toLowerCase())).slice(0, 10)
+            : products.slice(0, 10); // tampilkan semua jika kosong
+
+        const newFilteredProducts = [...filteredProducts];
+        newFilteredProducts[index] = filtered;
+        setFilteredProducts(newFilteredProducts);
+
+        updateDropdownPositions();
     };
 
     const handleAddRow = () => {
@@ -189,15 +201,15 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                 jumlah: '',
                 harga: '',
                 diskon: '',
-                unit: ''
-            }
+                unit: '',
+            },
         ]);
-        
+
         // Update UI state arrays
-        setSearchInputs([...searchInputs, ""]);
+        setSearchInputs([...searchInputs, '']);
         setDropdownOpen([...dropdownOpen, false]);
         setFilteredProducts([...filteredProducts, []]);
-        
+
         // Focus on the new search input after adding a row
         setTimeout(() => {
             const lastIndex = data.produk.length;
@@ -210,12 +222,12 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
     const handleDeleteRow = (index) => {
         const updatedProduk = data.produk.filter((_, i) => i !== index);
         setData('produk', updatedProduk);
-        
+
         // Update UI state arrays
         const newSearchInputs = searchInputs.filter((_, i) => i !== index);
         const newDropdownOpen = dropdownOpen.filter((_, i) => i !== index);
         const newFilteredProducts = filteredProducts.filter((_, i) => i !== index);
-        
+
         setSearchInputs(newSearchInputs);
         setDropdownOpen(newDropdownOpen);
         setFilteredProducts(newFilteredProducts);
@@ -259,7 +271,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
             onSuccess: () => {
                 reset();
                 setPreview(null);
-            }
+            },
         });
     };
 
@@ -322,7 +334,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
     return (
         <OwnerLayout>
             <div className="flex justify-center py-8 text-black">
-                <div className="mx-auto w-15/17 rounded-lg bg-white p-6 shadow-md">
+                <div className="mx-auto w-17/17 rounded-lg bg-white p-6 shadow-md">
                     <Link href="/owner-pembelian-supply" className="mb-4 inline-block text-blue-600 hover:underline">
                         <FiArrowLeftCircle size={50} className="text-black" />
                     </Link>
@@ -344,7 +356,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                     </option>
                                 ))}
                             </select>
-                            {errors.supplier_id && <div className="text-red-500 text-sm mt-1">{errors.supplier_id}</div>}
+                            {errors.supplier_id && <div className="mt-1 text-sm text-red-500">{errors.supplier_id}</div>}
                         </div>
 
                         <div>
@@ -355,7 +367,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                 onChange={(e) => setData('tanggal_supply', e.target.value)}
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                             />
-                            {errors.tanggal_supply && <div className="text-red-500 text-sm mt-1">{errors.tanggal_supply}</div>}
+                            {errors.tanggal_supply && <div className="mt-1 text-sm text-red-500">{errors.tanggal_supply}</div>}
                         </div>
 
                         <div>
@@ -367,7 +379,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 placeholder="Nomor Invoice (opsional)"
                             />
-                            {errors.nomor_invoice && <div className="text-red-500 text-sm mt-1">{errors.nomor_invoice}</div>}
+                            {errors.nomor_invoice && <div className="mt-1 text-sm text-red-500">{errors.nomor_invoice}</div>}
                         </div>
 
                         <div>
@@ -408,31 +420,31 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                     </div>
                                 </div>
                             )}
-                            {errors.gambar_invoice && <div className="text-red-500 text-sm mt-1">{errors.gambar_invoice}</div>}
+                            {errors.gambar_invoice && <div className="mt-1 text-sm text-red-500">{errors.gambar_invoice}</div>}
                         </div>
 
                         <div>
                             <label className="mb-1 block font-semibold">Produk yang dipesan</label>
-                            <div className="space-y-2">
+                            <div className="space-y-2 flex flex-col gap-4">
                                 <div className="overflow-x-auto">
                                     <table className="w-full table-fixed border text-sm">
                                         <thead className="bg-gray-100 text-left font-semibold">
                                             <tr>
-                                                <th className="w-3/15 border px-2 py-1">Produk</th>
-                                                <th className="w-1.5/15 border px-2 py-1">Jumlah</th>
-                                                <th className="w-2/15 border px-2 py-1">Harga Beli (per satuan)</th>
-                                                <th className="w-3/15 border px-2 py-1">Subtotal</th>
-                                                <th className="w-1.5/15 border px-2 py-1">Diskon</th>
-                                                <th className="w-3/15 border px-2 py-1">Total (setelah diskon)</th>
-                                                <th className="w-1/15 border px-2 py-1 text-center">Hapus</th>
+                                                <th className="w-3/17 border px-2 py-1">Produk</th>
+                                                <th className="w-2/17 border px-2 py-1">Jumlah</th>
+                                                <th className="w-3/17 border px-2 py-1">Harga Beli (per satuan)</th>
+                                                <th className="w-3.75/17 border px-2 py-1">Subtotal</th>
+                                                <th className="w-2.25/17 border px-2 py-1">Diskon</th>
+                                                <th className="w-3.75/17 border px-2 py-1">Total (setelah diskon)</th>
+                                                <th className="w-1/17 border px-2 py-1 text-center">Hapus</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {data.produk.map((row, index) => (
                                                 <tr key={index}>
-                                                    <td className="w-1/15 border px-2 py-1">
+                                                    <td className="w-1/17 border px-2 py-1">
                                                         <div className="relative" ref={dropdownRefs.current[index]}>
-                                                            <div className="flex items-center border rounded overflow-hidden">
+                                                            <div className="flex items-center overflow-hidden rounded border">
                                                                 <input
                                                                     type="text"
                                                                     ref={searchInputRefs.current[index]}
@@ -448,22 +460,24 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                                                     <FaSearch />
                                                                 </div>
                                                             </div>
-                                                            
+
                                                             {dropdownOpen[index] && filteredProducts[index] && filteredProducts[index].length > 0 && (
-                                                                <div className="fixed shadow-lg max-h-60 overflow-y-auto" 
-                                                                    style={{ 
-                                                                        zIndex: 9999, 
+                                                                <div
+                                                                    className="fixed max-h-60 overflow-y-auto shadow-lg"
+                                                                    style={{
+                                                                        zIndex: 9999,
                                                                         backgroundColor: 'white',
                                                                         border: '1px solid #ccc',
                                                                         borderRadius: '4px',
-                                                                        left: dropdownPositions[index]?.left + 'px', 
-                                                                        top: dropdownPositions[index]?.top + 'px', 
-                                                                        width: dropdownPositions[index]?.width + 'px' 
-                                                                    }}>
+                                                                        left: dropdownPositions[index]?.left + 'px',
+                                                                        top: dropdownPositions[index]?.top + 'px',
+                                                                        width: dropdownPositions[index]?.width + 'px',
+                                                                    }}
+                                                                >
                                                                     {filteredProducts[index].map((product, productIndex) => (
                                                                         <div
                                                                             key={product.ProductID}
-                                                                            className="p-2 hover:bg-gray-100 cursor-pointer dropdown-item"
+                                                                            className="dropdown-item cursor-pointer p-2 hover:bg-gray-100"
                                                                             onClick={() => handleProductSelect(index, product)}
                                                                             onKeyDown={(e) => handleDropdownKeyDown(e, index, productIndex)}
                                                                             tabIndex="0"
@@ -478,13 +492,13 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                                             )}
 
                                                             {errors[`produk.${index}.product_id`] && (
-                                                                <div className="text-red-500 text-xs mt-1">
+                                                                <div className="mt-1 text-xs text-red-500">
                                                                     {errors[`produk.${index}.product_id`]}
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="w-1/15 border px-2 py-1">
+                                                    <td className="w-1/17 border px-2 py-1">
                                                         <div className="flex gap-2">
                                                             <input
                                                                 type="number"
@@ -500,17 +514,13 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                                                     }
                                                                 }}
                                                             />
-                                                            {row.unit && (
-                                                                <span className="flex items-center text-gray-600 text-sm">
-                                                                    {row.unit}
-                                                                </span>
-                                                            )}
+                                                            {row.unit && <span className="flex items-center text-sm text-gray-600">{row.unit}</span>}
                                                         </div>
-                                                        {errors[`produk.${index}.jumlah`] && 
-                                                            <div className="text-red-500 text-xs">{errors[`produk.${index}.jumlah`]}</div>
-                                                        }
+                                                        {errors[`produk.${index}.jumlah`] && (
+                                                            <div className="text-xs text-red-500">{errors[`produk.${index}.jumlah`]}</div>
+                                                        )}
                                                     </td>
-                                                    <td className="w-1/15 border px-2 py-1">
+                                                    <td className="w-1/17 border px-2 py-1">
                                                         <input
                                                             type="number"
                                                             className="w-full rounded border p-1"
@@ -524,37 +534,52 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                                                 }
                                                             }}
                                                         />
-                                                        {errors[`produk.${index}.harga`] && 
-                                                            <div className="text-red-500 text-xs">{errors[`produk.${index}.harga`]}</div>
-                                                        }
+                                                        {errors[`produk.${index}.harga`] && (
+                                                            <div className="text-xs text-red-500">{errors[`produk.${index}.harga`]}</div>
+                                                        )}
                                                     </td>
-                                                    <td className="w-2/15 border px-2 py-1 text-right">
-                                                        {formatCurrency(calculateSubtotal(row))}
-                                                    </td>
-                                                    <td className="w-1/15 border px-2 py-1">
+                                                    <td className="w-2/17 border px-2 py-1 text-right">{formatCurrency(calculateSubtotal(row))}</td>
+                                                    <td className="w-1/17 border px-2 py-1">
                                                         <input
                                                             type="text"
                                                             className="w-full rounded border p-1"
                                                             value={row.diskon}
-                                                            onChange={(e) => handleChange(index, 'diskon', e.target.value)}
+                                                            onChange={(e) => {
+                                                                const input = e.target.value;
+                                                                const isValidFormat = /^[0-9+]*$/.test(input);
+
+                                                                if (isValidFormat) {
+                                                                    const values = input
+                                                                        .split('+')
+                                                                        .map((str) => str.trim())
+                                                                        .filter((str) => str.length > 0);
+
+                                                                    // Cek apakah semua angka ≤ 100
+                                                                    const allValid = values.every((num) => {
+                                                                        const n = Number(num);
+                                                                        return !isNaN(n) && n <= 100;
+                                                                    });
+
+                                                                    if (allValid) {
+                                                                        handleChange(index, 'diskon', input);
+                                                                    }
+                                                                }
+                                                            }}
                                                             placeholder="10+5+2"
                                                         />
-                                                        {errors[`produk.${index}.diskon`] && 
-                                                            <div className="text-red-500 text-xs">{errors[`produk.${index}.diskon`]}</div>
-                                                        }
+                                                        {errors[`produk.${index}.diskon`] && (
+                                                            <div className="text-xs text-red-500">{errors[`produk.${index}.diskon`]}</div>
+                                                        )}
                                                     </td>
-                                                    <td className="w-2/15 border px-2 py-1 text-right">
-                                                        {formatCurrency(calculateTotal(row))}
-                                                    </td>
-                                                    <td className="w-1/15 border px-2 py-1 text-center">
+
+                                                    <td className="w-2/17 border px-2 py-1 text-right">{formatCurrency(calculateTotal(row))}</td>
+                                                    <td className="w-1/17 border px-2 py-1 text-center">
                                                         <button
                                                             type="button"
                                                             onClick={() => handleDeleteRow(index)}
                                                             disabled={data.produk.length === 1}
                                                             className={`rounded ${
-                                                                data.produk.length === 1 
-                                                                ? 'bg-gray-400' 
-                                                                : 'bg-red-500 hover:bg-red-600'
+                                                                data.produk.length === 1 ? 'bg-gray-400' : 'bg-red-500 hover:bg-red-600'
                                                             } px-2 py-1 text-white`}
                                                         >
                                                             <FaTrash />
@@ -565,27 +590,27 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                         </tbody>
                                     </table>
                                 </div>
-                                <div className='flex items-center justify-between'>
+                                <div className="flex items-center justify-between">
                                     <button
                                         type="button"
                                         onClick={handleAddRow}
-                                        className="rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 hover:cursor-pointer"
+                                        className="rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:cursor-pointer hover:bg-green-700"
                                     >
                                         + Tambah Produk
                                     </button>
 
-                                    <div className="text-right font-semibold text-gray-700 text-xl">
+                                    <div className="text-right text-xl font-semibold text-gray-700">
                                         Total: <span className="text-green-600">{formatCurrency(grandTotal)}</span>
                                     </div>
                                 </div>
                             </div>
-                            {errors.produk && <div className="text-red-500 text-sm mt-1">{errors.produk}</div>}
+                            {errors.produk && <div className="mt-1 text-sm text-red-500">{errors.produk}</div>}
                         </div>
 
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             disabled={processing}
-                            className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:bg-green-700 hover:cursor-pointer"
+                            className="mt-8 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:cursor-pointer hover:bg-green-700"
                         >
                             {processing ? 'Menyimpan...' : 'Simpan Pesanan'}
                         </Button>

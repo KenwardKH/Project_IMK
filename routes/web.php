@@ -79,7 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('owner-daftar-pelanggan', ownerDaftarCustomer::class);
     
     // Owner Daftar Kasir Routes
-    Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
+    // Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
     
     Route::get('owner-daftar-kasir/riwayat', function () {
         return Inertia::render('owner/owner-riwayat-kasir');

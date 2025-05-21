@@ -137,7 +137,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                     </div>
 
                     {/* Search */}
-                    <div className="relative w-full md:w-1/3">
+                    {/* <div className="relative w-full md:w-1/3">
                         <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
@@ -147,7 +147,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                             onKeyDown={handleKeyDown}
                             className="h-9 w-full rounded-md border border-gray-400 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
-                    </div>
+                    </div> */}
 
                     {/* End Date */}
                     <div className="flex flex-col md:w-1/3 md:flex-row md:items-center md:gap-2">

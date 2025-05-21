@@ -2,18 +2,19 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
 use App\Http\Controllers\ownerDaftarKasir;
 
-Route::get('/', function () {
-    return Inertia::render('LandingPage', [
-        'auth' => [
-            'user' => Auth::user(),
-        ],
-    ]);
-})->name('home');
+// Route::get('/', function () {
+//     return Inertia::render('LandingPage', [
+//         'auth' => [
+//             'user' => Auth::user(),
+//         ],
+//     ]);
+// })->name('home');
 
 // Route::get("tes", function(){
 //     return Inertia::render("dashboard");
@@ -37,13 +38,10 @@ Route::get('order/{status}', function ($status) {
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('LandingPage', [
-            'auth' => [
-                'user' => Auth::user(),
-            ],
-        ]);
-    })->name('dashboard');
+
+    Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
+    Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
+
     Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
     Route::get('owner-produk', function () {
         return Inertia::render('owner/owner-produk');

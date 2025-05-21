@@ -1,39 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
+import { Link } from '@inertiajs/react';
 
-export default function FeaturedProductsSection() {
-    const products = [
-        {
-            id: 1,
-            name: 'Buku CAMPUS Isi 10',
-            price: 'Rp 120.000',
-            image: 'images/buku_campus.jpeg',
-            alt: 'Buku Campus Isi 10',
-        },
-        {
-            id: 2,
-            name: 'Buku Tulis Bergaris',
-            price: 'Rp 35.000',
-            image: 'images/buku_campus.jpeg',
-            alt: 'Buku Tulis Bergaris',
-        },
-        {
-            id: 3,
-            name: 'Binder Notebook A5',
-            price: 'Rp 55.000',
-            image: 'images/buku_campus.jpeg',
-            alt: 'Binder Notebook A5',
-        },
-        {
-            id: 4,
-            name: 'Buku Gambar A4',
-            price: 'Rp 25.000',
-            image: 'images/buku_campus.jpeg',
-            alt: 'Buku Gambar A4',
-        },
-    ];
-
+export default function FeaturedProductsSection({ products = [] }) {
+    // Take first 4 products or use all if less than 4
+    const featuredProducts = products.slice(0, 4);
+    
     return (
-    <section className="w-full bg-[#f6f6f6] py-20" id="produk">
+        <section className="w-full bg-[#f6f6f6] py-20" id="produk">
             <div className="mx-auto max-w-7xl px-4">
                 {/* Header */}
                 <div className="mb-12 text-center">
@@ -43,24 +16,48 @@ export default function FeaturedProductsSection() {
 
                 {/* Grid */}
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                    {products.map((product) => (
-                        <Card
-                            key={product.id}
-                            className="group cursor-pointer rounded-2xl bg-white shadow-md transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
-                        >
-                            <div className="relative">
-                                <img src={product.image} alt={product.alt} className="h-[260px] w-full rounded-t-2xl object-cover" />
-                                <span className="absolute top-3 right-3 rounded-full bg-[#153e98] px-3 py-1 text-xs font-semibold text-white shadow-md">
-                                    TERLARIS
-                                </span>
-                            </div>
-                            <CardContent className="p-5">
-                                <h3 className="font-[Poppins] text-base font-semibold text-[#1c283f]">{product.name}</h3>
-                                <p className="mt-1 font-[Poppins] text-sm text-gray-500">Tersedia</p>
-                                <p className="mt-2 font-[Poppins] text-lg font-bold text-[#56b280]">{product.price}</p>
-                            </CardContent>
-                        </Card>
-                    ))}
+                    {featuredProducts.length > 0 ? (
+                        featuredProducts.map((product) => (
+                            <Link href={`/product/${product.id}`} key={product.id}>
+                                <Card
+                                    className="group cursor-pointer rounded-2xl bg-white shadow-md transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
+                                >
+                                    <div className="relative">
+                                        {product.gambar_produk ? (
+                                            <img 
+                                                src={`/storage/${product.gambar_produk}`}
+                                                alt={product.nama_produk} 
+                                                className="h-[260px] w-full rounded-t-2xl object-cover" 
+                                            />
+                                        ) : (
+                                            <div className="h-[260px] w-full rounded-t-2xl bg-gray-200 flex items-center justify-center">
+                                                <span className="text-gray-400">No Image</span>
+                                            </div>
+                                        )}
+                                        <span className="absolute top-3 right-3 rounded-full bg-[#153e98] px-3 py-1 text-xs font-semibold text-white shadow-md">
+                                            TERLARIS
+                                        </span>
+                                    </div>
+                                    <CardContent className="p-5">
+                                        <h3 className="font-[Poppins] text-base font-semibold text-[#1c283f]">{product.nama_produk}</h3>
+                                        <p className="mt-1 font-[Poppins] text-sm text-gray-500">
+                                            {product.stock > 0 ? 'Tersedia' : 'Stok Habis'}
+                                        </p>
+                                        <p className="mt-2 font-[Poppins] text-lg font-bold text-[#56b280]">
+                                            {typeof product.harga_jual === 'number' 
+                                                ? product.harga_jual.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
+                                                : product.harga_jual}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        ))
+                    ) : (
+                        // Fallback for empty products array
+                        <div className="col-span-full text-center py-8">
+                            <p className="text-gray-500">Tidak ada produk unggulan saat ini</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </section>

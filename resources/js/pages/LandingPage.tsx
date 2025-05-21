@@ -5,12 +5,7 @@ import HeroSection from '@/components/section/HeroSection';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 
-export default function LandingPage() {
-    const contactInfo = [
-        { label: 'Email', value: 'sinarpelangi@gmail.com' },
-        { label: 'Phone', value: '+62 852 4456 2538' },
-        { label: 'Address', value: 'Jl. Sisingamangaraja no.98' },
-    ];
+export default function LandingPage({ products = [] }) {
     return (
         <>
             <Head title="Beranda | Sinar Pelangi" />
@@ -21,7 +16,7 @@ export default function LandingPage() {
                         <HeroSection />
 
                         {/* Featured Products */}
-                        <FeaturedProductsSection />
+                        <FeaturedProductsSection products={products} />
 
                         {/* Categories */}
                         <CategoriesSection />

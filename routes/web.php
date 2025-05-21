@@ -7,6 +7,7 @@ use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
 use App\Http\Controllers\ownerDaftarKasir;
+use App\Http\Controllers\ownerDaftarCustomer;
 use App\Http\Controllers\ownerPembelianSupply;
 
 // Route::get('/', function () {
@@ -75,12 +76,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/owner-pembelian-supply/update/{id}', [ownerPembelianSupply::class, 'update'])->name('owner.pembelian.supply.update');
     Route::delete('/owner-pembelian-supply/destroy/{id}', [ownerPembelianSupply::class, 'destroy'])->name('owner.pembelian.supply.destroy');
 
-    Route::get('owner-daftar-pelanggan', function () {
-        return Inertia::render('owner/owner-daftar-pelanggan');
-    })->name('owner-daftar-pelanggan');
+    Route::resource('owner-daftar-pelanggan', ownerDaftarCustomer::class);
     
     // Owner Daftar Kasir Routes
     Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
+    
     Route::get('owner-daftar-kasir/riwayat', function () {
         return Inertia::render('owner/owner-riwayat-kasir');
     })->name('owner-riwayat-kasir');

@@ -206,10 +206,10 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                                 <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
                                                 <td className="border border-gray-200 p-4 text-center">
                                                     <img
-                                                        src={`/images/supply-invoices/${item.gambar_invoice}`}
+                                                        src={`/storage/${item.gambar_invoice}`}
                                                         alt={item.nomor_invoice}
                                                         className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
-                                                        onClick={() => openModal(`/images/supply-invoices/${item.gambar_invoice}`)}
+                                                        onClick={() => openModal(`/storage/${item.gambar_invoice}`)}
                                                     />
                                                 </td>
                                                 <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nomor_invoice}</td>

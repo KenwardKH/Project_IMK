@@ -1,15 +1,16 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { Plus, Search, SquarePen, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const OwnerPembelianSupply = () => {
+const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
     interface detailPesanan {
         nama_produk: string;
         harga: number;
         jumlah: number;
         diskon: string | number;
+        unit: string;
     }
 
     interface pembelianSupplyData {
@@ -19,7 +20,7 @@ const OwnerPembelianSupply = () => {
         nama_supplier: string;
         jumlah_produk: number;
         harga_total: number;
-        tanggal_invoice: Date;
+        tanggal_invoice: string; // Changed from Date to string
         detail_pesanan: detailPesanan[];
     }
 
@@ -29,6 +30,11 @@ const OwnerPembelianSupply = () => {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedDetail, setSelectedDetail] = useState<detailPesanan[] | null>(null);
     const [selectedIdInvoice, setSelectedIdInvoice] = useState<string>('');
+
+    // State for search and date filters
+    const [startDate, setStartDate] = useState(filters.startDate || '');
+    const [endDate, setEndDate] = useState(filters.endDate || '');
+    const [search, setSearch] = useState(filters.search || '');
 
     const openModal = (imageUrl: string) => {
         setModalImage(imageUrl);
@@ -57,7 +63,7 @@ const OwnerPembelianSupply = () => {
 
         if (typeof diskon === 'number') {
             total = total - total * (diskon / 100);
-        } else {
+        } else if (diskon) {
             const diskonList = diskon
                 .split('+')
                 .map((d) => parseFloat(d.trim()))
@@ -71,17 +77,31 @@ const OwnerPembelianSupply = () => {
         return total;
     };
 
-    // State to manage window width for responsive design
-    // const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
+    // Apply filters
+    const applyFilters = () => {
+        router.get('/owner-pembelian-supply', {
+            startDate: startDate,
+            endDate: endDate,
+            search: search
+        }, {
+            preserveState: true,
+            replace: true
+        });
+    };
 
-    // useEffect(() => {
-    //     const handleResize = () => {
-    //         setWindowWidth(window.innerWidth);
-    //     };
+    // Handle enter key in search input
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            applyFilters();
+        }
+    };
 
-    //     window.addEventListener('resize', handleResize);
-    //     return () => window.removeEventListener('resize', handleResize);
-    // }, []);
+    // Handle delete confirmation
+    const handleDelete = (id) => {
+        if (confirm('Apakah Anda yakin ingin menghapus invoice ini?')) {
+            router.delete(`/owner-pembelian-supply/destroy/${id}`);
+        }
+    };
 
     // Format numbers for display
     const formatCurrency = (value: number): string => {
@@ -92,47 +112,11 @@ const OwnerPembelianSupply = () => {
         }).format(value);
     };
 
-    const pembelianSupplyData: pembelianSupplyData[] = [
-        {
-            id_invoice: '1',
-            gambar_invoice: 'kwitansi.jpg',
-            nomor_invoice: 'AMJ-101',
-            nama_supplier: 'ATK Medan Jaya',
-            jumlah_produk: 3,
-            harga_total: 19413000,
-            tanggal_invoice: new Date('2025-05-01'),
-            detail_pesanan: [
-                { nama_produk: 'Pensil 2B', harga: 24000, jumlah: 400, diskon: 10 },
-                { nama_produk: 'Spidol Snowman Merah', harga: 36000, jumlah: 350, diskon: '10+5' },
-            ],
-        },
-        {
-            id_invoice: '2',
-            gambar_invoice: 'kwitansi.jpg',
-            nomor_invoice: 'AMJ-101',
-            nama_supplier: 'ATK Medan Jaya',
-            jumlah_produk: 3,
-            harga_total: 19413000,
-            tanggal_invoice: new Date('2025-05-01'),
-            detail_pesanan: [
-                { nama_produk: 'Pensil 2B', harga: 24000, jumlah: 400, diskon: 10 },
-                { nama_produk: 'Spidol Snowman Merah', harga: 36000, jumlah: 350, diskon: '10+5' },
-            ],
-        },
-        {
-            id_invoice: '3',
-            gambar_invoice: 'kwitansi.jpg',
-            nomor_invoice: 'AMJ-101',
-            nama_supplier: 'ATK Medan Jaya',
-            jumlah_produk: 3,
-            harga_total: 19413000,
-            tanggal_invoice: new Date('2025-05-01'),
-            detail_pesanan: [
-                { nama_produk: 'Pensil 2B', harga: 24000, jumlah: 400, diskon: 10 },
-                { nama_produk: 'Spidol Snowman Merah', harga: 36000, jumlah: 350, diskon: '10+5' },
-            ],
-        },
-    ];
+    // Format date
+    const formatDate = (dateString: string): string => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID');
+    };
 
     return (
         <OwnerLayout>
@@ -146,6 +130,8 @@ const OwnerPembelianSupply = () => {
                         <input
                             type="date"
                             id="startDate"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
                             className="h-9 w-full rounded-md border border-gray-400 px-3 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
                     </div>
@@ -156,6 +142,9 @@ const OwnerPembelianSupply = () => {
                         <input
                             type="text"
                             placeholder="Cari Produk"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            onKeyDown={handleKeyDown}
                             className="h-9 w-full rounded-md border border-gray-400 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
                     </div>
@@ -168,10 +157,22 @@ const OwnerPembelianSupply = () => {
                         <input
                             type="date"
                             id="endDate"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
                             className="h-9 w-full rounded-md border border-gray-400 px-3 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
                     </div>
                 </section>
+
+                {/* Apply filters button */}
+                <div className="flex justify-end mt-2 mb-4 px-6">
+                    <Button 
+                        onClick={applyFilters} 
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                        Terapkan Filter
+                    </Button>
+                </div>
 
                 <section className="flex w-full items-center justify-end px-4 py-3">
                     <Link href={'/owner-pembelian-supply/tambah'}>
@@ -199,52 +200,61 @@ const OwnerPembelianSupply = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
-                                    {pembelianSupplyData.map((item, index) => (
-                                        <tr key={index} className="transition duration-200 hover:bg-gray-100">
-                                            <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                <img
-                                                    src={`/images/supply-invoices/${item.gambar_invoice}`}
-                                                    alt={item.nomor_invoice}
-                                                    className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
-                                                    onClick={() => openModal(`/images/supply-invoices/${item.gambar_invoice}`)}
-                                                />
-                                            </td>
-                                            <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nomor_invoice}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.nama_supplier}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.jumlah_produk}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{formatCurrency(item.harga_total)}</td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                {item.tanggal_invoice.toLocaleDateString('id-ID')}
-                                            </td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                <Button
-                                                    onClick={() => openDetailModal(item.detail_pesanan, item.id_invoice)}
-                                                    className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:cursor-pointer hover:bg-blue-600"
-                                                >
-                                                    Detail Harga
-                                                </Button>
-                                            </td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                <Link href="/owner-pembelian-supply/edit">
+                                    {pembelianSupplyData.length > 0 ? (
+                                        pembelianSupplyData.map((item, index) => (
+                                            <tr key={index} className="transition duration-200 hover:bg-gray-100">
+                                                <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
+                                                <td className="border border-gray-200 p-4 text-center">
+                                                    <img
+                                                        src={`/images/supply-invoices/${item.gambar_invoice}`}
+                                                        alt={item.nomor_invoice}
+                                                        className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
+                                                        onClick={() => openModal(`/images/supply-invoices/${item.gambar_invoice}`)}
+                                                    />
+                                                </td>
+                                                <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nomor_invoice}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.nama_supplier}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.jumlah_produk}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{formatCurrency(item.harga_total)}</td>
+                                                <td className="border border-gray-200 p-4 text-center">
+                                                    {formatDate(item.tanggal_invoice)}
+                                                </td>
+                                                <td className="border border-gray-200 p-4 text-center">
                                                     <Button
-                                                        className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
+                                                        onClick={() => openDetailModal(item.detail_pesanan, item.id_invoice)}
+                                                        className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:cursor-pointer hover:bg-blue-600"
+                                                    >
+                                                        Detail Harga
+                                                    </Button>
+                                                </td>
+                                                <td className="border border-gray-200 p-4 text-center">
+                                                    <Link href={`/owner-pembelian-supply/edit/${item.id_invoice}`}>
+                                                        <Button
+                                                            className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
+                                                            size="icon"
+                                                        >
+                                                            <SquarePen className="h-4 w-4" />
+                                                        </Button>
+                                                    </Link>
+                                                </td>
+                                                <td className="border border-gray-200 p-4 text-center">
+                                                    <Button
+                                                        onClick={() => handleDelete(item.id_invoice)}
+                                                        className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
                                                         size="icon"
                                                     >
-                                                        <SquarePen className="h-4 w-4" />
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                </Link>
-                                            </td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                <Button
-                                                    className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
-                                                    size="icon"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={10} className="border border-gray-200 p-4 text-center">
+                                                Tidak ada data pembelian supply yang ditemukan
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -253,12 +263,12 @@ const OwnerPembelianSupply = () => {
             </div>
             {isModalOpen && modalImage && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" // lebih terang dari bg-black/70
-                    onClick={closeModal} // klik di background menutup modal
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+                    onClick={closeModal}
                 >
                     <div
                         className="relative w-full max-w-lg rounded-lg bg-white p-4 shadow-lg"
-                        onClick={(e) => e.stopPropagation()} // mencegah modal menutup saat klik gambar/modal
+                        onClick={(e) => e.stopPropagation()}
                     >
                         <button
                             onClick={closeModal}
@@ -300,9 +310,9 @@ const OwnerPembelianSupply = () => {
                                                 <td className="border px-3 py-2">{item.nama_produk}</td>
                                                 <td className="border px-3 py-2">{formatCurrency(harga)}</td>
                                                 <td className="border px-3 py-2">
-                                                    {jumlah.toLocaleString()} {item.nama_produk.toLowerCase().includes('pensil') ? 'lusin' : 'kotak'}
+                                                    {jumlah.toLocaleString()} {item.unit || (item.nama_produk.toLowerCase().includes('pensil') ? 'lusin' : 'kotak')}
                                                 </td>
-                                                <td className="border px-3 py-2">{item.diskon}</td>
+                                                <td className="border px-3 py-2">{item.diskon ? `${item.diskon}%` : '-'}</td>
                                                 <td className="border px-3 py-2">{formatCurrency(subtotal)}</td>
                                             </tr>
                                         );

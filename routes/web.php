@@ -7,6 +7,7 @@ use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
 use App\Http\Controllers\ownerDaftarKasir;
+use App\Http\Controllers\ownerPembelianSupply;
 
 // Route::get('/', function () {
 //     return Inertia::render('LandingPage', [
@@ -67,15 +68,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/owner-produk/update/{id}', [ownerProduct::class, 'update'])->name('owner.produk.update');
     Route::delete('/owner-produk/{id}', [OwnerProdukController::class, 'destroy'])->name('owner.produk.destroy');
 
-    Route::get('owner-pembelian-supply', function () {
-        return Inertia::render('owner/owner-pembelian-supply');
-    })->name('owner-pembelian-supply');
-    Route::get('owner-pembelian-supply/tambah', function () {
-        return Inertia::render('owner/owner-tambah-pembelian-supply');
-    })->name('owner-tambah-pembelian-supply');
-    Route::get('owner-pembelian-supply/edit', function () {
-        return Inertia::render('owner/owner-edit-pembelian-supply');
-    })->name('owner-edit-pembelian-supply');
+    Route::get('/owner-pembelian-supply', [ownerPembelianSupply::class, 'index'])->name('owner.pembelian.supply');
+    Route::get('/owner-pembelian-supply/tambah', [ownerPembelianSupply::class, 'create'])->name('owner.pembelian.supply.create');
+    Route::post('/owner-pembelian-supply/store', [ownerPembelianSupply::class, 'store'])->name('owner.pembelian.supply.store');
+    Route::get('/owner-pembelian-supply/edit/{id}', [ownerPembelianSupply::class, 'edit'])->name('owner.pembelian.supply.edit');
+    Route::put('/owner-pembelian-supply/update/{id}', [ownerPembelianSupply::class, 'update'])->name('owner.pembelian.supply.update');
+    Route::delete('/owner-pembelian-supply/destroy/{id}', [ownerPembelianSupply::class, 'destroy'])->name('owner.pembelian.supply.destroy');
 
     Route::get('owner-daftar-pelanggan', function () {
         return Inertia::render('owner/owner-daftar-pelanggan');

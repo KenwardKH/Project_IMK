@@ -19,7 +19,7 @@ class ownerDaftarKasir extends Controller
         $kasirs = Kasir::with('user')->get()->map(function ($kasir) {
             return [
                 'id' => $kasir->id_kasir,
-                'nama' => $kasir->nama_kasir,
+                'nama' => $kasir->user->name,
                 'email' => $kasir->user->email,
                 'kontak' => $kasir->kontak_kasir ?? '',
                 'alamat' => $kasir->alamat_kasir ?? '',
@@ -122,7 +122,7 @@ class ownerDaftarKasir extends Controller
             'email' => $validated['email']
         ]);
 
-        return redirect()->route('owner-daftar-kasir')->with('message', 'Kasir berhasil diperbarui');
+        return redirect()->route('owner-daftar-kasir.index')->with('message', 'Kasir berhasil diperbarui');
     }
 
     /**

@@ -195,8 +195,6 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Harga Total</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Tanggal Invoice</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Detail Pesanan</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Edit</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Hapus</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
@@ -227,7 +225,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                                         Detail Harga
                                                     </Button>
                                                 </td>
-                                                <td className="border border-gray-200 p-4 text-center">
+                                                {/* <td className="border border-gray-200 p-4 text-center">
                                                     <Link href={`/owner-pembelian-supply/edit/${item.id_invoice}`}>
                                                         <Button
                                                             className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
@@ -245,7 +243,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                </td>
+                                                </td> */}
                                             </tr>
                                         ))
                                     ) : (

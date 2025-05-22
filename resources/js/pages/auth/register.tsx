@@ -13,6 +13,8 @@ type RegisterForm = {
     email: string;
     password: string;
     password_confirmation: string;
+    phone: string;
+    address: string;
 };
 
 export default function Register() {
@@ -21,6 +23,8 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        phone: '',
+        address: '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -86,6 +90,40 @@ export default function Register() {
                                 disabled={processing}
                             />
                             <InputError message={errors.email} className="mt-2" />
+                        </div>
+
+                        {/* Phone */}
+                        <div>
+                            <Label htmlFor="phone" className="text-sm font-medium text-[#334155]">
+                                Phone Number
+                            </Label>
+                            <Input
+                                id="phone"
+                                type="tel"
+                                value={data.phone}
+                                onChange={(e) => setData('phone', e.target.value)}
+                                className="mt-2 text-[#0f172a] placeholder:text-[#94a3b8] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]"
+                                placeholder="Your phone number"
+                                disabled={processing}
+                            />
+                            <InputError message={errors.phone} className="mt-2" />
+                        </div>
+
+                        {/* Address */}
+                        <div>
+                            <Label htmlFor="address" className="text-sm font-medium text-[#334155]">
+                                Address
+                            </Label>
+                            <Input
+                                id="address"
+                                type="text"
+                                value={data.address}
+                                onChange={(e) => setData('address', e.target.value)}
+                                className="mt-2 text-[#0f172a] placeholder:text-[#94a3b8] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]"
+                                placeholder="Your address"
+                                disabled={processing}
+                            />
+                            <InputError message={errors.address} className="mt-2" />
                         </div>
 
                         {/* Password */}

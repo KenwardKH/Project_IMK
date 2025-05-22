@@ -137,7 +137,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                     </div>
 
                     {/* Search */}
-                    <div className="relative w-full md:w-1/3">
+                    {/* <div className="relative w-full md:w-1/3">
                         <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
@@ -147,7 +147,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                             onKeyDown={handleKeyDown}
                             className="h-9 w-full rounded-md border border-gray-400 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
-                    </div>
+                    </div> */}
 
                     {/* End Date */}
                     <div className="flex flex-col md:w-1/3 md:flex-row md:items-center md:gap-2">
@@ -195,8 +195,6 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Harga Total</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Tanggal Invoice</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Detail Pesanan</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Edit</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Hapus</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
@@ -206,10 +204,10 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                                 <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
                                                 <td className="border border-gray-200 p-4 text-center">
                                                     <img
-                                                        src={`/images/supply-invoices/${item.gambar_invoice}`}
+                                                        src={`/storage/${item.gambar_invoice}`}
                                                         alt={item.nomor_invoice}
                                                         className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
-                                                        onClick={() => openModal(`/images/supply-invoices/${item.gambar_invoice}`)}
+                                                        onClick={() => openModal(`/storage/${item.gambar_invoice}`)}
                                                     />
                                                 </td>
                                                 <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nomor_invoice}</td>
@@ -227,7 +225,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                                         Detail Harga
                                                     </Button>
                                                 </td>
-                                                <td className="border border-gray-200 p-4 text-center">
+                                                {/* <td className="border border-gray-200 p-4 text-center">
                                                     <Link href={`/owner-pembelian-supply/edit/${item.id_invoice}`}>
                                                         <Button
                                                             className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
@@ -245,7 +243,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                </td>
+                                                </td> */}
                                             </tr>
                                         ))
                                     ) : (

@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { BarChart3, Box, ChevronRight, ClipboardList, LayoutDashboard, LogOut, Menu, Truck, User, Users } from 'lucide-react';
+import { BarChart3, Box, ChevronRight, ClipboardList, History, LayoutDashboard, LogOut, Menu, Truck, User, Users } from 'lucide-react';
 import { FC, useState } from 'react';
 import { AiFillProduct } from 'react-icons/ai';
 import { MdOutlineFactory } from 'react-icons/md';
@@ -137,6 +137,13 @@ const Sidebar: FC = () => {
                     active={currentPath === '/owner-daftar-kasir' || currentPath === '/owner-daftar-kasir/tambah' || currentPath === '/owner-daftar-kasir/edit'}
                     collapsed={collapsed}
                 />
+                <SidebarItem
+                    icon={<History size={20} />}
+                    label="Riwayat Kasir"
+                    href="/owner-daftar-kasir/riwayat"
+                    active={currentPath === '/owner-daftar-kasir/riwayat'}
+                    collapsed={collapsed}
+                />
             </SidebarGroup>
 
             <SidebarGroup title="Penjualan" icon={<RiBarChart2Fill size={20} />} collapsed={collapsed}>
@@ -176,7 +183,7 @@ const Sidebar: FC = () => {
                     {collapsed ? <ChevronRight size={24} /> : <ChevronRight className="rotate-180" size={24} />}
                 </button>
             </div>
-            <div className="space-y-6">{sidebarContent}</div>
+            <div className="space-y-4">{sidebarContent}</div>
         </div>
     );
 

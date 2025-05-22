@@ -3,10 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
+use App\Http\Controllers\CustomerCartController;
+
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
 use App\Http\Controllers\ownerDaftarKasir;
+use App\Http\Controllers\ownerDaftarCustomer;
 use App\Http\Controllers\ownerPembelianSupply;
 
 // Route::get('/', function () {
@@ -21,9 +24,9 @@ use App\Http\Controllers\ownerPembelianSupply;
 //     return Inertia::render("dashboard");
 // });
 
-Route::get("cart", function(){
-    return Inertia::render("CartPage");
-});
+// Route::get("cart", function(){
+//     return Inertia::render("CartPage");
+// });
 
 Route::get('order/{status}', function ($status) {
     $allowedStatuses = ['belum-bayar', 'sedang-proses', 'selesai', 'dibatalkan'];
@@ -39,6 +42,24 @@ Route::get('order/{status}', function ($status) {
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
+        // Display cart
+    Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
+    
+    // Add to cart
+    Route::post('/cart', [CustomerCartController::class, 'store'])->name('cart.store');
+    
+    // Update cart item
+    Route::put('/cart/{id}', [CustomerCartController::class, 'update'])->name('cart.update');
+    
+    // Remove from cart
+    Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
+    
+    // Get cart count (for navbar)
+    Route::get('/cart/count', [CustomerCartController::class, 'getCartCount'])->name('cart.count');
+    
+    // CHECKOUT
+    Route::post('/checkout', [CustomerCartController::class, 'checkout'])->name('cart.checkout');
+
 
     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
@@ -75,12 +96,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/owner-pembelian-supply/update/{id}', [ownerPembelianSupply::class, 'update'])->name('owner.pembelian.supply.update');
     Route::delete('/owner-pembelian-supply/destroy/{id}', [ownerPembelianSupply::class, 'destroy'])->name('owner.pembelian.supply.destroy');
 
-    Route::get('owner-daftar-pelanggan', function () {
-        return Inertia::render('owner/owner-daftar-pelanggan');
-    })->name('owner-daftar-pelanggan');
+    Route::resource('owner-daftar-pelanggan', ownerDaftarCustomer::class);
     
     // Owner Daftar Kasir Routes
-    Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
+    // Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
+    
     Route::get('owner-daftar-kasir/riwayat', function () {
         return Inertia::render('owner/owner-riwayat-kasir');
     })->name('owner-riwayat-kasir');

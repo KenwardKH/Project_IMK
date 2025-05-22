@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\SupplyInvoice;
 use App\Models\SupplyInvoiceDetail;
 use App\Models\Supplier;
+use App\Models\Product;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ownerPembelianSupply extends Controller
@@ -80,23 +82,26 @@ class ownerPembelianSupply extends Controller
     }
 
     public function create()
-{
-    $suppliers = Supplier::select('id', 'name')->get();
+    {
+        $suppliers = Supplier::select('SupplierID', 'SupplierName')->get();
+        $products = Product::select('ProductID', 'ProductName', 'ProductUnit', 'CurrentStock')->get();
 
-    return Inertia::render('owner/owner-tambah-pembelian-supply', [
-        'suppliers' => $suppliers
-    ]);
-}
+        return Inertia::render('owner/owner-tambah-pembelian-supply', [
+            'suppliers' => $suppliers,
+            'products' => $products
+        ]);
+    }
 
-public function store(Request $request)
-{
+    public function store(Request $request)
+    {
     $request->validate([
-        'supplier_id' => 'required|exists:suppliers,id',
+        'supplier_id' => 'required|exists:suppliers,SupplierID',
         'tanggal_supply' => 'required|date',
-        'nomor_invoice' => 'required|string|max:255',
+        'nomor_invoice' => 'nullable|string|max:255', // Changed from 'required' to 'nullable'
         'gambar_invoice' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         'produk' => 'required|array|min:1',
-        'produk.*.produk_id' => 'required|string',
+        'produk.*.product_id' => 'required|exists:products,ProductID',
+        'produk.*.produk_name' => 'required|string',
         'produk.*.jumlah' => 'required|numeric|min:1',
         'produk.*.harga' => 'required|numeric|min:0',
         'produk.*.diskon' => 'nullable|string'
@@ -116,37 +121,65 @@ public function store(Request $request)
 
         // Simpan ke tabel SupplyInvoice
         $invoice = SupplyInvoice::create([
-            'SupplierId' => $supplier->id,
-            'SupplierName' => $supplier->name,
+            'SupplierId' => $supplier->SupplierID,
+            'SupplierName' => $supplier->SupplierName,
             'SupplyDate' => $request->tanggal_supply,
-            'SupplyInvoiceNumber' => $request->nomor_invoice,
+            'SupplyInvoiceNumber' => $request->nomor_invoice ?? null, // Add fallback to null
             'SupplyInvoiceImage' => $gambarPath,
         ]);
 
-        // Simpan detail produk
-        foreach ($request->produk as $produk) {
-            $jumlah = floatval($produk['jumlah']);
-            $harga = floatval($produk['harga']);
-            $diskon = $produk['diskon'] ?? '';
-            $finalPrice = $this->hitungDiskonBerlapis($harga, $jumlah, $diskon);
+            // Simpan detail produk
+            foreach ($request->produk as $produk) {
+                $jumlah = floatval($produk['jumlah']);
+                $harga = floatval($produk['harga']);
+                $diskon = $produk['diskon'] ?? '';
+                $finalPrice = $this->hitungDiskonBerlapis($harga, $jumlah, $diskon);
+                
+                // Get product data
+                $product = Product::findOrFail($produk['product_id']);
+                
+                SupplyInvoiceDetail::create([
+                    'SupplyInvoiceId' => $invoice->SupplyInvoiceId,
+                    'ProductID' => $product->ProductID,
+                    'ProductName' => $product->ProductName,
+                    'Quantity' => $jumlah,
+                    'SupplyPrice' => $harga,
+                    'discount' => $diskon,
+                    'FinalPrice' => $finalPrice,
+                    'productUnit' => $product->ProductUnit,
+                ]);
+                
+                // Update product stock
+                $product->CurrentStock = ($product->CurrentStock ?? 0) + $jumlah;
+                $product->save();
+            }
 
-            SupplyInvoiceDetail::create([
-                'SupplyInvoiceId' => $invoice->SupplyInvoiceId,
-                'ProductName' => $produk['produk_id'], // jika perlu, ubah ke nama dari ID
-                'Quantity' => $jumlah,
-                'SupplyPrice' => $harga,
-                'discount' => $diskon,
-                'FinalPrice' => $finalPrice,
-                'productUnit' => 'pcs', // default atau bisa ditambahkan ke input
-            ]);
+            DB::commit();
+
+            return redirect()->route('owner.pembelian.supply')->with('success', 'Data supply berhasil disimpan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    private function hitungDiskonBerlapis($harga, $jumlah, $diskon = '')
+    {
+        $total = $harga * $jumlah;
+
+        if (empty($diskon)) {
+            return $total;
         }
 
-        DB::commit();
+        $diskonList = explode('+', $diskon);
+        
+        foreach ($diskonList as $d) {
+            $d = trim($d);
+            if (is_numeric($d)) {
+                $total -= $total * ($d / 100);
+            }
+        }
 
-        return redirect()->route('owner-pembelian-supply.index')->with('success', 'Data supply berhasil disimpan.');
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data.'])->withInput();
+        return $total;
     }
-}
 }

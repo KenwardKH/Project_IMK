@@ -9,8 +9,8 @@ use App\Models\CustomerCart;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\User;
-
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CustomerCartController extends Controller
 {
@@ -198,5 +198,60 @@ class CustomerCartController extends Controller
         $count = CustomerCart::where('CustomerID', $customer->CustomerID)->sum('Quantity');
         
         return response()->json(['count' => $count]);
+    }
+
+    /**
+     * Process checkout
+     */
+    public function checkout(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Please login to checkout'], 401);
+        }
+
+        $request->validate([
+            'shipping_option' => 'required|in:pickup,diantar',
+            'payment_option' => 'required|string',
+            'alamat' => 'nullable|string|required_if:shipping_option,diantar'
+        ]);
+
+        $user = Auth::user();
+        $customer = $user->customer;
+
+        if (!$customer) {
+            return response()->json(['error' => 'Customer profile not found'], 400);
+        }
+
+        // Check if cart is not empty
+        $cartItemCount = CustomerCart::where('CustomerID', $customer->CustomerID)->count();
+        if ($cartItemCount === 0) {
+            return response()->json(['error' => 'Cart is empty'], 400);
+        }
+
+        try {
+            // Call the stored procedure
+            DB::statement('CALL CheckoutCart(?, ?, ?, ?)', [
+                $customer->CustomerID,
+                $request->shipping_option,
+                $request->payment_option,
+                $request->alamat
+            ]);
+
+            return response()->json(['success' => 'Checkout completed successfully']);
+        } catch (\Exception $e) {
+            // Check if it's a stock error or other database error
+            $errorMessage = $e->getMessage();
+            
+            if (strpos($errorMessage, 'Cart not found or is empty') !== false) {
+                return response()->json(['error' => 'Keranjang kosong atau tidak ditemukan'], 400);
+            }
+            
+            if (strpos($errorMessage, 'stock') !== false || strpos($errorMessage, 'Stock') !== false) {
+                return response()->json(['error' => 'Stok produk tidak mencukupi'], 400);
+            }
+            
+            \Log::error('Checkout error: ' . $errorMessage);
+            return response()->json(['error' => 'Terjadi kesalahan saat checkout. Silakan coba lagi.'], 500);
+        }
     }
 }

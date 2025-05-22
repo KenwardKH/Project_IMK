@@ -56,6 +56,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Get cart count (for navbar)
     Route::get('/cart/count', [CustomerCartController::class, 'getCartCount'])->name('cart.count');
+    
+    // CHECKOUT
+    Route::post('/checkout', [CustomerCartController::class, 'checkout'])->name('cart.checkout');
+
+
     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
 

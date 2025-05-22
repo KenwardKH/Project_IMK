@@ -61,6 +61,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    // In User.php
+
     /**
      * Get the attributes that should be cast.
      *

@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
+use App\Http\Controllers\CustomerCartController;
+
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
@@ -22,9 +24,9 @@ use App\Http\Controllers\ownerPembelianSupply;
 //     return Inertia::render("dashboard");
 // });
 
-Route::get("cart", function(){
-    return Inertia::render("CartPage");
-});
+// Route::get("cart", function(){
+//     return Inertia::render("CartPage");
+// });
 
 Route::get('order/{status}', function ($status) {
     $allowedStatuses = ['belum-bayar', 'sedang-proses', 'selesai', 'dibatalkan'];
@@ -40,7 +42,20 @@ Route::get('order/{status}', function ($status) {
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
-
+        // Display cart
+    Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
+    
+    // Add to cart
+    Route::post('/cart', [CustomerCartController::class, 'store'])->name('cart.store');
+    
+    // Update cart item
+    Route::put('/cart/{id}', [CustomerCartController::class, 'update'])->name('cart.update');
+    
+    // Remove from cart
+    Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
+    
+    // Get cart count (for navbar)
+    Route::get('/cart/count', [CustomerCartController::class, 'getCartCount'])->name('cart.count');
     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
 

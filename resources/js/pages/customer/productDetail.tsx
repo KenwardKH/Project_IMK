@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,10 +20,18 @@ interface ProductDetailProps {
             tanggal: string;
         }>;
     };
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+        } | null;
+    };
 }
 
-export default function ProductDetail({ product }: ProductDetailProps) {
+export default function ProductDetail({ product, auth }: ProductDetailProps) {
     const [quantity, setQuantity] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
     
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -48,9 +56,92 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         }
     };
 
-    const handleAddToCart = () => {
-        // Cart functionality would be implemented here
-        alert(`Menambahkan ${quantity} ${product.nama_produk} ke keranjang`);
+    const handleAddToCart = async () => {
+        if (!auth.user) {
+            // Redirect to login if not authenticated
+            router.visit('/login', {
+                data: { 
+                    intended: window.location.pathname 
+                }
+            });
+            return;
+        }
+
+        setIsLoading(true);
+        
+        try {
+            // Get CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            console.log('Adding to cart:', {
+                product_id: product.id,
+                quantity: quantity,
+                csrf_token: csrfToken
+            });
+
+            const response = await fetch('/cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    product_id: product.id,
+                    quantity: quantity
+                })
+            });
+
+            console.log('Response status:', response.status);
+            
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (response.ok) {
+                // Show success message
+                alert(`Berhasil menambahkan ${quantity} ${product.nama_produk} ke keranjang!`);
+                
+                // Optionally redirect to cart or refresh cart count
+                // router.visit('/cart');
+            } else {
+                console.error('Error response:', data);
+                alert(data.message || data.error || 'Terjadi kesalahan saat menambahkan ke keranjang');
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+            alert('Terjadi kesalahan jaringan saat menambahkan ke keranjang');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Alternative method using Inertia's router.post
+    const handleAddToCartInertia = () => {
+        if (!auth.user) {
+            router.visit('/login');
+            return;
+        }
+
+        setIsLoading(true);
+        
+        router.post('/cart', {
+            product_id: product.id,
+            quantity: quantity
+        }, {
+            onSuccess: () => {
+                alert(`Berhasil menambahkan ${quantity} ${product.nama_produk} ke keranjang!`);
+                setIsLoading(false);
+            },
+            onError: (errors) => {
+                console.error('Inertia errors:', errors);
+                alert('Terjadi kesalahan saat menambahkan ke keranjang');
+                setIsLoading(false);
+            },
+            onFinish: () => {
+                setIsLoading(false);
+            }
+        });
     };
 
     // Format price to Indonesian Rupiah
@@ -104,6 +195,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                                 </p>
                             </div>
                             
+                           
                             {/* Quantity Selector */}
                             <div className="mb-6">
                                 <h3 className="font-[Poppins] text-lg font-semibold text-[#1c283f] mb-2">
@@ -113,7 +205,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                                     <button 
                                         onClick={handleDecrement}
                                         disabled={quantity <= 1}
-                                        className="bg-gray-100 px-4 py-2 rounded-l-lg text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+                                        className="bg-gray-100 px-4 py-2 rounded-l-lg text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         -
                                     </button>
@@ -126,27 +218,64 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                                                 setQuantity(val);
                                             }
                                         }}
-                                        className="w-16 text-center py-2 border-t border-b border-gray-200"
+                                        className="w-16 text-center py-2 border-t border-b border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#56b280]"
                                         min="1"
                                         max={product.stock}
                                     />
                                     <button 
                                         onClick={handleIncrement}
                                         disabled={quantity >= product.stock}
-                                        className="bg-gray-100 px-4 py-2 rounded-r-lg text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+                                        className="bg-gray-100 px-4 py-2 rounded-r-lg text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         +
                                     </button>
                                 </div>
                             </div>
                             
-                            {/* Add to Cart Button */}
-                            <Button 
-                                onClick={handleAddToCart}
-                                className="w-full bg-[#153e98] hover:bg-[#0f2e73] text-white font-bold py-3 rounded-lg"
-                            >
-                                Tambah ke Keranjang
-                            </Button>
+                            {/* Stock Alert */}
+                            {product.stock === 0 ? (
+                                <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <p className="text-red-600 font-medium">Stok habis</p>
+                                </div>
+                            ) : product.stock < 10 ? (
+                                <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p className="text-yellow-600 font-medium">Stok terbatas: {product.stock} {product.satuan}</p>
+                                </div>
+                            ) : null}
+                            
+                            {/* Add to Cart Buttons */}
+                            <div className="space-y-2">
+                                <Button 
+                                    onClick={handleAddToCart}
+                                    disabled={isLoading || product.stock === 0}
+                                    className="w-full bg-[#153e98] hover:bg-[#0f2e73] text-white font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                            Menambahkan...
+                                        </div>
+                                    ) : product.stock === 0 ? (
+                                        'Stok Habis'
+                                    ) : auth.user ? (
+                                        'Tambah ke Keranjang'
+                                    ) : (
+                                        'Login untuk Membeli'
+                                    )}
+                                </Button>
+
+                                
+                            </div>
+
+                            {/* Total Price Display */}
+                            {quantity > 1 && (
+                                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <p className="text-green-800">
+                                        <span className="font-medium">Total: </span>
+                                        {formatPrice(product.harga_jual * quantity)}
+                                    </p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

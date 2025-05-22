@@ -22,7 +22,7 @@ class CustomerDashboard extends Controller
                 'Description as deskripsi',
                 'ProductUnit as satuan',
                 'CurrentStock as stock',
-                'ProductPrice as harga_jual',
+                // 'ProductPrice as harga_jual',
                 'image as gambar_produk'
             )
             ->get();
@@ -49,7 +49,7 @@ class CustomerDashboard extends Controller
                 'image as gambar_produk'
             )
             ->findOrFail($id);
-        
+
         // Load price history for the product if PricingLog exists
         try {
             $priceHistory = PricingLog::where('ProductID', $product->id)
@@ -57,7 +57,7 @@ class CustomerDashboard extends Controller
                 ->orderBy('TimeChanged', 'desc')
                 ->limit(10)
                 ->get();
-            
+
             $product->riwayat_harga = $priceHistory;
         } catch (\Exception $e) {
             // If PricingLog doesn't exist or there's an error, provide empty array

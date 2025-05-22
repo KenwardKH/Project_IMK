@@ -157,7 +157,6 @@ export default function OrderSummarySection() {
                 </div>
             )} */}
             {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
-
         </>
     );
 }

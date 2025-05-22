@@ -27,9 +27,16 @@ class CustomerDashboard extends Controller
             )
             ->get();
 
-        // Pass the products to the LandingPage component
+        // Pass the products and auth data to the LandingPage component
         return Inertia::render('LandingPage', [
-            'products' => $products
+            'products' => $products,
+            'auth' => [
+                'user' => auth()->user() ? [
+                    'id' => auth()->user()->id,
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ] : null
+            ]
         ]);
     }
 
@@ -49,7 +56,7 @@ class CustomerDashboard extends Controller
                 'image as gambar_produk'
             )
             ->findOrFail($id);
-        
+            
         // Load price history for the product if PricingLog exists
         try {
             $priceHistory = PricingLog::where('ProductID', $product->id)
@@ -57,16 +64,23 @@ class CustomerDashboard extends Controller
                 ->orderBy('TimeChanged', 'desc')
                 ->limit(10)
                 ->get();
-            
+                    
             $product->riwayat_harga = $priceHistory;
         } catch (\Exception $e) {
             // If PricingLog doesn't exist or there's an error, provide empty array
             $product->riwayat_harga = [];
         }
 
-        // Render the product detail page
+        // Render the product detail page with auth data
         return Inertia::render('customer/productDetail', [
-            'product' => $product
+            'product' => $product,
+            'auth' => [
+                'user' => auth()->user() ? [
+                    'id' => auth()->user()->id,
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ] : null
+            ]
         ]);
     }
 

@@ -29,6 +29,17 @@ export function NavbarSection() {
         { title: 'Contacts', href: '#footer' },
     ];
 
+    // Function to get user initials for avatar fallback
+    const getUserInitials = (name) => {
+        if (!name) return 'U';
+        return name
+            .split(' ')
+            .map(word => word.charAt(0))
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
     return (
         <nav className="sticky top-0 z-50 w-full bg-[#f6f6f6] py-2 shadow-sm">
             <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 md:px-6">
@@ -90,9 +101,11 @@ export function NavbarSection() {
                                 >
                                     <Avatar className="h-8 w-8">
                                         <AvatarImage src="/images/default-avatar.png" alt="Avatar" />
-                                        <AvatarFallback className="bg-green-100 font-bold text-green-800">IK</AvatarFallback>
+                                        <AvatarFallback className="bg-green-100 font-bold text-green-800">
+                                            {getUserInitials(user.name)}
+                                        </AvatarFallback>
                                     </Avatar>
-                                    <span className="text-sm font-semibold">Ikhsan</span>
+                                    <span className="text-sm font-semibold">{user.name}</span>
                                 </Button>
                             </DropdownMenuTrigger>
 
@@ -161,16 +174,41 @@ export function NavbarSection() {
                             <Input placeholder="Cari alat tulis..." className="h-10 w-full rounded-md bg-gray-100 px-4 pr-10 text-sm" />
                             <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
                         </div>
-                        <div className="mt-4 flex gap-3">
-                            <Link href="/login" className="flex-1">
-                                <Button variant="outline" className="w-full text-sm font-semibold text-green-700">
-                                    Masuk
-                                </Button>
-                            </Link>
-                            <Link href="/register" className="flex-1">
-                                <Button className="w-full bg-green-700 text-sm font-semibold text-white hover:bg-green-800">Daftar</Button>
-                            </Link>
-                        </div>
+
+                        {/* Mobile Auth Section */}
+                        {user ? (
+                            <div className="mt-4 flex items-center gap-3 rounded-lg bg-green-50 p-3">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src="/images/default-avatar.png" alt="Avatar" />
+                                    <AvatarFallback className="bg-green-100 font-bold text-green-800">
+                                        {getUserInitials(user.name)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                    <p className="text-sm font-semibold text-green-800">{user.name}</p>
+                                    <p className="text-xs text-green-600">{user.email}</p>
+                                </div>
+                                <Link
+                                    method="post"
+                                    href="/logout"
+                                    as="button"
+                                    className="text-red-500 hover:text-red-600"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="mt-4 flex gap-3">
+                                <Link href="/login" className="flex-1">
+                                    <Button variant="outline" className="w-full text-sm font-semibold text-green-700">
+                                        Masuk
+                                    </Button>
+                                </Link>
+                                <Link href="/register" className="flex-1">
+                                    <Button className="w-full bg-green-700 text-sm font-semibold text-white hover:bg-green-800">Daftar</Button>
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

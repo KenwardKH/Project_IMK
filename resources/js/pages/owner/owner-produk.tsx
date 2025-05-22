@@ -1,8 +1,8 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
-import { Link, usePage, router } from '@inertiajs/react';
 
 const OwnerProduct = () => {
     interface RiwayatHarga {
@@ -20,12 +20,12 @@ const OwnerProduct = () => {
         deskripsi: string;
         riwayat_harga: RiwayatHarga[];
     }
-    
+
     interface Props {
         products: ProductData[];
         [key: string]: any;
     }
-    
+
     const { products } = usePage<Props>().props;
     const [modalImage, setModalImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,7 +56,7 @@ const OwnerProduct = () => {
         setSelectedRiwayat(null);
         setSelectedNamaProduk('');
     };
-    
+
     const handleDelete = (id: number) => {
         if (confirm('Yakin ingin menghapus produk ini?')) {
             router.delete(`/owner-produk/${id}`);
@@ -77,18 +77,17 @@ const OwnerProduct = () => {
         return new Date(dateString).toLocaleDateString('id-ID', {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
     };
 
     // Filter products based on search term
-    const filteredProducts = products.filter(product => 
-        product.nama_produk.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredProducts = products.filter((product) => product.nama_produk.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
         <OwnerLayout>
-            <div>
+            <div className="flex w-full flex-col gap-6 px-6 py-4">
+                <h1 className="flex w-full justify-center text-3xl font-bold">Daftar Produk</h1>
                 <section className="flex w-full items-center justify-between px-4 py-3">
                     <div className="relative w-full max-w-sm">
                         <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
@@ -146,17 +145,15 @@ const OwnerProduct = () => {
                                             <td className="border border-gray-200 p-4 text-center">{formatCurrency(item.harga_jual)}</td>
                                             <td className="border border-gray-200 p-4 text-center">{item.stock}</td>
                                             <td className="border border-gray-200 p-4 text-center">{item.satuan}</td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                {item.deskripsi ? item.deskripsi : '-'}
-                                            </td>
+                                            <td className="border border-gray-200 p-4 text-center">{item.deskripsi ? item.deskripsi : '-'}</td>
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <Button
                                                     onClick={() => openRiwayatModal(item.riwayat_harga || [], item.nama_produk)}
-                                                    className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600 hover:cursor-pointer"
+                                                    className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:cursor-pointer hover:bg-blue-600"
                                                     disabled={!item.riwayat_harga || item.riwayat_harga.length === 0}
                                                 >
-                                                    {item.riwayat_harga && item.riwayat_harga.length > 0 
-                                                        ? `Riwayat Harga (${item.riwayat_harga.length})` 
+                                                    {item.riwayat_harga && item.riwayat_harga.length > 0
+                                                        ? `Riwayat Harga (${item.riwayat_harga.length})`
                                                         : 'Tidak Ada Riwayat'}
                                                 </Button>
                                             </td>
@@ -195,14 +192,8 @@ const OwnerProduct = () => {
                 </section>
             </div>
             {isModalOpen && modalImage && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-                    onClick={closeModal}
-                >
-                    <div
-                        className="relative w-full max-w-lg rounded-lg bg-white p-4 shadow-lg"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={closeModal}>
+                    <div className="relative w-full max-w-lg rounded-lg bg-white p-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
                         <button
                             onClick={closeModal}
                             className="absolute top-2 right-2 rounded-full bg-black/60 px-4 py-1 text-3xl font-bold text-white transition hover:cursor-pointer hover:bg-black/80"

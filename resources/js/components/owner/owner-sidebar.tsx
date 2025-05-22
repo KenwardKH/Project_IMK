@@ -98,7 +98,7 @@ const Sidebar: FC = () => {
                 {!collapsed && <span className="truncate">Dashboard</span>}
             </Link>
 
-            <SidebarGroup title="Manajemen Produk" icon={<AiFillProduct size={20} />} collapsed={collapsed}>
+            <SidebarGroup title="Kelola Produk" icon={<AiFillProduct size={20} />} collapsed={collapsed}>
                 <SidebarItem
                     icon={<Box size={20} />}
                     label="Produk"
@@ -140,8 +140,8 @@ const Sidebar: FC = () => {
                 <SidebarItem
                     icon={<History size={20} />}
                     label="Riwayat Kasir"
-                    href="/owner-daftar-kasir/riwayat"
-                    active={currentPath === '/owner-daftar-kasir/riwayat'}
+                    href="/owner-riwayat-kasir"
+                    active={currentPath === '/owner-riwayat-kasir'}
                     collapsed={collapsed}
                 />
             </SidebarGroup>
@@ -149,9 +149,9 @@ const Sidebar: FC = () => {
             <SidebarGroup title="Penjualan" icon={<RiBarChart2Fill size={20} />} collapsed={collapsed}>
                 <SidebarItem
                     icon={<ClipboardList size={20} />}
-                    label="Jumlah Transaksi"
-                    href="/owner-jumlah-transaksi"
-                    active={currentPath === '/owner-jumlah-transaksi'}
+                    label="Riwayat Transaksi"
+                    href="/owner-riwayat-transaksi"
+                    active={currentPath === '/owner-riwayat-transaksi'}
                     collapsed={collapsed}
                 />
                 <SidebarItem

@@ -11,79 +11,81 @@ interface PesananData {
     satuan_produk: string;
     subtotal: number;
 }
-interface PemesanData {
-    nama_pemesan: string;
-    kontak_pemesan: string;
-    pesananData: PesananData[];
-}
 interface RiwayatData {
     id: number;
     invoiceId: string;
-    opsiPengantaran: string;
-    statusSebelum: string;
-    statusSesudah: string;
+    namaPemesan: string;
+    kontakPemesan: string;
+    opsiPembayaran: string;
+    totalPembayaran: number;
+    tanggalPembayaran: string;
     namaKasir: string;
-    waktuStatusBerubah: string;
-    pemesanData: PemesanData[];
+    jenisPesanan: string;
+    status: string;
+    tanggalInvoice: string;
+    pesananData: PesananData[];
 }
-
-const OwnerRiwayatKasir = () => {
+const OwnerRiwayatTransaksi = () => {
     const dummyData: RiwayatData[] = [
         {
             id: 1,
             invoiceId: 'INV-001',
-            opsiPengantaran: 'Diantar',
-            statusSebelum: 'Diproses',
-            statusSesudah: 'Selesai',
+            namaPemesan: 'Budi',
+            kontakPemesan: '08123456789',
+            opsiPembayaran: 'Transfer',
+            totalPembayaran: 1620000,
+            tanggalPembayaran: '2025-05-20 14:30',
             namaKasir: 'Kasir A',
-            waktuStatusBerubah: '2025-05-20 14:35',
-            pemesanData: [
+            jenisPesanan: 'Online',
+            status: 'Selesai',
+            tanggalInvoice: '2025-05-20 16:00',
+            pesananData: [
                 {
-                    nama_pemesan: 'Budi',
-                    kontak_pemesan: '08123456789',
-                    pesananData: [
-                        {
-                            gambar_produk: 'kertas.jpg',
-                            nama_produk: 'Kertas A4',
-                            harga_produk: 50000,
-                            jumlah_produk: 20,
-                            satuan_produk: 'rim',
-                            subtotal: 1000000,
-                        },
-                        {
-                            gambar_produk: 'pensil.jpg',
-                            nama_produk: 'Pensil 2B',
-                            harga_produk: 50000,
-                            jumlah_produk: 20,
-                            satuan_produk: 'rim',
-                            subtotal: 1000000,
-                        },
-                    ],
+                    gambar_produk: 'kertas.jpg',
+                    nama_produk: 'Kertas A4',
+                    harga_produk: 50000,
+                    jumlah_produk: 20,
+                    satuan_produk: 'rim',
+                    subtotal: 1000000,
+                },
+                {
+                    gambar_produk: 'pen.jpg',
+                    nama_produk: 'Pen Greebel Hitam',
+                    harga_produk: 24000,
+                    jumlah_produk: 20,
+                    satuan_produk: 'lusin',
+                    subtotal: 480000,
                 },
             ],
         },
         {
             id: 2,
             invoiceId: 'INV-002',
-            opsiPengantaran: 'Diambil',
-            statusSebelum: 'Menunggu',
-            statusSesudah: 'Diproses',
+            namaPemesan: 'Andiana',
+            kontakPemesan: '08123456129',
+            opsiPembayaran: 'Tunai',
+            totalPembayaran: 1620000,
+            tanggalPembayaran: '2025-05-22 11:00',
             namaKasir: 'Kasir B',
-            waktuStatusBerubah: '2025-05-21 09:10',
-            pemesanData: [
+            jenisPesanan: 'Offline',
+            status: 'Menunggu Pembayaran',
+            tanggalInvoice: '2025-05-22 14:00',
+            pesananData: [
                 {
-                    nama_pemesan: 'Siti',
-                    kontak_pemesan: '08987654321',
-                    pesananData: [
-                        {
-                            gambar_produk: '',
-                            nama_produk: 'Rantang Harian',
-                            harga_produk: 30000,
-                            jumlah_produk: 1,
-                            satuan_produk: 'paket',
-                            subtotal: 30000,
-                        },
-                    ],
+                    gambar_produk: 'spidol.jpg',
+                    nama_produk: 'Spidol Snowman Hitam',
+                    harga_produk: 36000,
+                    jumlah_produk: 25,
+                    satuan_produk: 'lusin',
+                    subtotal: 900000,
+                },
+                {
+                    gambar_produk: 'pen.jpg',
+                    nama_produk: 'Pen Greebel Hitam',
+                    harga_produk: 24000,
+                    jumlah_produk: 30,
+                    satuan_produk: 'lusin',
+                    subtotal: 720000,
                 },
             ],
         },
@@ -100,8 +102,10 @@ const OwnerRiwayatKasir = () => {
     //     setFilteredKasirs(filtered);
     // }, [searchTerm]);
 
-    const openDetailModal = (pesananData: PemesanData[], invoiceId: string) => {
-        setSelectedRiwayat(pesananData[0].pesananData);
+    const statusOptions = ['Menunggu Pembayaran', 'Diproses', 'Menunggu Pengambilan', 'Diantar', 'Selesai', 'Dibatalkan'];
+
+    const openDetailModal = (pesananData: PesananData[], invoiceId: string) => {
+        setSelectedRiwayat(pesananData);
         setSelectedNamaProduk(invoiceId);
         setShowPriceModal(true);
     };
@@ -119,9 +123,25 @@ const OwnerRiwayatKasir = () => {
     return (
         <OwnerLayout>
             <div className="flex w-full flex-col gap-6 px-6 py-4">
-                <h1 className="flex w-full justify-center text-3xl font-bold">Riwayat Aktifitas Kasir</h1>
+                <h1 className="flex w-full justify-center text-3xl font-bold">Riwayat Transaksi</h1>
                 <section className="mb-6 w-full rounded-xl bg-[#F8FAFC] p-4 shadow-md">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        {/* Search */}
+                        <div className="flex w-full items-center gap-2 md:w-1/3">
+                            <label htmlFor="searchCashier" className="w-28 text-sm font-semibold whitespace-nowrap">
+                                Nama Pemesan:
+                            </label>
+                            <div className="relative w-full">
+                                <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                    type="text"
+                                    id="searchCashier"
+                                    placeholder="Cari Pemesan..."
+                                    className="h-9 w-full rounded-md border border-gray-300 pr-3 pl-10 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                />
+                            </div>
+                        </div>
+
                         {/* Start Date */}
                         <div className="flex w-full items-center gap-2 md:w-1/3">
                             <label htmlFor="startDate" className="w-28 text-sm font-semibold whitespace-nowrap">
@@ -132,22 +152,6 @@ const OwnerRiwayatKasir = () => {
                                     type="date"
                                     id="startDate"
                                     className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Search */}
-                        <div className="flex w-full items-center gap-2 md:w-1/3">
-                            <label htmlFor="searchCashier" className="w-28 text-sm font-semibold whitespace-nowrap">
-                                Nama Kasir:
-                            </label>
-                            <div className="relative w-full">
-                                <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" size={18} />
-                                <input
-                                    type="text"
-                                    id="searchCashier"
-                                    placeholder="Cari kasir..."
-                                    className="h-9 w-full rounded-md border border-gray-300 pr-3 pl-10 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 />
                             </div>
                         </div>
@@ -165,6 +169,26 @@ const OwnerRiwayatKasir = () => {
                                 />
                             </div>
                         </div>
+
+                        {/* Search */}
+                        <div className="flex w-full items-center gap-2 md:w-1/3">
+                            <label htmlFor="statusFilter" className="w-28 text-sm font-semibold whitespace-nowrap">
+                                Status Pesanan:
+                            </label>
+                            <div className="relative w-full">
+                                <select
+                                    id="statusFilter"
+                                    className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                >
+                                    <option value="">Pilih Status</option>
+                                    {statusOptions.map((status, index) => (
+                                        <option key={index} value={status}>
+                                            {status}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Button */}
@@ -179,12 +203,16 @@ const OwnerRiwayatKasir = () => {
                                 <thead className="bg-gray-700 text-sm text-gray-100">
                                     <tr>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Invoice ID</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Opsi Pengiriman</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Status Sebelum</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Status Sesudah</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Nama Pemesan</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Kontak Pemesan</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Opsi Pembayaran</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Total Pembayaran</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Tanggal Pembayaran</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Nama Kasir</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Detail Pesanan</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Waktu Status Berubah</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Jenis Pesanan</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Detail</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Status</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Tanggal Invoice</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
@@ -192,19 +220,23 @@ const OwnerRiwayatKasir = () => {
                                         filteredKasirs.map((item) => (
                                             <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
                                                 <td className="border border-gray-200 p-4 text-center">{item.invoiceId}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.opsiPengantaran}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.statusSebelum}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.statusSesudah}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.namaPemesan}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.kontakPemesan}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.opsiPembayaran}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{formatCurrency(item.totalPembayaran)}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{formatDate(item.tanggalPembayaran)}</td>
                                                 <td className="border border-gray-200 p-4 text-center">{item.namaKasir}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.jenisPesanan}</td>
                                                 <td className="border border-gray-200 p-4 text-center">
                                                     <Button
-                                                        onClick={() => openDetailModal(item.pemesanData, item.invoiceId)}
+                                                        onClick={() => openDetailModal(item.pesananData, item.invoiceId)}
                                                         className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600"
                                                     >
                                                         Detail
                                                     </Button>
                                                 </td>
-                                                <td className="border border-gray-200 p-4 text-center">{formatDate(item.waktuStatusBerubah)}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.status}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{formatDate(item.tanggalInvoice)}</td>
                                             </tr>
                                         ))
                                     ) : (
@@ -238,11 +270,11 @@ const OwnerRiwayatKasir = () => {
                             <h2 className="text-xl font-bold text-gray-800">Informasi Pemesan</h2>
                             <p className="mt-1 text-sm font-medium text-gray-700">
                                 <span className="font-semibold">Nama Pemesan:</span>{' '}
-                                {dummyData.find((d) => d.invoiceId === selectedNamaProduk)?.pemesanData[0].nama_pemesan}
+                                {dummyData.find((d) => d.invoiceId === selectedNamaProduk)?.namaPemesan}
                             </p>
                             <p className="text-sm font-medium text-gray-700">
                                 <span className="font-semibold">Kontak Pemesan:</span>{' '}
-                                {dummyData.find((d) => d.invoiceId === selectedNamaProduk)?.pemesanData[0].kontak_pemesan}
+                                {dummyData.find((d) => d.invoiceId === selectedNamaProduk)?.kontakPemesan}
                             </p>
                         </div>
 
@@ -296,4 +328,4 @@ const OwnerRiwayatKasir = () => {
     );
 };
 
-export default OwnerRiwayatKasir;
+export default OwnerRiwayatTransaksi;

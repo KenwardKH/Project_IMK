@@ -42,7 +42,8 @@ const OwnerDaftarKasir = ({ kasirData }: OwnerDaftarKasirProps) => {
 
     return (
         <OwnerLayout>
-            <div>
+            <div className="flex w-full flex-col gap-6 px-6 py-4">
+                <h1 className="flex w-full justify-center text-3xl font-bold">Daftar Kasir</h1>
                 <section className="flex w-full items-center justify-between px-4 py-3">
                     <div className="relative w-full max-w-sm">
                         <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />

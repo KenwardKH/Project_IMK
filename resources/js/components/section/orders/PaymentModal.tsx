@@ -65,29 +65,36 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
         setIsUploading(true);
         setError(null);
 
-        try {
-            const formData = new FormData();
-            formData.append('payment_proof', selectedFile);
+        const formData = new FormData();
+        formData.append('payment_proof', selectedFile);
 
-            await router.post(`/order/${order.invoice_id}/upload-payment`, formData, {
-                forceFormData: true,
-                onSuccess: () => {
-                    onClose();
-                    // Refresh the page to show updated data
-                    router.reload();
-                },
-                onError: (errors) => {
-                    console.error('Upload error:', errors);
-                    setError('Gagal mengupload bukti pembayaran. Silakan coba lagi.');
+        try {
+            await router.post(
+                `/order/${order.invoice_id}/upload-payment`,
+                formData,
+                {
+                    forceFormData: true,
+                    preserveScroll: true,
+                    onSuccess: (page) => {
+                        const message = page.props?.flash?.success || 'Bukti pembayaran berhasil diupload';
+                        alert(message); // tampilkan pesan sukses
+                        onClose();
+                        router.reload(); // jika memang perlu refresh data
+                    },
+                    onError: (errors) => {
+                        console.error('Upload error:', errors);
+                        setError('Gagal mengupload bukti pembayaran. Silakan coba lagi.');
+                    },
                 }
-            });
-        } catch (error) {
-            console.error('Upload error:', error);
+            );
+        } catch (err) {
+            console.error('Unexpected error:', err);
             setError('Terjadi kesalahan saat mengupload. Silakan coba lagi.');
         } finally {
             setIsUploading(false);
         }
     };
+
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">

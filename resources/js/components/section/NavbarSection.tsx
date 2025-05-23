@@ -25,8 +25,8 @@ export function NavbarSection() {
 
     const navLinks = [
         { title: 'Home', href: '/' },
-        { title: 'Products', href: '#produk' },
-        { title: 'Contacts', href: '#footer' },
+        { title: 'Products', href: '/#produk' },
+        { title: 'Contacts', href: '/#footer' },
     ];
 
     // Function to get user initials for avatar fallback

@@ -18,99 +18,160 @@ class OrderController extends Controller
      * Display orders by status
      */
     public function index($status)
-    {
-        $allowedStatuses = ['belum-bayar', 'sedang-proses', 'selesai', 'dibatalkan'];
-        
-        if (!in_array($status, $allowedStatuses)) {
-            abort(404);
-        }
+{
+    $allowedStatuses = ['belum-bayar', 'sedang-proses', 'selesai', 'dibatalkan'];
+    
+    if (!in_array($status, $allowedStatuses)) {
+        abort(404);
+    }
 
-        $user = Auth::user();
-        
-        // Map status to database values for both pickup and delivery
-        $statusMap = [
-            'belum-bayar' => ['menunggu pembayaran'],
-            'sedang-proses' => ['diproses', 'menunggu pengambilan', 'diantar'], // includes pickup waiting and delivery in transit
-            'selesai' => ['selesai'],
-            'dibatalkan' => ['dibatalkan']
-        ];
+    $user = Auth::user();
+    
+    // Map frontend status to database values
+    $statusMap = [
+        'belum-bayar' => ['menunggu pembayaran', 'pending', 'belum_bayar'],
+        'sedang-proses' => ['diproses', 'menunggu pengambilan', 'diantar', 'processing', 'sedang_proses', 'confirmed'],
+        'selesai' => ['selesai', 'completed'],
+        'dibatalkan' => ['dibatalkan', 'cancelled']
+    ];
 
-        $dbStatuses = $statusMap[$status] ?? [$status];
+    $dbStatuses = $statusMap[$status] ?? [$status];
 
-        // Get all invoices for this customer first
-        $customer = Customer::where('user_id', $user->id)->first();
-        $orders = Invoice::with(['invoicedetails', 'pickup_order_statuses', 'delivery_order_statuses', 'payments'])
-            ->where('CustomerID', $customer->CustomerID)
-            ->orderBy('InvoiceDate', 'desc')
-            ->get()
-            ->filter(function($invoice) use ($dbStatuses) {
-                // Get latest status from both pickup and delivery
-                $latestPickupStatus = $invoice->pickup_order_statuses->sortByDesc('created_at')->first();
-                $latestDeliveryStatus = $invoice->delivery_order_statuses->sortByDesc('created_at')->first();
-                
-                // Check if any of the latest statuses match our filter
-                $pickupMatch = $latestPickupStatus && in_array($latestPickupStatus->status, $dbStatuses);
-                $deliveryMatch = $latestDeliveryStatus && in_array($latestDeliveryStatus->status, $dbStatuses);
-                
-                return $pickupMatch || $deliveryMatch;
-            })
-            ->map(function($invoice) {
-                // Determine if this is pickup or delivery order
-                $isPickup = $invoice->type === 'pickup' || $invoice->pickup_order_statuses->count() > 0;
-                $isDelivery = $invoice->type === 'delivery' || $invoice->delivery_order_statuses->count() > 0;
-                
-                // Get the latest status from appropriate table
-                $latestStatus = null;
-                if ($isPickup && $invoice->pickup_order_statuses->count() > 0) {
-                    $latestStatus = $invoice->pickup_order_statuses->sortByDesc('created_at')->first();
-                } elseif ($isDelivery && $invoice->delivery_order_statuses->count() > 0) {
-                    $latestStatus = $invoice->delivery_order_statuses->sortByDesc('created_at')->first();
-                }
-                
-                $totalAmount = $invoice->invoicedetails->sum(function($detail) {
-                    return (float)$detail->price * $detail->Quantity;
-                });
-
-                return [
-                    'invoice_id' => $invoice->InvoiceID,
-                    'customer_name' => $invoice->customerName,
-                    'customer_contact' => $invoice->customerContact,
-                    'invoice_date' => $invoice->InvoiceDate,
-                    'type' => $invoice->type ?? ($isPickup ? 'pickup' : 'delivery'),
-                    'payment_option' => $invoice->payment_option,
-                    'cashier_name' => $invoice->CashierName,
-                    'status' => $latestStatus->status ?? 'unknown',
-                    'delivery_address' => $isDelivery && $latestStatus ? $latestStatus->alamat ?? null : null,
-                    'total_amount' => $totalAmount,
-                    'items' => $invoice->invoicedetails->map(function($detail) {
-                        return [
-                            'product_id' => $detail->ProductID,
-                            'product_name' => $detail->productName,
-                            'product_image' => $detail->productImage,
-                            'quantity' => $detail->Quantity,
-                            'unit' => $detail->productUnit,
-                            'price' => (float)$detail->price,
-                            'subtotal' => (float)$detail->price * $detail->Quantity
-                        ];
-                    }),
-                    'payments' => $invoice->payments->map(function($payment) {
-                        return [
-                            'payment_id' => $payment->PaymentID,
-                            'amount' => $payment->Amount,
-                            'payment_date' => $payment->PaymentDate,
-                            'payment_method' => $payment->PaymentMethod,
-                            'proof_image' => $payment->ProofImage
-                        ];
-                    })
-                ];
-            });
-
+    // Get customer
+    $customer = Customer::where('user_id', $user->id)->first();
+    
+    if (!$customer) {
         return Inertia::render('orders/OrderPage', [
             'status' => $status,
-            'orders' => $orders
+            'orders' => []
         ]);
     }
 
+    // Get all invoices for this customer
+    $invoices = Invoice::with(['invoicedetails', 'pickup_order_statuses', 'delivery_order_statuses', 'payments'])
+        ->where('CustomerID', $customer->CustomerID)
+        ->orderBy('InvoiceDate', 'desc')
+        ->get();
+
+    // Filter and map invoices based on status
+    $orders = $invoices->filter(function($invoice) use ($dbStatuses) {
+        // Get latest status from both pickup and delivery
+        $latestPickupStatus = $invoice->pickup_order_statuses
+            ->sortByDesc('created_at')
+            ->first();
+        $latestDeliveryStatus = $invoice->delivery_order_statuses
+            ->sortByDesc('created_at')
+            ->first();
+        
+        // Determine which status to use
+        $currentStatus = null;
+        
+        // If both exist, use the most recent one
+        if ($latestPickupStatus && $latestDeliveryStatus) {
+            $currentStatus = $latestPickupStatus->created_at > $latestDeliveryStatus->created_at 
+                ? $latestPickupStatus->status 
+                : $latestDeliveryStatus->status;
+        } elseif ($latestPickupStatus) {
+            $currentStatus = $latestPickupStatus->status;
+        } elseif ($latestDeliveryStatus) {
+            $currentStatus = $latestDeliveryStatus->status;
+        }
+        
+        // If no status found, check if invoice has payments (might be pending payment)
+        if (!$currentStatus) {
+            $hasPayment = $invoice->payments->count() > 0;
+            $currentStatus = $hasPayment ? 'diproses' : 'menunggu pembayaran';
+        }
+        
+        // Check if current status matches any of the required statuses
+        return in_array($currentStatus, $dbStatuses);
+    })
+    ->map(function($invoice) {
+        // Determine order type
+        $hasPickupStatus = $invoice->pickup_order_statuses->count() > 0;
+        $hasDeliveryStatus = $invoice->delivery_order_statuses->count() > 0;
+        
+        // Get the latest status
+        $latestPickupStatus = $hasPickupStatus 
+            ? $invoice->pickup_order_statuses->sortByDesc('created_at')->first()
+            : null;
+        $latestDeliveryStatus = $hasDeliveryStatus 
+            ? $invoice->delivery_order_statuses->sortByDesc('created_at')->first()
+            : null;
+        
+        // Determine current status and type
+        $currentStatus = null;
+        $orderType = 'pickup'; // default
+        $deliveryAddress = null;
+        
+        if ($latestPickupStatus && $latestDeliveryStatus) {
+            if ($latestPickupStatus->created_at > $latestDeliveryStatus->created_at) {
+                $currentStatus = $latestPickupStatus->status;
+                $orderType = 'pickup';
+            } else {
+                $currentStatus = $latestDeliveryStatus->status;
+                $orderType = 'delivery';
+                $deliveryAddress = $latestDeliveryStatus->alamat ?? null;
+            }
+        } elseif ($latestPickupStatus) {
+            $currentStatus = $latestPickupStatus->status;
+            $orderType = 'pickup';
+        } elseif ($latestDeliveryStatus) {
+            $currentStatus = $latestDeliveryStatus->status;
+            $orderType = 'delivery';
+            $deliveryAddress = $latestDeliveryStatus->alamat ?? null;
+        } else {
+            // No status found, determine based on payment
+            $hasPayment = $invoice->payments->count() > 0;
+            $currentStatus = $hasPayment ? 'diproses' : 'menunggu pembayaran';
+            $orderType = $invoice->type ?? 'pickup';
+        }
+
+        // Calculate total amount
+        $totalAmount = $invoice->invoicedetails->sum(function($detail) {
+            return (float)$detail->price * $detail->Quantity;
+        });
+
+        return [
+            'invoice_id' => $invoice->InvoiceID,
+            'customer_name' => $invoice->customerName,
+            'customer_contact' => $invoice->customerContact,
+            'invoice_date' => $invoice->InvoiceDate,
+            'type' => $orderType === 'pickup' ? 'Ambil Sendiri' : 'Antar',
+            'payment_option' => $invoice->payment_option,
+            'cashier_name' => $invoice->CashierName,
+            'status' => $currentStatus,
+            'delivery_address' => $deliveryAddress,
+            'total_amount' => $totalAmount,
+            'items' => $invoice->invoicedetails->map(function($detail) {
+                return [
+                    'product_id' => $detail->ProductID,
+                    'product_name' => $detail->productName,
+                    'product_image' => $detail->productImage,
+                    'quantity' => $detail->Quantity,
+                    'unit' => $detail->productUnit,
+                    'price' => (float)$detail->price,
+                    'subtotal' => (float)$detail->price * $detail->Quantity
+                ];
+            }),
+            'payments' => $invoice->payments->map(function($payment) {
+                return [
+                    'payment_id' => $payment->PaymentID,
+                    'amount' => (float)$payment->AmountPaid, // Sesuaikan dengan nama field di database
+                    'payment_date' => $payment->PaymentDate,
+                    'payment_method' => $payment->payment_option, // Ambil dari invoice karena payment tidak punya method
+                    'proof_image' => $payment->PaymentImage // Sesuaikan dengan nama field di database
+                ];
+            })
+        ];
+    })
+    ->values(); // Re-index array
+
+    return Inertia::render('orders/OrderPage', [
+        'status' => $status,
+        'orders' => $orders
+    ]);
+}
     /**
      * Show specific order details
      */
@@ -204,25 +265,24 @@ class OrderController extends Controller
         }
 
         // Create cancellation status in appropriate table
-        if ($isPickup) {
-            PickupOrderStatus::create([
-                'invoice_id' => $invoice->InvoiceID,
+        if ($isPickup && $latestStatus) {
+            $latestStatus->update([
                 'status' => 'dibatalkan',
                 'updated_by' => $user->id
             ]);
         } elseif ($isDelivery) {
             // Get the current address from latest status
             $currentAddress = $latestStatus && isset($latestStatus->alamat) ? $latestStatus->alamat : '';
-            
-            DeliveryOrderStatus::create([
-                'invoice_id' => $invoice->InvoiceID,
+            $latestStatus->update([
                 'status' => 'dibatalkan',
-                'alamat' => $currentAddress,
+                'alamat' => $latestStatus->alamat, // Pertahankan alamat sebelumnya
                 'updated_by' => $user->id
             ]);
+        } else {
+            return response()->json(['error' => 'Status tidak ditemukan untuk diperbarui'], 400);
         }
+        return redirect()->back()->with('success', 'Pesanan berhasil dibatalkan');
 
-        return response()->json(['message' => 'Pesanan berhasil dibatalkan']);
     }
 
     /**
@@ -248,12 +308,12 @@ class OrderController extends Controller
         $payment = Payment::updateOrCreate(
             ['InvoiceID' => $invoice->InvoiceID],
             [
-                'Amount' => $invoice->invoicedetails->sum(function($detail) {
+                'AmountPaid' => $invoice->invoicedetails->sum(function($detail) {
                     return (float)$detail->price * $detail->Quantity;
                 }),
                 'PaymentDate' => now(),
-                'PaymentMethod' => $invoice->payment_option,
-                'ProofImage' => $imagePath
+                'InvoiceID' => $invoice->InvoiceID,
+                'PaymentImage' => $imagePath
             ]
         );
 
@@ -262,31 +322,32 @@ class OrderController extends Controller
         $isDelivery = $invoice->type === 'delivery' || $invoice->delivery_order_statuses->count() > 0;
 
         if ($isPickup) {
-            PickupOrderStatus::create([
-                'invoice_id' => $invoice->InvoiceID,
-                'status' => 'diproses',
-                'updated_by' => $user->id
-            ]);
+            $pickupStatus = PickupOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
+            if ($pickupStatus) {
+                $pickupStatus->update([
+                    'status' => 'diproses',
+                    'updated_by' => $user->id
+                ]);
+            }
         } elseif ($isDelivery) {
-            // Get the current address from latest status
             $currentAddress = '';
             if ($invoice->delivery_order_statuses->count() > 0) {
                 $latestDeliveryStatus = $invoice->delivery_order_statuses->sortByDesc('created_at')->first();
                 $currentAddress = $latestDeliveryStatus->alamat ?? '';
             }
-            
-            DeliveryOrderStatus::create([
-                'invoice_id' => $invoice->InvoiceID,
-                'status' => 'diproses',
-                'alamat' => $currentAddress,
-                'updated_by' => $user->id
-            ]);
+
+            $deliveryStatus = DeliveryOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
+            if ($deliveryStatus) {
+                $deliveryStatus->update([
+                    'status' => 'diproses',
+                    'alamat' => $currentAddress,
+                    'updated_by' => $user->id
+                ]);
+            }
         }
 
-        return response()->json([
-            'message' => 'Bukti pembayaran berhasil diupload',
-            'payment' => $payment
-        ]);
+        return redirect()->back()->with('success', 'Bukti pembayaran berhasil diupload');
+
     }
 
     /**

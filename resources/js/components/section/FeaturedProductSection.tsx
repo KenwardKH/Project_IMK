@@ -41,7 +41,7 @@ export default function FeaturedProductsSection({ products = [] }) {
                                     <CardContent className="p-5">
                                         <h3 className="font-[Poppins] text-base font-semibold text-[#1c283f]">{product.nama_produk}</h3>
                                         <p className="mt-1 font-[Poppins] text-sm text-gray-500">
-                                            {product.stock > 0 ? 'Tersedia' : 'Stok Habis'}
+                                            {product.stock > 0 ? `Tersedia ${product.stock} ${product.satuan}`  : 'Stok Habis'}
                                         </p>
                                         <p className="mt-2 font-[Poppins] text-lg font-bold text-[#56b280]">
                                             {typeof product.harga_jual === 'number' 

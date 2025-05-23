@@ -32,7 +32,6 @@ import NavbarSection from "@/components/section/NavbarSection";
           {/* Main Content */}
           <main className="flex flex-col w-full mt-8">
             <OrderSummarySection />
-            <OrderSummarySection />
             {/* <OrderDetailsSection /> */}
           </main>
         </div>

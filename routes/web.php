@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\CustomerCartController;
+use App\Http\Controllers\OrderController;
 
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
@@ -12,37 +13,10 @@ use App\Http\Controllers\ownerDaftarKasir;
 use App\Http\Controllers\ownerDaftarCustomer;
 use App\Http\Controllers\ownerPembelianSupply;
 
-// Route::get('/', function () {
-//     return Inertia::render('LandingPage', [
-//         'auth' => [
-//             'user' => Auth::user(),
-//         ],
-//     ]);
-// })->name('home');
-
-// Route::get("tes", function(){
-//     return Inertia::render("dashboard");
-// });
-
-// Route::get("cart", function(){
-//     return Inertia::render("CartPage");
-// });
-
-Route::get('order/{status}', function ($status) {
-    $allowedStatuses = ['belum-bayar', 'sedang-proses', 'selesai', 'dibatalkan'];
-
-    if (!in_array($status, $allowedStatuses)) {
-        abort(404);
-    }
-
-    return Inertia::render('orders/OrderPage', [
-        'status' => $status,
-    ]);
-});
-
-
+// Order routes with controller
+Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
 Route::middleware(['auth', 'verified'])->group(function () {
-        // Display cart
+    // Display cart
     Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
     
     // Add to cart
@@ -60,6 +34,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // CHECKOUT
     Route::post('/checkout', [CustomerCartController::class, 'checkout'])->name('cart.checkout');
 
+    // Order management routes
+    Route::get('/order/{id}/detail', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::post('/order/{id}/upload-payment', [OrderController::class, 'uploadPaymentProof'])->name('orders.upload-payment');
+    Route::get('/order/{id}/invoice', [OrderController::class, 'generateInvoice'])->name('orders.invoice');
 
     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');

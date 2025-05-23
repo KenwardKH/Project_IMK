@@ -1,8 +1,8 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Link, router } from '@inertiajs/react';
-import { Plus, Search, SquarePen, Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Plus, Search } from 'lucide-react';
+import { useState } from 'react';
 
 const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
     interface detailPesanan {
@@ -79,14 +79,18 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
 
     // Apply filters
     const applyFilters = () => {
-        router.get('/owner-pembelian-supply', {
-            startDate: startDate,
-            endDate: endDate,
-            search: search
-        }, {
-            preserveState: true,
-            replace: true
-        });
+        router.get(
+            '/owner-pembelian-supply',
+            {
+                startDate: startDate,
+                endDate: endDate,
+                search: search,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     // Handle enter key in search input
@@ -120,59 +124,67 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
 
     return (
         <OwnerLayout>
-            <div>
-                <section className="flex w-full flex-col gap-4 rounded-md border-b-2 border-gray-300 bg-[#FFD9B3] px-6 py-4 shadow-sm md:flex-row md:items-center md:justify-between">
-                    {/* Start Date */}
-                    <div className="flex flex-col md:w-1/3 md:flex-row md:items-center md:gap-2">
-                        <label htmlFor="startDate" className="mb-1 text-sm font-semibold whitespace-nowrap md:mb-0">
-                            Tanggal Mulai:
-                        </label>
-                        <input
-                            type="date"
-                            id="startDate"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="h-9 w-full rounded-md border border-gray-400 px-3 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        />
+            <div className="flex w-full flex-col gap-6 px-6 py-4">
+                <h1 className="flex w-full justify-center text-3xl font-bold">Daftar Pembelian Supply</h1>
+                <section className="mb-6 w-full rounded-xl bg-[#F8FAFC] p-4 shadow-md">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        {/* Start Date */}
+                        <div className="flex w-full items-center gap-2 md:w-1/3">
+                            <label htmlFor="startDate" className="w-28 text-sm font-semibold whitespace-nowrap">
+                                Tanggal Mulai:
+                            </label>
+                            <div className="relative w-full">
+                                <input
+                                    type="date"
+                                    id="startDate"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Search */}
+                        <div className="flex w-full items-center gap-2 md:w-1/3">
+                            <label htmlFor="searchCashier" className="w-28 text-sm font-semibold whitespace-nowrap">
+                                Nama Supplier:
+                            </label>
+                            <div className="relative w-full">
+                                <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Cari Supplier"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    className="h-9 w-full rounded-md border border-gray-300 pr-3 pl-10 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        {/* End Date */}
+                        <div className="flex w-full items-center gap-2 md:w-1/3">
+                            <label htmlFor="endDate" className="w-28 text-sm font-semibold whitespace-nowrap">
+                                Tanggal Akhir:
+                            </label>
+                            <div className="relative w-full">
+                                <input
+                                    type="date"
+                                    id="endDate"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                />
+                            </div>
+                        </div>
                     </div>
-
-                    {/* Search */}
-                    {/* <div className="relative w-full md:w-1/3">
-                        <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Cari Produk"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            className="h-9 w-full rounded-md border border-gray-400 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        />
-                    </div> */}
-
-                    {/* End Date */}
-                    <div className="flex flex-col md:w-1/3 md:flex-row md:items-center md:gap-2">
-                        <label htmlFor="endDate" className="mb-1 text-sm font-semibold whitespace-nowrap md:mb-0">
-                            Tanggal Akhir:
-                        </label>
-                        <input
-                            type="date"
-                            id="endDate"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="h-9 w-full rounded-md border border-gray-400 px-3 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        />
+                    {/* Apply filters button */}
+                    <div className="mt-4 flex justify-end">
+                        <Button onClick={applyFilters} className="bg-blue-600 text-white hover:bg-blue-700">
+                            Terapkan Filter
+                        </Button>
                     </div>
                 </section>
-
-                {/* Apply filters button */}
-                <div className="flex justify-end mt-2 mb-4 px-6">
-                    <Button 
-                        onClick={applyFilters} 
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                        Terapkan Filter
-                    </Button>
-                </div>
 
                 <section className="flex w-full items-center justify-end px-4 py-3">
                     <Link href={'/owner-pembelian-supply/tambah'}>
@@ -214,9 +226,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                                 <td className="border border-gray-200 p-4 text-center">{item.nama_supplier}</td>
                                                 <td className="border border-gray-200 p-4 text-center">{item.jumlah_produk}</td>
                                                 <td className="border border-gray-200 p-4 text-center">{formatCurrency(item.harga_total)}</td>
-                                                <td className="border border-gray-200 p-4 text-center">
-                                                    {formatDate(item.tanggal_invoice)}
-                                                </td>
+                                                <td className="border border-gray-200 p-4 text-center">{formatDate(item.tanggal_invoice)}</td>
                                                 <td className="border border-gray-200 p-4 text-center">
                                                     <Button
                                                         onClick={() => openDetailModal(item.detail_pesanan, item.id_invoice)}
@@ -260,14 +270,8 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                 </section>
             </div>
             {isModalOpen && modalImage && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-                    onClick={closeModal}
-                >
-                    <div
-                        className="relative w-full max-w-lg rounded-lg bg-white p-4 shadow-lg"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={closeModal}>
+                    <div className="relative w-full max-w-lg rounded-lg bg-white p-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
                         <button
                             onClick={closeModal}
                             className="absolute top-2 right-2 rounded-full bg-black/60 px-4 py-1 text-3xl font-bold text-white transition hover:cursor-pointer hover:bg-black/80"
@@ -308,7 +312,8 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
                                                 <td className="border px-3 py-2">{item.nama_produk}</td>
                                                 <td className="border px-3 py-2">{formatCurrency(harga)}</td>
                                                 <td className="border px-3 py-2">
-                                                    {jumlah.toLocaleString()} {item.unit || (item.nama_produk.toLowerCase().includes('pensil') ? 'lusin' : 'kotak')}
+                                                    {jumlah.toLocaleString()}{' '}
+                                                    {item.unit || (item.nama_produk.toLowerCase().includes('pensil') ? 'lusin' : 'kotak')}
                                                 </td>
                                                 <td className="border px-3 py-2">{item.diskon ? `${item.diskon}%` : '-'}</td>
                                                 <td className="border px-3 py-2">{formatCurrency(subtotal)}</td>

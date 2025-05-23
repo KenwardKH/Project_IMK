@@ -101,9 +101,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Owner Daftar Kasir Routes
     // Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
     
-    Route::get('owner-daftar-kasir/riwayat', function () {
+    Route::get('owner-riwayat-kasir', function () {
         return Inertia::render('owner/owner-riwayat-kasir');
     })->name('owner-riwayat-kasir');
+
+    Route::get('owner-riwayat-transaksi', function () {
+        return Inertia::render('owner/owner-riwayat-transaksi');
+    })->name('owner-riwayat-transaksi');
+
+    Route::get('owner-laporan-penjualan', function () {
+        return Inertia::render('owner/owner-laporan-penjualan');
+    })->name('owner-laporan-penjualan');
 });
 
 require __DIR__.'/settings.php';

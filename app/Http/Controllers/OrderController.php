@@ -295,11 +295,14 @@ class OrderController extends Controller
         ]);
 
         $user = Auth::user();
-        
+        $customer = Customer::where('user_id', $user->id)->firstOrFail();
+
         $invoice = Invoice::with(['pickup_order_statuses', 'delivery_order_statuses'])
             ->where('InvoiceID', $id)
-            ->where('CustomerID', $user->id)
+            ->where('CustomerID', $customer->CustomerID)
             ->firstOrFail();
+            
+        
 
         // Store the uploaded file
         $imagePath = $request->file('payment_proof')->store('payment_proofs', 'public');

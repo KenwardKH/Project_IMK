@@ -61,7 +61,8 @@ class Invoice extends Model
 
 	public function delivery_order_statuses()
 	{
-		return $this->hasMany(DeliveryOrderStatus::class);
+		// Explicitly specify the foreign key
+		return $this->hasMany(DeliveryOrderStatus::class, 'invoice_id', 'InvoiceID');
 	}
 
 	public function invoicedetails()
@@ -76,6 +77,7 @@ class Invoice extends Model
 
 	public function pickup_order_statuses()
 	{
-		return $this->hasMany(PickupOrderStatus::class);
+		// Explicitly specify the foreign key
+		return $this->hasMany(PickupOrderStatus::class, 'invoice_id', 'InvoiceID');
 	}
 }

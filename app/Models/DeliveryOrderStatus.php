@@ -42,6 +42,7 @@ class DeliveryOrderStatus extends Model
 
 	public function invoice()
 	{
-		return $this->belongsTo(Invoice::class);
+		// Explicitly specify the foreign key and owner key
+		return $this->belongsTo(Invoice::class, 'invoice_id', 'InvoiceID');
 	}
 }

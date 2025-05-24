@@ -26,9 +26,9 @@ class CustomerCartController extends Controller
         $user = Auth::user();
         $customer = $user->customer;
 
-        if (!$customer) {
-            return redirect()->route('home')->with('error', 'Customer profile not found');
-        }
+        // if (!$customer) {
+        //     return redirect()->route('dashboard')->with('error', 'Customer profile not found');
+        // }
 
         // Get cart items with product details
         $cartItems = CustomerCart::with(['product'])
@@ -88,7 +88,7 @@ class CustomerCartController extends Controller
         }
 
         $product = Product::find($request->product_id);
-        
+
         if ($request->quantity > $product->CurrentStock) {
             return response()->json(['error' => 'Quantity exceeds available stock'], 400);
         }
@@ -101,11 +101,11 @@ class CustomerCartController extends Controller
         if ($existingCartItem) {
             // Update quantity
             $newQuantity = $existingCartItem->Quantity + $request->quantity;
-            
+
             if ($newQuantity > $product->CurrentStock) {
                 return response()->json(['error' => 'Total quantity exceeds available stock'], 400);
             }
-            
+
             $existingCartItem->update(['Quantity' => $newQuantity]);
         } else {
             // Create new cart item
@@ -144,7 +144,7 @@ class CustomerCartController extends Controller
         }
 
         $product = Product::find($cartItem->ProductID);
-        
+
         if ($request->quantity > $product->CurrentStock) {
             return response()->json(['error' => 'Quantity exceeds available stock'], 400);
         }
@@ -196,7 +196,7 @@ class CustomerCartController extends Controller
         }
 
         $count = CustomerCart::where('CustomerID', $customer->CustomerID)->sum('Quantity');
-        
+
         return response()->json(['count' => $count]);
     }
 
@@ -241,15 +241,15 @@ class CustomerCartController extends Controller
         } catch (\Exception $e) {
             // Check if it's a stock error or other database error
             $errorMessage = $e->getMessage();
-            
+
             if (strpos($errorMessage, 'Cart not found or is empty') !== false) {
                 return response()->json(['error' => 'Keranjang kosong atau tidak ditemukan'], 400);
             }
-            
+
             if (strpos($errorMessage, 'stock') !== false || strpos($errorMessage, 'Stock') !== false) {
                 return response()->json(['error' => 'Stok produk tidak mencukupi'], 400);
             }
-            
+
             \Log::error('Checkout error: ' . $errorMessage);
             return response()->json(['error' => 'Terjadi kesalahan saat checkout. Silakan coba lagi.'], 500);
         }

@@ -179,7 +179,7 @@ export default function OrderDetailModal({ order, onClose }: OrderDetailModalPro
                                             {formatCurrency(item.price)} per {item.unit}
                                         </p>
                                     </div>
-                                    <div className="text-sm font-medium text-orange-600">
+                                    <div className="text-sm font-medium text-price-lighter">
                                         {formatCurrency(item.subtotal)}
                                     </div>
                                 </div>
@@ -191,7 +191,7 @@ export default function OrderDetailModal({ order, onClose }: OrderDetailModalPro
                 {/* Total */}
                 <Card className="mt-4 rounded-lg bg-[#f4f4f4]">
                     <CardContent className="flex justify-end p-4">
-                        <div className="text-base font-bold text-[#b92e00]">
+                        <div className="text-base font-bold text-price">
                             Total Pesanan: {formatCurrency(order.total_amount)}
                         </div>
                     </CardContent>

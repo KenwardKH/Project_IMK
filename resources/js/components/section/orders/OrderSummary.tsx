@@ -220,7 +220,7 @@ export default function OrderSummarySection() {
                                                         {formatCurrency(item.price)} per {item.unit}
                                                     </p>
                                                 </div>
-                                                <p className="text-base font-bold text-orange-600">
+                                                <p className="text-base font-bold text-price-lighter">
                                                     {formatCurrency(item.subtotal)}
                                                 </p>
                                             </div>
@@ -232,7 +232,7 @@ export default function OrderSummarySection() {
                             <section className="mt-10 rounded-xl border border-gray-200 bg-gray-50 p-6 font-sans shadow-sm">
                                 <div className="mb-6 text-right">
                                     <p className="text-xl font-semibold text-gray-800 sm:text-2xl">
-                                        Total Pesanan: <span className="font-bold text-red-600">
+                                        Total Pesanan: <span className="font-bold text-price">
                                             {formatCurrency(order.total_amount)}
                                         </span>
                                     </p>

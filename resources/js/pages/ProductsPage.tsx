@@ -370,7 +370,7 @@ const ProductsPage = () => {
                                             <Card key={product.ProductID} className="overflow-hidden transition-shadow hover:shadow-lg">
                                                 <div className="bg-muted aspect-square overflow-hidden">
                                                     <img
-                                                        src={product.image}
+                                                        src={`storage/${product.image}`}
                                                         alt={product.ProductName}
                                                         className="h-full w-full object-cover transition-transform duration-200 hover:scale-105"
                                                     />

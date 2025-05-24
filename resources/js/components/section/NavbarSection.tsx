@@ -25,7 +25,7 @@ export function NavbarSection() {
 
     const navLinks = [
         { title: 'Home', href: '/' },
-        { title: 'Products', href: '/#produk' },
+        { title: 'Products', href: '/products' },
         { title: 'Contacts', href: '/#footer' },
     ];
 

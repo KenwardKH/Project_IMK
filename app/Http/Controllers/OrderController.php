@@ -178,10 +178,10 @@ class OrderController extends Controller
     public function show($id)
     {
         $user = Auth::user();
-        
+        $customer = Customer::where('user_id', $user->id)->firstOrFail();
         $invoice = Invoice::with(['invoicedetails', 'pickup_order_statuses', 'delivery_order_statuses', 'payments'])
             ->where('InvoiceID', $id)
-            ->where('CustomerID', $user->id)
+            ->where('CustomerID', $customer->CustomerID)
             ->firstOrFail();
 
         // Determine if this is pickup or delivery order
@@ -242,10 +242,10 @@ class OrderController extends Controller
     public function cancel(Request $request, $id)
     {
         $user = Auth::user();
-        
+        $customer = Customer::where('user_id', $user->id)->firstOrFail();
         $invoice = Invoice::with(['pickup_order_statuses', 'delivery_order_statuses'])
             ->where('InvoiceID', $id)
-            ->where('CustomerID', $user->id)
+            ->where('CustomerID', $customer->CustomerID)
             ->firstOrFail();
 
         // Determine order type and get latest status
@@ -359,10 +359,10 @@ class OrderController extends Controller
     public function generateInvoice($id)
     {
         $user = Auth::user();
-        
+        $customer = Customer::where('user_id', $user->id)->firstOrFail();
         $invoice = Invoice::with(['invoicedetails', 'pickup_order_statuses', 'delivery_order_statuses', 'payments'])
             ->where('InvoiceID', $id)
-            ->where('CustomerID', $user->id)
+            ->where('CustomerID', $customer->CustomerID)
             ->firstOrFail();
 
         // Determine order type and get latest status
@@ -407,9 +407,9 @@ class OrderController extends Controller
     public function debug()
     {
         $user = Auth::user();
-        
+        $customer = Customer::where('user_id', $user->id)->firstOrFail();
         $invoices = Invoice::with(['pickup_order_statuses', 'delivery_order_statuses'])
-            ->where('CustomerID', $user->id)
+            ->where('CustomerID', $customer->CustomerID)
             ->get();
             
         $debug_data = [];

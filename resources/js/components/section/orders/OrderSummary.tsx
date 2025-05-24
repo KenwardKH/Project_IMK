@@ -36,6 +36,7 @@ interface Order {
     total_amount: number;
     items: OrderItem[];
     payments: Payment[];
+    delivery_address?: string;
 }
 
 interface PageProps {
@@ -51,7 +52,6 @@ export default function OrderSummarySection() {
     const [loading, setLoading] = useState(false);
 
     const { orders, status } = usePage<PageProps>().props;
-    const currentPath = `/order/${status}`;
 
     const handleShowDetail = (order: Order) => {
         setSelectedOrder(order);
@@ -63,6 +63,7 @@ export default function OrderSummarySection() {
         try {
             await router.post(`/order/${orderId}/cancel`, {}, {
                 onSuccess: () => {
+                    alert('Pesanan berhasil dibatalkan');
                     setShowCancelModal(false);
                     setSelectedOrder(null);
                     // Refresh the page to show updated data
@@ -91,9 +92,7 @@ export default function OrderSummarySection() {
             const response = await fetch(`/order/${orderId}/invoice`);
             if (response.ok) {
                 const invoiceData = await response.json();
-                // Here you would typically generate or download the PDF
                 console.log('Invoice data:', invoiceData);
-                // For now, just show success message
                 alert('Data invoice berhasil diambil. Fitur cetak akan segera tersedia.');
             } else {
                 const errorData = await response.json();
@@ -115,11 +114,15 @@ export default function OrderSummarySection() {
 
     const getStatusText = (status: string) => {
         const statusMap: { [key: string]: string } = {
-            'belum_bayar': 'Belum Bayar',
+            'menunggu pembayaran': 'Belum Bayar',
             'pending': 'Belum Bayar',
-            'sedang_proses': 'Sedang Diproses',
-            'processing': 'Sedang Diproses',
+            'belum_bayar': 'Belum Bayar',
+            'diproses': 'Menunggu Konfirmasi',
+            'sedang_proses': 'Menunggu Konfirmasi',
+            'processing': 'Menunggu Konfirmasi',
             'confirmed': 'Dikonfirmasi',
+            'menunggu pengambilan': 'Siap Diambil',
+            'diantar': 'Sedang Diantar',
             'selesai': 'Selesai',
             'completed': 'Selesai',
             'dibatalkan': 'Dibatalkan',
@@ -128,16 +131,43 @@ export default function OrderSummarySection() {
         return statusMap[status] || status;
     };
 
+    const getStatusColor = (status: string) => {
+        const completedStatuses = ['selesai', 'completed'];
+        const cancelledStatuses = ['dibatalkan', 'cancelled'];
+        const processingStatuses = ['diproses', 'sedang_proses', 'processing', 'confirmed', 'menunggu pengambilan', 'diantar'];
+        const pendingStatuses = ['menunggu pembayaran', 'pending', 'belum_bayar'];
+
+        if (completedStatuses.includes(status)) return 'text-green-600';
+        if (cancelledStatuses.includes(status)) return 'text-red-600';
+        if (processingStatuses.includes(status)) return 'text-blue-600';
+        if (pendingStatuses.includes(status)) return 'text-orange-600';
+        return 'text-gray-600';
+    };
+
     const canCancel = (orderStatus: string) => {
-        return !['selesai', 'completed', 'dibatalkan', 'cancelled'].includes(orderStatus);
+        const nonCancellableStatuses = ['selesai', 'completed', 'dibatalkan', 'cancelled'];
+        return !nonCancellableStatuses.includes(orderStatus);
     };
 
     const canUploadPayment = (orderStatus: string) => {
-        return ['menunggu pembayaran', 'pending'].includes(orderStatus);
+        const paymentPendingStatuses = ['menunggu pembayaran', 'pending', 'belum_bayar'];
+        return paymentPendingStatuses.includes(orderStatus);
     };
 
     const canPrintInvoice = (orderStatus: string) => {
-        return ['selesai', 'completed', 'dibatalkan', 'cancelled'].includes(orderStatus);
+        const printableStatuses = ['selesai', 'completed', 'dibatalkan', 'cancelled'];
+        return printableStatuses.includes(orderStatus);
+    };
+
+    // Convert status to display status for section title
+    const getStatusDisplayText = (status: string) => {
+        const statusDisplayMap: { [key: string]: string } = {
+            'belum-bayar': 'Belum Bayar',
+            'sedang-proses': 'Menunggu Konfirmasi',
+            'selesai': 'Selesai',
+            'dibatalkan': 'Dibatalkan'
+        };
+        return statusDisplayMap[status] || status;
     };
 
     if (!orders || orders.length === 0) {
@@ -145,7 +175,9 @@ export default function OrderSummarySection() {
             <section className="mx-auto w-full max-w-4xl p-2 sm:p-8">
                 <Card className="rounded-xl border border-gray-200 shadow-sm">
                     <CardContent className="p-10 text-center">
-                        <p className="text-gray-500">Tidak ada pesanan dengan status "{getStatusText(status)}"</p>
+                        <p className="text-gray-500">
+                            Tidak ada pesanan dengan status "{getStatusDisplayText(status)}"
+                        </p>
                     </CardContent>
                 </Card>
             </section>
@@ -164,24 +196,24 @@ export default function OrderSummarySection() {
                                         No. Pesanan: <span className="font-normal text-gray-600">#{order.invoice_id}</span>
                                     </p>
                                     <p className="text-sm font-semibold text-gray-700">
-                                        Opsi Pengantaran: <span className="font-normal text-gray-600">{order.type || 'Ambil Sendiri'}</span>
+                                        Opsi Pengantaran: <span className="font-normal text-gray-600">{order.type}</span>
                                     </p>
+                                    {order.delivery_address && (
+                                        <p className="text-sm font-semibold text-gray-700">
+                                            Alamat Pengiriman: <span className="font-normal text-gray-600">{order.delivery_address}</span>
+                                        </p>
+                                    )}
                                     <p className="text-sm font-semibold text-gray-700">
                                         Tanggal: <span className="font-normal text-gray-600">
                                             {new Date(order.invoice_date).toLocaleDateString('id-ID')}
                                         </span>
                                     </p>
                                     <p className="text-sm font-semibold text-gray-700">
-                                        Status: <span className={`font-normal ${
-                                            ['selesai', 'completed'].includes(order.status) ? 'text-green-600' :
-                                            ['dibatalkan', 'cancelled'].includes(order.status) ? 'text-red-600' :
-                                            ['sedang_proses', 'processing', 'confirmed'].includes(order.status) ? 'text-blue-600' :
-                                            'text-orange-600'
-                                        }`}>
+                                        Status: <span className={`font-normal ${getStatusColor(order.status)}`}>
                                             {getStatusText(order.status)}
                                         </span>
                                     </p>
-                                    {order.payments.length > 0 && (
+                                    {order.payment_option && (
                                         <p className="text-sm font-semibold text-gray-700">
                                             Metode Pembayaran: <span className="font-normal text-gray-600">{order.payment_option}</span>
                                         </p>
@@ -207,7 +239,10 @@ export default function OrderSummarySection() {
                                                 src={`/storage/${item.product_image}`}
                                                 alt={item.product_name}
                                                 className="h-full w-full object-cover"
-
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = '/images/placeholder-product.png';
+                                                }}
                                             />
                                         </div>
 

@@ -190,7 +190,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
 
             if (response.ok) {
                 alert('Checkout berhasil! Silakan lakukan pembayaran.');
-                router.visit('/dashboard'); // Redirect to orders page
+                router.visit('/cart'); // Redirect to orders page
             } else {
                 alert(data.error || 'Gagal melakukan checkout');
             }

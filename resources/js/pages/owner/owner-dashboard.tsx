@@ -96,7 +96,7 @@ const OwnerDashboard = () => {
                                     <th className="border px-4 py-3 text-center font-semibold">Bulan</th>
                                     <th className="border px-4 py-3 text-center font-semibold">Penjualan</th>
                                     <th className="border px-4 py-3 text-center font-semibold">Pengeluaran</th>
-                                    <th className="border px-4 py-3 text-center font-semibold">Keuntungan</th>
+                                    <th className="border px-4 py-3 text-center font-semibold">Keuntungan/Kerugian</th>
                                 </tr>
                             </thead>
                             <tbody>

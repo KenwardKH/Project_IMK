@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\CustomerCartController;
-
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
@@ -40,29 +39,30 @@ Route::get('order/{status}', function ($status) {
     ]);
 });
 
-
 Route::middleware(['auth', 'verified'])->group(function () {
         // Display cart
     Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
-    
+
     // Add to cart
     Route::post('/cart', [CustomerCartController::class, 'store'])->name('cart.store');
-    
+
     // Update cart item
     Route::put('/cart/{id}', [CustomerCartController::class, 'update'])->name('cart.update');
-    
+
     // Remove from cart
     Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
-    
+
     // Get cart count (for navbar)
     Route::get('/cart/count', [CustomerCartController::class, 'getCartCount'])->name('cart.count');
-    
+
     // CHECKOUT
     Route::post('/checkout', [CustomerCartController::class, 'checkout'])->name('cart.checkout');
 
 
     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
+    Route::get('products', [customerDashboard::class, 'indexProducts'])->name('products.index');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
+
 
     Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
     Route::get('owner-produk', function () {
@@ -79,7 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('owner/owner-tambah-supplier');
     })->name('owner-tambah-supplier');
     Route::resource('owner-supplier', ownerSupplier::class);
-    Route::get('/owner-supplier/edit/{id}', 
+    Route::get('/owner-supplier/edit/{id}',
         [ownerSupplier::class, 'edit']
     )->name('owner-edit-supplier');
     Route::put('/owner-supplier/{id}',[ownerSupplier::class,'update']);
@@ -97,10 +97,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/owner-pembelian-supply/destroy/{id}', [ownerPembelianSupply::class, 'destroy'])->name('owner.pembelian.supply.destroy');
 
     Route::resource('owner-daftar-pelanggan', ownerDaftarCustomer::class);
-    
+
     // Owner Daftar Kasir Routes
     // Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
-    
+
     Route::get('owner-riwayat-kasir', function () {
         return Inertia::render('owner/owner-riwayat-kasir');
     })->name('owner-riwayat-kasir');

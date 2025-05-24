@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Product;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,9 +16,25 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
+
+                // Isi 10 data produk langsung
+                for ($i = 1; $i <= 10; $i++) {
+                    Product::create([
+                        'ProductName'   => 'Produk ' . $i,
+                        'Description'     => 'Deskripsi produk ke-' . $i,
+                        'ProductUnit'        => 'pcs',
+                        'CurrentStock'         => rand(10, 100),
+                        'ProductPrice'    => rand(10000, 50000),
+                    'image' => 'images/onic-esport.jpg',
+
+                    ]);
+                }
+
+
+
     }
 }

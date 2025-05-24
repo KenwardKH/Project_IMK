@@ -91,7 +91,7 @@ export default function OrderDetailModal({ onClose }: { onClose: () => void }) {
                                         <h3 className="mb-2 text-base font-medium">{item.name}</h3>
                                         <p className="text-sm text-gray-500">x{item.quantity}</p>
                                     </div>
-                                    <div className="text-sm font-medium text-orange-600">{item.price}</div>
+                                    <div className="text-sm font-medium text-price-lighter">{item.price}</div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -101,7 +101,7 @@ export default function OrderDetailModal({ onClose }: { onClose: () => void }) {
                 {/* Total */}
                 <Card className="mt-4 rounded-lg bg-[#f4f4f4]">
                     <CardContent className="flex justify-end p-4">
-                        <div className="text-base font-bold text-[#b92e00]">Total Pesanan: Rp 3.600.000</div>
+                        <div className="text-base font-bold text-price">Total Pesanan: Rp 3.600.000</div>
                     </CardContent>
                 </Card>
             </div>

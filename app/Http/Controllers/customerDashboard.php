@@ -36,9 +36,27 @@ class CustomerDashboard extends Controller
                     'name' => auth()->user()->name,
                     'email' => auth()->user()->email,
                 ] : null
-            ]
+                ]
+            ]);
+    }
+
+    public function indexProducts(Request $request)
+    {
+        $products = Product::all();
+
+        return Inertia::render('ProductsPage', [
+            'products' => $products,
+            'auth' => [
+                'user' => auth()->user() ? [
+                    'id' => auth()->user()->id,
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ] : null
+            ],
+            'search' => $request->input('search'), // penting!
         ]);
     }
+
 
     /**
      * Display a single product.

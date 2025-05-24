@@ -44,7 +44,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
     const [alamat, setAlamat] = useState('');
     const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
     const [quantityInputs, setQuantityInputs] = useState<{[key: number]: string}>({});
-    
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Beranda',
@@ -63,9 +63,9 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
 
     const updateQuantity = async (cartId: number, newQuantity: number) => {
         if (newQuantity < 1) return;
-        
+
         setLoadingItems(prev => new Set(prev).add(cartId));
-        
+
         try {
             const response = await fetch(`/cart/${cartId}`, {
                 method: 'PUT',
@@ -129,7 +129,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
         }
 
         setLoadingItems(prev => new Set(prev).add(cartId));
-        
+
         try {
             const response = await fetch(`/cart/${cartId}`, {
                 method: 'DELETE',
@@ -206,7 +206,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
         return (
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="Keranjang Belanja | Sinar Pelangi" />
-                
+
                 <div className="container mx-auto py-8 px-4">
                     <Card className="bg-white rounded-2xl shadow-lg">
                         <CardContent className="p-8 text-center">
@@ -234,7 +234,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
         return (
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="Checkout | Sinar Pelangi" />
-                
+
                 <div className="container mx-auto py-8 px-4">
                     <div className="max-w-2xl mx-auto">
                         <Card className="bg-white rounded-2xl shadow-lg">
@@ -329,16 +329,16 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
 
                                 {/* Action Buttons */}
                                 <div className="flex space-x-3">
-                                    <Button 
+                                    <Button
                                         onClick={() => setShowCheckout(false)}
-                                        variant="outline" 
+                                        variant="outline"
                                         className="flex-1 border-[#153e98] text-[#153e98] hover:bg-[#153e98] hover:text-white"
                                         disabled={isProcessingCheckout}
                                     >
                                         <ArrowLeft className="mr-2 h-4 w-4" />
                                         Kembali
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={processCheckout}
                                         className="flex-1 bg-[#153e98] hover:bg-[#0f2e73] text-white"
                                         disabled={isProcessingCheckout}
@@ -357,7 +357,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Keranjang Belanja | Sinar Pelangi" />
-            
+
             <div className="container mx-auto py-8 px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Cart Items */}
@@ -367,14 +367,14 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                 <h1 className="font-[Poppins] text-2xl font-bold text-[#1c283f] mb-6">
                                     Keranjang Belanja ({cartItems.length} item)
                                 </h1>
-                                
+
                                 <div className="space-y-4">
                                     {cartItems.map((item) => (
                                         <div key={item.id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
                                             {/* Product Image */}
                                             <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                                                 {item.product.gambar_produk ? (
-                                                    <img 
+                                                    <img
                                                         src={`/storage/${item.product.gambar_produk}`}
                                                         alt={item.product.nama_produk}
                                                         className="w-full h-full object-cover"
@@ -385,7 +385,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                                     </div>
                                                 )}
                                             </div>
-                                            
+
                                             {/* Product Details */}
                                             <div className="flex-1">
                                                 <h3 className="font-medium text-[#1c283f] mb-1">
@@ -398,7 +398,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                                     Stok: {item.product.stock} {item.product.satuan}
                                                 </p>
                                             </div>
-                                            
+
                                             {/* Quantity Controls */}
                                             <div className="flex items-center gap-2">
                                                 <button
@@ -408,7 +408,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                                 >
                                                     <Minus className="h-4 w-4" />
                                                 </button>
-                                                
+
                                                 <Input
                                                     type="number"
                                                     min="1"
@@ -420,7 +420,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                                     className="w-16 text-center"
                                                     disabled={loadingItems.has(item.id)}
                                                 />
-                                                
+
                                                 <button
                                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                                     disabled={loadingItems.has(item.id) || item.quantity >= item.product.stock}
@@ -429,14 +429,14 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                                     <Plus className="h-4 w-4" />
                                                 </button>
                                             </div>
-                                            
+
                                             {/* Subtotal */}
                                             <div className="text-right">
                                                 <p className="font-bold text-[#1c283f]">
                                                     {formatPrice(item.subtotal)}
                                                 </p>
                                             </div>
-                                            
+
                                             {/* Remove Button */}
                                             <button
                                                 onClick={() => removeItem(item.id)}
@@ -452,7 +452,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                             </CardContent>
                         </Card>
                     </div>
-                    
+
                     {/* Order Summary */}
                     <div className="lg:col-span-1">
                         <Card className="bg-white rounded-2xl shadow-lg sticky top-8">
@@ -460,7 +460,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                 <h2 className="font-[Poppins] text-xl font-bold text-[#1c283f] mb-4">
                                     Ringkasan Pesanan
                                 </h2>
-                                
+
                                 <div className="space-y-3 mb-6">
                                     <div className="flex justify-between">
                                         <span className="text-gray-600">Subtotal ({cartItems.length} item)</span>
@@ -476,18 +476,18 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                         <span className="text-[#56b280]">{formatPrice(totalAmount)}</span>
                                     </div>
                                 </div>
-                                
+
                                 <div className="space-y-3">
-                                    <Button 
+                                    <Button
                                         onClick={handleCheckout}
                                         className="w-full bg-[#153e98] hover:bg-[#0f2e73] text-white font-bold py-3 rounded-lg"
                                     >
                                         Checkout
                                     </Button>
-                                    
+
                                     <Link href="/">
-                                        <Button 
-                                            variant="outline" 
+                                        <Button
+                                            variant="outline"
                                             className="w-full border-[#153e98] text-[#153e98] hover:bg-[#153e98] hover:text-white"
                                         >
                                             <ArrowLeft className="mr-2 h-4 w-4" />

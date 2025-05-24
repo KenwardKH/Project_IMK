@@ -34,7 +34,12 @@ export default function OrderSummarySection() {
                                 <span className="ml-2 font-normal text-gray-600">Ambil Sendiri</span>
                             </p>
                             {currentPath === '/order/selesai' || currentPath === '/order/dibatalkan' ? (
-                                <Button className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600">
+                                <Button
+                                    className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600"
+                                    onClick={() => {
+                                        window.open('/invoice/cetak', '_blank');
+                                    }}
+                                >
                                     Cetak Invoice
                                 </Button>
                             ) : null}
@@ -57,7 +62,7 @@ export default function OrderSummarySection() {
                                         <h3 className="text-base font-semibold text-gray-800">{product.name}</h3>
                                         <div className="mt-2 flex justify-between sm:mt-6">
                                             <p className="text-sm text-gray-500">x{product.quantity}</p>
-                                            <p className="text-base font-bold text-orange-600">{product.price}</p>
+                                            <p className="text-price-lighter text-base font-bold">{product.price}</p>
                                         </div>
                                     </div>
                                 </article>
@@ -67,7 +72,7 @@ export default function OrderSummarySection() {
                         <section className="mt-10 rounded-xl border border-gray-200 bg-gray-50 p-6 font-sans shadow-sm">
                             <div className="mb-6 text-right">
                                 <p className="text-xl font-semibold text-gray-800 sm:text-2xl">
-                                    Total Pesanan: <span className="font-bold text-red-600">Rp 3.600.000</span>
+                                    Total Pesanan: <span className="text-price font-bold">Rp 3.600.000</span>
                                 </p>
                             </div>
 

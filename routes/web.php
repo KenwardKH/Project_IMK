@@ -14,6 +14,18 @@ use App\Http\Controllers\ownerDaftarCustomer;
 use App\Http\Controllers\ownerPembelianSupply;
 
 // Order routes with controller
+Route::get('/about', function (){
+      return Inertia::render("footer/AboutUsPage");
+});
+
+Route::get('/contact', function (){
+      return Inertia::render("footer/ContactUsPage");
+});
+
+Route::get('/faq', function (){
+      return Inertia::render("footer/FAQPage");
+});
+
 Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
 Route::middleware(['auth', 'verified'])->group(function () {
     // Display cart

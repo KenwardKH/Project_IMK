@@ -50,7 +50,7 @@ export default function FeaturedProductsSection({ products = [] }: Props) {
     const featuredProducts = products.length > 0 ? products.slice(0, 3) : dummyProducts;
 
     return (
-        <section className="w-full bg-[#f6f6f6] py-20" id="produk">
+        <section className="w-full py-20" id="produk">
             <div className="mx-auto max-w-7xl px-4">
                 {/* Header */}
                 <div className="mb-12 text-center">
@@ -82,7 +82,7 @@ export default function FeaturedProductsSection({ products = [] }: Props) {
                                 <CardContent className="p-5">
                                     <h3 className="font-[Poppins] text-base font-semibold text-[#1c283f]">{product.nama_produk}</h3>
                                     <p className="mt-1 font-[Poppins] text-sm text-gray-500">{product.stock > 0 ? 'Tersedia' : 'Stok Habis'}</p>
-                                <p className="mt-2 font-[Poppins] text-lg font-bold text-price">
+                                    <p className="text-price mt-2 font-[Poppins] text-lg font-bold">
                                         {typeof product.harga_jual === 'number'
                                             ? product.harga_jual.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
                                             : product.harga_jual}

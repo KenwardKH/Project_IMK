@@ -29,7 +29,7 @@ function CategoriesSection() {
   ]
 
   return (
-    <section className="w-full bg-[#f6f6f6] px-4 py-20">
+    <section className="w-full px-4 py-20">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-12 text-center">

@@ -33,7 +33,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
   const currentPath = window.location.pathname;
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-6 bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center px-4 py-6 ">
       <div className="w-full max-w-5xl space-y-6">
         <Heading
           title="Settings"

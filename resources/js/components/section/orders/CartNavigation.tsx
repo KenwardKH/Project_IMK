@@ -34,7 +34,7 @@ export default function CartNavigationSection() {
                             className={`flex flex-1 items-center justify-center rounded-lg px-2 py-2 text-xs sm:text-sm font-medium transition-all duration-200
                                 ${
                                     isActive
-                                        ? 'bg-white text-green-700 shadow-sm'
+                                        ? 'bg-white text-green-700 shadow-sm italic'
                                         : 'text-gray-600 hover:bg-white hover:text-green-600'
                                 }`}
                         >

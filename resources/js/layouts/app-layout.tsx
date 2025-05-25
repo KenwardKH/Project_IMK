@@ -16,7 +16,6 @@
 
 // resources/js/Layouts/AppLayout.jsx\
 
-import Footer from '@/components/section/Footer';
 import NavbarSection from '@/components/section/NavbarSection';
 import { ReactNode } from 'react';
 
@@ -27,8 +26,12 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
     return (
         <>
-            <NavbarSection />
-            <main className="min-h-screen bg-gray-50 p-4">{children}</main>
+            <div className="flex w-full flex-col items-center">
+                <div className="relative w-full max-w-[1440px]">
+                    <NavbarSection />
+                    <main className="min-h-screen p-4">{children}</main>
+                </div>
+            </div>
             {/* <Footer /> */}
         </>
     );

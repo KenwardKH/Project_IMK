@@ -139,7 +139,7 @@ class CashierController extends Controller
     public function removeFromCart($productId)
     {
         try {
-            $cartItem = CashierCart::where('product_id', $productId)->first();
+            $cartItem = CashierCart::where('ProductID', $productId)->first();
 
             if (!$cartItem) {
                 return redirect()->back()->with('error', 'Item tidak ditemukan di keranjang!');

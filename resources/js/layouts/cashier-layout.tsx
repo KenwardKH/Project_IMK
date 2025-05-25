@@ -2,6 +2,9 @@ import React, { ReactNode } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import NavbarSectionCashier from '@/components/section/NavbarSectionCashier';
 
+// Type yang sama dengan NavbarSectionCashier
+type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'logout';
+
 interface CashierLayoutProps {
     children: ReactNode;
     title?: string;
@@ -10,20 +13,27 @@ interface CashierLayoutProps {
 const CashierLayout: React.FC<CashierLayoutProps> = ({ children, title = "Kasir" }) => {
     const { url } = usePage();
 
-    // Tentukan active section berdasarkan current route
-    const getActiveSection = () => {
-        if (url.includes('/cashier/orders/create') || url === '/cashier') return 'buat-pesanan';
-        if (url.includes('/cashier/orders')) return 'konfirmasi-pesanan';
-        if (url.includes('/cashier/orders/status')) return 'status-pesanan';
-        if (url.includes('/cashier/inventory')) return 'stok-barang';
+    const getActiveSection = (): SectionId => {
+        if (url === '/cashier' || url.startsWith('/cashier/orders/create')) {
+            return 'buat-pesanan';
+        }
+        if (url.startsWith('/cashier/orders/status')) {
+            return 'status-pesanan';
+        }
+        if (url.startsWith('/cashier/orders')) {
+            return 'konfirmasi-pesanan'; // ini harus diletakkan setelah 'status' agar tidak tertimpa
+        }
+        if (url.startsWith('/cashier/inventory')) {
+            return 'stok-barang';
+        }
         return 'buat-pesanan';
     };
 
-    const handleSectionChange = (sectionId: string) => {
-        // Navigate ke route yang sesuai menggunakan Inertia router
+
+    const handleSectionChange = (sectionId: SectionId) => {
         switch (sectionId) {
             case 'buat-pesanan':
-                router.visit('/cashier/orders/create');
+                router.visit('/cashier');
                 break;
             case 'konfirmasi-pesanan':
                 router.visit('/cashier/orders');
@@ -42,11 +52,11 @@ const CashierLayout: React.FC<CashierLayoutProps> = ({ children, title = "Kasir"
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Sidebar */}
-            <NavbarSectionCashier 
+            <NavbarSectionCashier
                 activeSection={getActiveSection()}
                 onSectionChange={handleSectionChange}
             />
-            
+
             {/* Main Content */}
             <div className="ml-16 flex flex-col min-h-screen">
                 {/* Header */}

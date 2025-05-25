@@ -55,10 +55,11 @@ interface Props {
 
 
 export default function OrderList() {
-    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState('');
     const { orders } = usePage<Props>().props;
     const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
-
+    const itemsPerPage = 5;
+    const [currentPage, setCurrentPage] = useState(1);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleOpenModal = (order: OrderData) => {
@@ -71,10 +72,21 @@ export default function OrderList() {
         setSelectedOrder(null);
     };
 
-    const filteredOrders = orders.data.filter(order =>
+    const filteredOrders = orders.data.filter(order => typeof order.name === 'string' &&
         order.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+   // Step 2: Tentukan data yang akan ditampilkan berdasarkan halaman
+    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+
+    // Step 3: Fungsi navigasi halaman
+    const goToPage = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
 
     return (
         <AppLayout>
@@ -91,7 +103,10 @@ export default function OrderList() {
                                 placeholder="Cari Nama Customer"
                                 className="h-12 w-full rounded-md border border-gray-300 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value);
+                                    //setCurrentPage(1); // Reset halaman saat pencarian berubah
+                                }}
                             />
                         </div>
                     </div>
@@ -156,6 +171,27 @@ export default function OrderList() {
                                 )}
                             </tbody>
                         </table>
+                        <div className="mt-4 flex justify-center gap-2">
+                            {orders.prev_page_url && (
+                                <Button
+                                    variant="outline"
+                                    onClick={() => router.visit(orders.prev_page_url!)}
+                                >
+                                    Previous
+                                </Button>
+                            )}
+                            <span className="px-2 py-1 text-sm">
+                                Page {orders.current_page} of {orders.last_page}
+                            </span>
+                            {orders.next_page_url && (
+                                <Button
+                                    variant="outline"
+                                    onClick={() => router.visit(orders.next_page_url!)}
+                                >
+                                    Next
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
                 {isModalOpen && selectedOrder && (
@@ -185,27 +221,6 @@ export default function OrderList() {
                         </div>
                     </div>
                 )}
-                <div className="mt-4 flex justify-center gap-2">
-                    {orders.prev_page_url && (
-                        <Button
-                            variant="outline"
-                            onClick={() => router.visit(orders.prev_page_url!)}
-                        >
-                            Previous
-                        </Button>
-                    )}
-                    <span className="px-2 py-1 text-sm">
-                        Page {orders.current_page} of {orders.last_page}
-                    </span>
-                    {orders.next_page_url && (
-                        <Button
-                            variant="outline"
-                            onClick={() => router.visit(orders.next_page_url!)}
-                        >
-                            Next
-                        </Button>
-                    )}
-                </div>
 
             </section>
         </AppLayout>

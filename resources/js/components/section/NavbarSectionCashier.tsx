@@ -7,9 +7,11 @@ import {
     LogOut 
 } from 'lucide-react';
 
+type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'logout';
+
 interface NavbarSectionCashierProps {
-    activeSection?: string;
-    onSectionChange?: (sectionId: string) => void;
+    activeSection?: SectionId;  // Hanya menerima string yang valid
+    onSectionChange?: (sectionId: SectionId) => void;
 }
 
 const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({ 

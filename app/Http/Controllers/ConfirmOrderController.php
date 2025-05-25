@@ -31,7 +31,7 @@ class ConfirmOrderController extends Controller
         'CashierID as cid',
         'CashierName as cname',
         )
-        ->paginate();
+        ->paginate(5);
         // dd($orders);
 
         //Memanggil data InvoiceDetail

@@ -263,8 +263,6 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                                         'Login untuk Membeli'
                                     )}
                                 </Button>
-
-                                
                             </div>
 
                             {/* Total Price Display */}

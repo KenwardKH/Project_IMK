@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\CustomerCartController;
-
+use App\Http\Controllers\CashierController;
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
@@ -39,8 +39,29 @@ Route::get('order/{status}', function ($status) {
         'status' => $status,
     ]);
 });
-
-
+Route::get('/test-cashier', function () {
+    return 'Cashier route is accessible!';
+});
+Route::prefix('cashier')->name('cashier.')->group(function () {
+        // Main cashier page
+        Route::get('/', [CashierController::class, 'index'])->name('index');
+        
+        // Cart operations
+        Route::post('/cart/update', [CashierController::class, 'updateCart'])->name('cart.update');
+        Route::delete('/cart/remove/{productId}', [CashierController::class, 'removeFromCart'])->name('cart.remove');
+        Route::delete('/cart/clear', [CashierController::class, 'clearCart'])->name('cart.clear');
+        
+        // Checkout
+        Route::post('/checkout', [CashierController::class, 'checkout'])->name('checkout');
+        
+        // API endpoints (for AJAX requests)
+        Route::get('/api/cart-summary', [CashierController::class, 'getCartSummary'])->name('api.cart-summary');
+        Route::get('/api/search-products', [CashierController::class, 'searchProducts'])->name('api.search-products');
+        Route::get('/api/transaction-history', [CashierController::class, 'getTransactionHistory'])->name('api.transaction-history');
+        
+        // Receipt
+        Route::get('/receipt/{transactionId}', [CashierController::class, 'printReceipt'])->name('receipt');
+    });
 Route::middleware(['auth', 'verified'])->group(function () {
         // Display cart
     Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
@@ -63,6 +84,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
+
+    //Cashier
+    
 
     Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
     Route::get('owner-produk', function () {
@@ -87,7 +111,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('/owner-produk', ownerProduct::class)->names('owner.produk');
     Route::get('/owner-produk/edit/{id}', [ownerProduct::class, 'edit'])->name('owner.produk.edit');
     Route::post('/owner-produk/update/{id}', [ownerProduct::class, 'update'])->name('owner.produk.update');
-    Route::delete('/owner-produk/{id}', [OwnerProdukController::class, 'destroy'])->name('owner.produk.destroy');
+    Route::delete('/owner-produk/{id}', [ownerProduct::class, 'destroy'])->name('owner.produk.destroy');
 
     Route::get('/owner-pembelian-supply', [ownerPembelianSupply::class, 'index'])->name('owner.pembelian.supply');
     Route::get('/owner-pembelian-supply/tambah', [ownerPembelianSupply::class, 'create'])->name('owner.pembelian.supply.create');

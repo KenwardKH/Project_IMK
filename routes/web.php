@@ -12,6 +12,7 @@ use App\Http\Controllers\ownerProduct;
 use App\Http\Controllers\ownerDaftarKasir;
 use App\Http\Controllers\ownerDaftarCustomer;
 use App\Http\Controllers\ownerPembelianSupply;
+use App\Http\Controllers\OwnerTransaksiController;
 
 // Order routes with controller
 Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
@@ -80,16 +81,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('owner-daftar-pelanggan', ownerDaftarCustomer::class);
 
     // Owner Daftar Kasir Routes
-    // Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
+    Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
 
     Route::get('owner-riwayat-kasir', function () {
         return Inertia::render('owner/owner-riwayat-kasir');
     })->name('owner-riwayat-kasir');
 
-    Route::get('owner-riwayat-transaksi', function () {
-        return Inertia::render('owner/owner-riwayat-transaksi');
-    })->name('owner-riwayat-transaksi');
-
+    Route::get('owner-riwayat-transaksi', [OwnerTransaksiController::class, 'index'])->name('owner-riwayat-transaksi');
     Route::get('owner-laporan-penjualan', function () {
         return Inertia::render('owner/owner-laporan-penjualan');
     })->name('owner-laporan-penjualan');

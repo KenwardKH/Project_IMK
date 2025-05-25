@@ -1,9 +1,10 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Search, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface PesananData {
+    id: number;
     gambar_produk: string;
     nama_produk: string;
     harga_produk: number;
@@ -11,109 +12,81 @@ interface PesananData {
     satuan_produk: string;
     subtotal: number;
 }
+
 interface RiwayatData {
     id: number;
-    invoiceId: string;
-    namaPemesan: string;
-    kontakPemesan: string;
-    opsiPembayaran: string;
-    totalPembayaran: number;
-    tanggalPembayaran: string;
-    namaKasir: string;
-    jenisPesanan: string;
-    status: string;
-    tanggalInvoice: string;
+    InvoiceID: string;
+    CustomerName: string;
+    CustomerContact: string;
+    PaymentOption: string;
+    TotalAmount: number;
+    PaymentDate: string;
+    CashierName: string;
+    OrderStatus: string;
+    InvoiceDate: string;
     pesananData: PesananData[];
+    [key: string]: any;
 }
-const OwnerRiwayatTransaksi = () => {
-    const dummyData: RiwayatData[] = [
-        {
-            id: 1,
-            invoiceId: 'INV-001',
-            namaPemesan: 'Budi',
-            kontakPemesan: '08123456789',
-            opsiPembayaran: 'Transfer',
-            totalPembayaran: 1620000,
-            tanggalPembayaran: '2025-05-20 14:30',
-            namaKasir: 'Kasir A',
-            jenisPesanan: 'Online',
-            status: 'Selesai',
-            tanggalInvoice: '2025-05-20 16:00',
-            pesananData: [
-                {
-                    gambar_produk: 'kertas.jpg',
-                    nama_produk: 'Kertas A4',
-                    harga_produk: 50000,
-                    jumlah_produk: 20,
-                    satuan_produk: 'rim',
-                    subtotal: 1000000,
-                },
-                {
-                    gambar_produk: 'pen.jpg',
-                    nama_produk: 'Pen Greebel Hitam',
-                    harga_produk: 24000,
-                    jumlah_produk: 20,
-                    satuan_produk: 'lusin',
-                    subtotal: 480000,
-                },
-            ],
-        },
-        {
-            id: 2,
-            invoiceId: 'INV-002',
-            namaPemesan: 'Andiana',
-            kontakPemesan: '08123456129',
-            opsiPembayaran: 'Tunai',
-            totalPembayaran: 1620000,
-            tanggalPembayaran: '2025-05-22 11:00',
-            namaKasir: 'Kasir B',
-            jenisPesanan: 'Offline',
-            status: 'Menunggu Pembayaran',
-            tanggalInvoice: '2025-05-22 14:00',
-            pesananData: [
-                {
-                    gambar_produk: 'spidol.jpg',
-                    nama_produk: 'Spidol Snowman Hitam',
-                    harga_produk: 36000,
-                    jumlah_produk: 25,
-                    satuan_produk: 'lusin',
-                    subtotal: 900000,
-                },
-                {
-                    gambar_produk: 'pen.jpg',
-                    nama_produk: 'Pen Greebel Hitam',
-                    harga_produk: 24000,
-                    jumlah_produk: 30,
-                    satuan_produk: 'lusin',
-                    subtotal: 720000,
-                },
-            ],
-        },
-    ];
 
+interface Props {
+    riwayatTransaksi: RiwayatData[];
+}
+
+const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredKasirs, setFilteredKasirs] = useState<RiwayatData[]>(dummyData);
-    const [selectedRiwayat, setSelectedRiwayat] = useState<PesananData[]>([]);
-    const [selectedNamaProduk, setSelectedNamaProduk] = useState<string>('');
-    const [showPriceModal, setShowPriceModal] = useState(false);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [filteredKasirs, setFilteredKasirs] = useState<RiwayatData[]>(riwayatTransaksi);
 
-    // useEffect(() => {
-    //     const filtered = dummyData.filter((item) => item.namaKasir.toLowerCase().includes(searchTerm.toLowerCase()));
-    //     setFilteredKasirs(filtered);
-    // }, [searchTerm]);
+    const [selectedRiwayat, setSelectedRiwayat] = useState<PesananData[]>([]);
+    const [selectedInvoiceData, setSelectedInvoiceData] = useState<RiwayatData | null>(null);
+    const [showPriceModal, setShowPriceModal] = useState(false);
 
     const statusOptions = ['Menunggu Pembayaran', 'Diproses', 'Menunggu Pengambilan', 'Diantar', 'Selesai', 'Dibatalkan'];
 
-    const openDetailModal = (pesananData: PesananData[], invoiceId: string) => {
-        setSelectedRiwayat(pesananData);
-        setSelectedNamaProduk(invoiceId);
+    useEffect(() => {
+        let result = riwayatTransaksi;
+
+        if (searchTerm.trim()) {
+            result = result.filter(
+                (item) =>
+                    item.CustomerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    item.CashierName?.toLowerCase().includes(searchTerm.toLowerCase()),
+            );
+        }
+
+        if (statusFilter) {
+            result = result.filter((item) => item.OrderStatus?.toLowerCase().trim() === statusFilter.toLowerCase().trim());
+        }
+
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            result = result.filter((item) => {
+                const tanggal = new Date(item.InvoiceDate);
+                return tanggal >= start && tanggal <= end;
+            });
+        }
+
+        setFilteredKasirs(result);
+    }, [searchTerm, startDate, endDate, statusFilter, riwayatTransaksi]);
+
+    const openDetailModal = (transaksi: RiwayatData) => {
+        if (!transaksi.pesananData || transaksi.pesananData.length === 0) {
+            alert('Data detail pesanan tidak tersedia untuk transaksi ini.');
+            return;
+        }
+
+        setSelectedRiwayat(transaksi.pesananData);
+        setSelectedInvoiceData(transaksi);
         setShowPriceModal(true);
     };
 
     const closeRiwayatModal = () => {
         setShowPriceModal(false);
         setSelectedRiwayat([]);
-        setSelectedNamaProduk('');
+        setSelectedInvoiceData(null);
     };
 
     const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
@@ -124,9 +97,10 @@ const OwnerRiwayatTransaksi = () => {
         <OwnerLayout>
             <div className="flex w-full flex-col gap-6 px-6 py-4">
                 <h1 className="flex w-full justify-center text-3xl font-bold">Riwayat Transaksi</h1>
+
+                {/* Filter */}
                 <section className="mb-6 w-full rounded-xl bg-[#F8FAFC] p-4 shadow-md">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        {/* Search */}
                         <div className="flex w-full items-center gap-2 md:w-1/3">
                             <label htmlFor="searchCashier" className="w-28 text-sm font-semibold whitespace-nowrap">
                                 Nama Pemesan:
@@ -136,113 +110,132 @@ const OwnerRiwayatTransaksi = () => {
                                 <input
                                     type="text"
                                     id="searchCashier"
-                                    placeholder="Cari Pemesan..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Cari Pemesan atau Kasir..."
                                     className="h-9 w-full rounded-md border border-gray-300 pr-3 pl-10 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 />
                             </div>
                         </div>
 
-                        {/* Start Date */}
                         <div className="flex w-full items-center gap-2 md:w-1/3">
                             <label htmlFor="startDate" className="w-28 text-sm font-semibold whitespace-nowrap">
                                 Tanggal Mulai:
                             </label>
-                            <div className="relative w-full">
-                                <input
-                                    type="date"
-                                    id="startDate"
-                                    className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                />
-                            </div>
+                            <input
+                                type="date"
+                                id="startDate"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            />
                         </div>
 
-                        {/* End Date */}
                         <div className="flex w-full items-center gap-2 md:w-1/3">
                             <label htmlFor="endDate" className="w-28 text-sm font-semibold whitespace-nowrap">
                                 Tanggal Akhir:
                             </label>
-                            <div className="relative w-full">
-                                <input
-                                    type="date"
-                                    id="endDate"
-                                    className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                />
-                            </div>
+                            <input
+                                type="date"
+                                id="endDate"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm text-black shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            />
                         </div>
 
-                        {/* Search */}
                         <div className="flex w-full items-center gap-2 md:w-1/3">
                             <label htmlFor="statusFilter" className="w-28 text-sm font-semibold whitespace-nowrap">
-                                Status Pesanan:
+                                Status:
                             </label>
-                            <div className="relative w-full">
-                                <select
-                                    id="statusFilter"
-                                    className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                >
-                                    <option value="">Pilih Status</option>
-                                    {statusOptions.map((status, index) => (
-                                        <option key={index} value={status}>
-                                            {status}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <select
+                                id="statusFilter"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            >
+                                <option value="">Pilih Status</option>
+                                {statusOptions.map((OrderStatus, i) => (
+                                    <option key={i} value={OrderStatus}>
+                                        {OrderStatus}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
-
-                    {/* Button */}
-                    <div className="mt-4 flex justify-end">
-                        <Button className="bg-blue-600 text-white hover:bg-blue-700">Terapkan Filter</Button>
-                    </div>
                 </section>
+
+                {/* Tabel Riwayat */}
                 <section>
                     <div className="relative overflow-hidden rounded-lg shadow-md">
-                        <div className="w-full overflow-x-auto rounded-xl shadow-md">
+                        <div className="w-full overflow-x-auto rounded-xl">
                             <table className="w-full min-w-[1000px] table-auto border-collapse">
-                                <thead className="bg-gray-700 text-sm text-gray-100">
+                                <thead className="bg-gray-700 text-sm text-white">
                                     <tr>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Invoice ID</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Nama Pemesan</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Kontak Pemesan</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Opsi Pembayaran</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Total Pembayaran</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Tanggal Pembayaran</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Nama Kasir</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Jenis Pesanan</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Detail</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Status</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Tanggal Invoice</th>
+                                        {[
+                                            'Invoice ID',
+                                            'Nama Pemesan',
+                                            'Kontak Pemesan',
+                                            'Opsi Pembayaran',
+                                            'Total',
+                                            'Tanggal Pembayaran',
+                                            'Nama Kasir',
+                                            'Jenis Pesanan',
+                                            'Detail',
+                                            'Status',
+                                            'Tanggal Invoice',
+                                        ].map((text, i) => (
+                                            <th key={i} className="border border-gray-300 p-4 text-center font-semibold">
+                                                {text}
+                                            </th>
+                                        ))}
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
                                     {filteredKasirs.length > 0 ? (
                                         filteredKasirs.map((item) => (
                                             <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
-                                                <td className="border border-gray-200 p-4 text-center">{item.invoiceId}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.namaPemesan}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.kontakPemesan}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.opsiPembayaran}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{formatCurrency(item.totalPembayaran)}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{formatDate(item.tanggalPembayaran)}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.namaKasir}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.jenisPesanan}</td>
-                                                <td className="border border-gray-200 p-4 text-center">
+                                                <td className="border p-4 text-center">{item.InvoiceID}</td>
+                                                <td className="border p-4 text-center">{item.CustomerName}</td>
+                                                <td className="border p-4 text-center">{item.CustomerContact}</td>
+                                                <td className="border p-4 text-center">{item.PaymentOption}</td>
+                                                <td className="border p-4 text-center">{formatCurrency(item.TotalAmount)}</td>
+                                                <td className="border p-4 text-center">{formatDate(item.PaymentDate)}</td>
+                                                <td className="border p-4 text-center">{item.CashierName ?? 'N/A'}</td>
+                                                <td className="border p-4 text-center">{item.CashierName != null ? 'Offline' : 'Online'}</td>
+                                                <td className="border p-4 text-center">
                                                     <Button
-                                                        onClick={() => openDetailModal(item.pesananData, item.invoiceId)}
-                                                        className="rounded-md bg-blue-500 px-3 py-2 text-xs text-white shadow transition hover:bg-blue-600"
+                                                        onClick={() => openDetailModal(item)}
+                                                        className="rounded bg-blue-500 px-3 py-2 text-xs text-white hover:bg-blue-600"
+                                                        disabled={!item.pesananData || item.pesananData.length === 0}
                                                     >
                                                         Detail
                                                     </Button>
                                                 </td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.status}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{formatDate(item.tanggalInvoice)}</td>
+                                                <td className="border p-4 text-center">
+                                                    <span
+                                                        className={`rounded-full px-2 py-1 text-xs font-medium ${
+                                                            item.OrderStatus === 'Selesai'
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : item.OrderStatus === 'Dibatalkan'
+                                                                  ? 'bg-red-100 text-red-800'
+                                                                  : item.OrderStatus === 'Diproses'
+                                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                                    : item.OrderStatus === 'Diantar'
+                                                                      ? 'bg-blue-100 text-blue-800'
+                                                                      : 'bg-gray-100 text-gray-800'
+                                                        }`}
+                                                    >
+                                                        {item.OrderStatus}
+                                                    </span>
+                                                </td>
+                                                <td className="border p-4 text-center">{formatDate(item.InvoiceDate)}</td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={7} className="border border-gray-200 p-4 text-center">
-                                                {searchTerm ? 'Data tidak ditemukan' : 'Belum ada riwayat kasir'}
+                                            <td colSpan={11} className="p-4 text-center text-gray-500">
+                                                Data tidak ditemukan
                                             </td>
                                         </tr>
                                     )}
@@ -253,10 +246,11 @@ const OwnerRiwayatTransaksi = () => {
                 </section>
             </div>
 
-            {showPriceModal && selectedRiwayat.length > 0 && (
+            {/* Modal Detail */}
+            {showPriceModal && selectedRiwayat.length > 0 && selectedInvoiceData && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={closeRiwayatModal}>
                     <div
-                        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
+                        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
@@ -266,59 +260,117 @@ const OwnerRiwayatTransaksi = () => {
                             <X size={20} />
                         </button>
 
-                        <div className="mb-4 border-b pb-4">
-                            <h2 className="text-xl font-bold text-gray-800">Informasi Pemesan</h2>
-                            <p className="mt-1 text-sm font-medium text-gray-700">
-                                <span className="font-semibold">Nama Pemesan:</span>{' '}
-                                {dummyData.find((d) => d.invoiceId === selectedNamaProduk)?.namaPemesan}
-                            </p>
-                            <p className="text-sm font-medium text-gray-700">
-                                <span className="font-semibold">Kontak Pemesan:</span>{' '}
-                                {dummyData.find((d) => d.invoiceId === selectedNamaProduk)?.kontakPemesan}
-                            </p>
-                        </div>
-
-                        <h3 className="mb-4 text-center text-lg font-semibold text-gray-800">Detail Pesanan</h3>
-                        <div className="space-y-4">
-                            {selectedRiwayat.map((item, idx) => (
-                                <div key={idx} className="flex gap-4 border-b pb-4">
-                                    <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded border">
-                                        {item.gambar_produk ? (
-                                            <img
-                                                src={`/images/products/${item.gambar_produk}`}
-                                                alt={item.nama_produk}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-400">
-                                                Tidak ada gambar
-                                            </div>
-                                        )}
+                        {/* Header Modal */}
+                        <div className="mb-6 border-b pb-4">
+                            <h2 className="mb-4 text-center text-2xl font-bold">Detail Transaksi</h2>
+                            <div className="flex items-center justify-center">
+                                <div className="grid grid-cols-1 gap-4 rounded-xl bg-white p-6 shadow-md md:grid-cols-2">
+                                    <div className="flex w-full flex-col justify-center">
+                                        <h3 className="mb-2 text-lg font-semibold">Informasi Pemesan</h3>
+                                        <p className="mb-1 text-sm">
+                                            <strong>Invoice ID:</strong> {selectedInvoiceData.InvoiceID}
+                                        </p>
+                                        <p className="mb-1 text-sm">
+                                            <strong>Nama:</strong> {selectedInvoiceData.CustomerName}
+                                        </p>
+                                        <p className="mb-1 text-sm">
+                                            <strong>Kontak:</strong> {selectedInvoiceData.CustomerContact}
+                                        </p>
+                                        <p className="text-sm">
+                                            <strong>Jenis Pesanan:</strong> {selectedInvoiceData.CashierName != null ? 'Offline' : 'Online'}
+                                        </p>
                                     </div>
-                                    <div className="flex flex-1 items-center justify-between">
-                                        <div>
-                                            <h4 className="text-base font-semibold text-gray-800">{item.nama_produk}</h4>
-                                            <p className="text-sm text-gray-700">
-                                                Harga: <span className="font-semibold text-orange-600">{item.harga_produk}</span>
-                                            </p>
-                                            <p className="text-sm text-gray-700">
-                                                Jumlah:{' '}
-                                                <span className="font-semibold text-orange-600">
-                                                    {item.jumlah_produk} {item.satuan_produk}
-                                                </span>
-                                            </p>
-                                        </div>
-                                        <div className="flex flex-col items-center p-4">
-                                            <p className="text-sm font-medium text-gray-800">Subtotal: </p>
-                                            <p className="text-sm font-bold text-orange-600">{formatCurrency(item.subtotal)}</p>
-                                        </div>
+                                    <div>
+                                        <h3 className="mb-2 text-lg font-semibold">Informasi Pembayaran</h3>
+                                        <p className="mb-1 text-sm">
+                                            <strong>Opsi Pembayaran:</strong> {selectedInvoiceData.PaymentOption}
+                                        </p>
+                                        <p className="mb-1 text-sm">
+                                            <strong>Total:</strong> {formatCurrency(selectedInvoiceData.TotalAmount)}
+                                        </p>
+                                        <p className="mb-1 text-sm">
+                                            <strong>Tanggal Pembayaran:</strong> {formatDate(selectedInvoiceData.PaymentDate)}
+                                        </p>
+                                        <p className="text-sm">
+                                            <strong>Status:</strong>
+                                            <span
+                                                className={`ml-2 rounded-full px-2 py-1 text-xs font-medium ${
+                                                    selectedInvoiceData.OrderStatus === 'Selesai'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : selectedInvoiceData.OrderStatus === 'Dibatalkan'
+                                                          ? 'bg-red-100 text-red-800'
+                                                          : selectedInvoiceData.OrderStatus === 'Diproses'
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : selectedInvoiceData.OrderStatus === 'Diantar'
+                                                              ? 'bg-blue-100 text-blue-800'
+                                                              : 'bg-gray-100 text-gray-800'
+                                                }`}
+                                            >
+                                                {selectedInvoiceData.OrderStatus}
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
-                            ))}
-                            <div className="text-right">
-                                <p className="text-lg font-bold text-gray-800">
-                                    Total: {formatCurrency(selectedRiwayat.reduce((acc, item) => acc + item.subtotal, 0))}
-                                </p>
+                            </div>
+                        </div>
+
+                        {/* Detail Pesanan */}
+                        <div>
+                            <h3 className="mb-4 text-center text-lg font-semibold">Detail Pesanan</h3>
+                            <div className="max-h-96 space-y-4 overflow-y-auto">
+                                {selectedRiwayat.map((item, index) => (
+                                    <div key={`${item.id}-${index}`} className="flex gap-4 rounded-lg border bg-gray-50 p-4">
+                                        <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded border bg-white">
+                                            {item.gambar_produk ? (
+                                                <img
+                                                    src={`/storage/${item.gambar_produk}`}
+                                                    alt={item.nama_produk}
+                                                    className="h-full w-full object-cover"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.style.display = 'none';
+                                                        target.nextElementSibling?.classList.remove('hidden');
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <div
+                                                className={`flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-400 ${item.gambar_produk ? 'hidden' : ''}`}
+                                            >
+                                                Tidak ada gambar
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-1 items-center justify-between">
+                                            <div>
+                                                <h4 className="text-base font-semibold">{item.nama_produk}</h4>
+                                                <p className="text-sm text-gray-600">
+                                                    Harga: <span className="font-semibold text-orange-600">{formatCurrency(item.harga_produk)}</span>
+                                                </p>
+                                                <p className="text-sm text-gray-600">
+                                                    Jumlah:
+                                                    <span className="ml-1 font-semibold text-orange-600">
+                                                        {item.jumlah_produk} {item.satuan_produk}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-medium text-gray-600">Subtotal</p>
+                                                <p className="text-lg font-bold text-orange-600">{formatCurrency(item.subtotal)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Total */}
+                            <div className="mt-6 border-t pt-4">
+                                <div className="text-right">
+                                    <p className="text-xl font-bold">
+                                        Total Keseluruhan:
+                                        <span className="ml-2 text-green-600">
+                                            {formatCurrency(selectedRiwayat.reduce((acc, item) => acc + item.subtotal, 0))}
+                                        </span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

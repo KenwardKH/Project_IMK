@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
+use App\Http\Controllers\ConfirmOrderController;
 use App\Http\Controllers\CustomerCartController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\ownerDashboard;
@@ -59,8 +60,9 @@ Route::prefix('cashier')->name('cashier.')->group(function () {
         Route::get('/api/search-products', [CashierController::class, 'searchProducts'])->name('api.search-products');
         Route::get('/api/transaction-history', [CashierController::class, 'getTransactionHistory'])->name('api.transaction-history');
         
-        // Receipt
-        Route::get('/receipt/{transactionId}', [CashierController::class, 'printReceipt'])->name('receipt');
+        //Confirm Order Page
+        Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
+
     });
 Route::middleware(['auth', 'verified'])->group(function () {
         // Display cart

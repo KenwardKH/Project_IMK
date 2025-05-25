@@ -198,6 +198,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
           return (
               <AppLayout > 
                 {/* breadcrumbs={breadcrumbs}> */}
+                <section id="buat-pesanan" className="mb-12">
                   <Head title="Checkout | Sinar Pelangi" />
                   
                   <div className="container mx-auto py-8 px-4" id="CashierCart">
@@ -343,6 +344,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                           </Card>
                       </div>
                   </div>
+                </section>
               </AppLayout>
           );
       }
@@ -350,193 +352,194 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
   return (
     <AppLayout>
       <Head title="Kasir - Toko ATK" />
-      
-      <div className="min-h-screen bg-gray-100">
-        {/* Header */}
-        {/* <div className="bg-white shadow-sm border-b">
-          <div className="max-w-full mx-auto px-6 py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Kasir Toko ATK</h1>
-          </div>
-        </div> */}
-
-        {/* Main Content */}
-        <div className="max-w-full mx-auto px-6 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
-            
-            {/* Left Panel - Products */}
-            <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6 overflow-hidden flex flex-col">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-800">Daftar Produk</h2>
-                <div className="w-80">
-                  <input
-                    type="text"
-                    placeholder="Cari produk..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* Products Grid */}
-              <div className="flex-1 overflow-y-auto">
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {filteredProducts.map((product) => {
-                    const quantityInCart = getProductQuantityInCart(product.id);
-                    return (
-                      <div
-                        key={product.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                      >
-                        {/* Product Image */}
-                        <div className="w-full h-32 bg-gray-100 rounded-md mb-3 flex items-center justify-center">
-                          {product.image ? (
-                            <img
-                              src={`/storage/${product.image}`}
-                              alt={product.name}
-                              className="w-full h-full object-cover rounded-md"
-                            />
-                          ) : (
-                            <span className="text-gray-400 text-sm">No Image</span>
-                          )}
-                        </div>
-
-                        {/* Product Info */}
-                        <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">
-                          {product.name}
-                        </h3>
-                        <p className="text-lg font-semibold text-blue-600 mb-2">
-                          Rp {product.price.toLocaleString('id-ID')}
-                        </p>
-                        <p className="text-sm text-gray-500 mb-3">
-                          Stok: {product.stock}
-                        </p>
-
-                        {/* Quantity Controls */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => updateCartQuantity(product.id, 'decrement')}
-                              disabled={quantityInCart === 0 || loading === product.id}
-                              className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                            >
-                              -
-                            </button>
-                            <span className="w-8 text-center font-medium">
-                              {loading === product.id ? '...' : quantityInCart}
-                            </span>
-                            <button
-                              onClick={() => updateCartQuantity(product.id, 'increment')}
-                              disabled={quantityInCart >= product.stock || loading === product.id}
-                              className="w-8 h-8 flex items-center justify-center bg-green-500 text-white rounded-full hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                            >
-                              +
-                            </button>
-                          </div>
-                          
-                          {quantityInCart > 0 && (
-                            <button
-                              onClick={() => removeFromCart(product.id)}
-                              disabled={loading === product.id}
-                              className="text-red-500 hover:text-red-700 text-sm font-medium"
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {filteredProducts.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">Tidak ada produk yang ditemukan</p>
-                  </div>
-                )}
-              </div>
+      <section id="buat-pesanan" className="mb-12">
+        <div className="min-h-screen bg-gray-100">
+          {/* Header */}
+          {/* <div className="bg-white shadow-sm border-b">
+            <div className="max-w-full mx-auto px-6 py-4">
+              <h1 className="text-2xl font-bold text-gray-900">Kasir Toko ATK</h1>
             </div>
+          </div> */}
 
-            {/* Right Panel - Cart Summary */}
-            <div className="bg-white rounded-lg shadow-sm p-6 flex flex-col">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-800">Ringkasan Pesanan</h2>
-                {cartItems.length > 0 && (
-                  <button
-                    onClick={clearCart}
-                    className="text-red-500 hover:text-red-700 text-sm font-medium"
-                  >
-                    Clear All
-                  </button>
-                )}
-              </div>
-
-              {/* Cart Items */}
-              <div className="flex-1 overflow-y-auto mb-6">
-                {cartItems.length === 0 ? (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">Keranjang belanja kosong</p>
+          {/* Main Content */}
+          <div className="max-w-full mx-auto px-6 py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
+              
+              {/* Left Panel - Products */}
+              <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6 overflow-hidden flex flex-col">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800">Daftar Produk</h2>
+                  <div className="w-80">
+                    <input
+                      type="text"
+                      placeholder="Cari produk..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {cartItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex justify-between items-center p-3 border border-gray-200 rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 text-sm">
-                            {item.product?.name ?? 'Nama produk tidak tersedia'}
+                </div>
+
+                {/* Products Grid */}
+                <div className="flex-1 overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filteredProducts.map((product) => {
+                      const quantityInCart = getProductQuantityInCart(product.id);
+                      return (
+                        <div
+                          key={product.id}
+                          className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        >
+                          {/* Product Image */}
+                          <div className="w-full h-32 bg-gray-100 rounded-md mb-3 flex items-center justify-center">
+                            {product.image ? (
+                              <img
+                                src={`/storage/${product.image}`}
+                                alt={product.name}
+                                className="w-full h-full object-cover rounded-md"
+                              />
+                            ) : (
+                              <span className="text-gray-400 text-sm">No Image</span>
+                            )}
+                          </div>
+
+                          {/* Product Info */}
+                          <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">
+                            {product.name}
+                          </h3>
+                          <p className="text-lg font-semibold text-blue-600 mb-2">
+                            Rp {product.price.toLocaleString('id-ID')}
+                          </p>
+                          <p className="text-sm text-gray-500 mb-3">
+                            Stok: {product.stock}
+                          </p>
+
+                          {/* Quantity Controls */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => updateCartQuantity(product.id, 'decrement')}
+                                disabled={quantityInCart === 0 || loading === product.id}
+                                className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                              >
+                                -
+                              </button>
+                              <span className="w-8 text-center font-medium">
+                                {loading === product.id ? '...' : quantityInCart}
+                              </span>
+                              <button
+                                onClick={() => updateCartQuantity(product.id, 'increment')}
+                                disabled={quantityInCart >= product.stock || loading === product.id}
+                                className="w-8 h-8 flex items-center justify-center bg-green-500 text-white rounded-full hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                              >
+                                +
+                              </button>
+                            </div>
                             
-                          </h4>
-                          <p className="text-sm text-gray-500">
-                            {item.product?.price !== undefined
-                                  ? `Rp ${item.product.price.toLocaleString('id-ID')} x ${item.quantity}`
-                                  : 'Harga tidak tersedia'}
-                          </p>
+                            {quantityInCart > 0 && (
+                              <button
+                                onClick={() => removeFromCart(product.id)}
+                                disabled={loading === product.id}
+                                className="text-red-500 hover:text-red-700 text-sm font-medium"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-gray-900">
-                            {item.product?.price !== undefined
-                                ? `Rp ${(item.product.price * item.quantity).toLocaleString('id-ID')}`
-                                : 'Total tidak tersedia'}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
-                )}
+
+                  {filteredProducts.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">Tidak ada produk yang ditemukan</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Cart Summary */}
-              <div className="border-t pt-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Subtotal:</span>
-                  <span className="font-medium">
-                    Rp {subtotal.toLocaleString('id-ID')}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between items-center text-lg font-semibold">
-                  <span>Total:</span>
-                  <span className="text-blue-600">
-                    Rp {total.toLocaleString('id-ID')}
-                  </span>
+              {/* Right Panel - Cart Summary */}
+              <div className="bg-white rounded-lg shadow-sm p-6 overflow-hidden flex flex-col">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800">Ringkasan Pesanan</h2>
+                  {cartItems.length > 0 && (
+                    <button
+                      onClick={clearCart}
+                      className="text-red-500 hover:text-red-700 text-sm font-medium"
+                    >
+                      Clear All
+                    </button>
+                  )}
                 </div>
 
-                {/* Checkout Button */}
-                <button
-                  onClick={handleCheckout}
-                  disabled={cartItems.length === 0 || loading === -1}
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                >
-                  {loading === -1 ? 'Processing...' : 'Checkout'}
-                </button>
+                {/* Cart Items */}
+                <div className="flex-1 overflow-y-auto mb-6">
+                  {cartItems.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">Keranjang belanja kosong</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {cartItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex justify-between items-center p-3 border border-gray-200 rounded-lg"
+                        >
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">
+                              {item.product?.name ?? 'Nama produk tidak tersedia'}
+                              
+                            </h4>
+                            <p className="text-sm text-gray-500">
+                              {item.product?.price !== undefined
+                                    ? `Rp ${item.product.price.toLocaleString('id-ID')} x ${item.quantity}`
+                                    : 'Harga tidak tersedia'}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-gray-900">
+                              {item.product?.price !== undefined
+                                  ? `Rp ${(item.product.price * item.quantity).toLocaleString('id-ID')}`
+                                  : 'Total tidak tersedia'}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Cart Summary */}
+                <div className="border-t pt-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Subtotal:</span>
+                    <span className="font-medium">
+                      Rp {subtotal.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-lg font-semibold">
+                    <span>Total:</span>
+                    <span className="text-blue-600">
+                      Rp {total.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+
+                  {/* Checkout Button */}
+                  <button
+                    onClick={handleCheckout}
+                    disabled={cartItems.length === 0 || loading === -1}
+                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {loading === -1 ? 'Processing...' : 'Checkout'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </AppLayout>
   );
 };

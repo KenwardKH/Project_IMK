@@ -5,16 +5,21 @@ use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\ConfirmOrderController;
 use App\Http\Controllers\CustomerCartController;
-use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CashierController;
-
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
 use App\Http\Controllers\ownerDaftarKasir;
 use App\Http\Controllers\ownerDaftarCustomer;
 use App\Http\Controllers\ownerPembelianSupply;
+use App\Http\Controllers\OwnerTransaksiController;
 
+// Order routes with controller
+Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
+Route::get('/test-cashier', function () {
+    return 'Cashier route is accessible!';
+});
 Route::prefix('cashier')->name('cashier.')->group(function () {
         // Main cashier page
         Route::get('/', [CashierController::class, 'index'])->name('index');
@@ -36,9 +41,6 @@ Route::prefix('cashier')->name('cashier.')->group(function () {
         Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
 
     });
-
-// Order routes with controller
-Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
 Route::middleware(['auth', 'verified'])->group(function () {
     // Display cart
     Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
@@ -68,6 +70,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('products', [customerDashboard::class, 'indexProducts'])->name('products.index');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
 
+
+    //Cashier
+    // route::resource('cashier',CashierController::class)->name('cashier');
+    
 
     Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
     Route::get('owner-produk', function () {
@@ -104,16 +110,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('owner-daftar-pelanggan', ownerDaftarCustomer::class);
 
     // Owner Daftar Kasir Routes
-    // Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
+    Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
 
     Route::get('owner-riwayat-kasir', function () {
         return Inertia::render('owner/owner-riwayat-kasir');
     })->name('owner-riwayat-kasir');
 
-    Route::get('owner-riwayat-transaksi', function () {
-        return Inertia::render('owner/owner-riwayat-transaksi');
-    })->name('owner-riwayat-transaksi');
-
+    Route::get('owner-riwayat-transaksi', [OwnerTransaksiController::class, 'index'])->name('owner-riwayat-transaksi');
     Route::get('owner-laporan-penjualan', function () {
         return Inertia::render('owner/owner-laporan-penjualan');
     })->name('owner-laporan-penjualan');

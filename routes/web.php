@@ -6,6 +6,7 @@ use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\ConfirmOrderController;
 use App\Http\Controllers\CustomerCartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CashierController;
 
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
@@ -13,6 +14,28 @@ use App\Http\Controllers\ownerProduct;
 use App\Http\Controllers\ownerDaftarKasir;
 use App\Http\Controllers\ownerDaftarCustomer;
 use App\Http\Controllers\ownerPembelianSupply;
+
+Route::prefix('cashier')->name('cashier.')->group(function () {
+        // Main cashier page
+        Route::get('/', [CashierController::class, 'index'])->name('index');
+        
+        // Cart operations
+        Route::post('/cart/update', [CashierController::class, 'updateCart'])->name('cart.update');
+        Route::delete('/cart/remove/{productId}', [CashierController::class, 'removeFromCart'])->name('cart.remove');
+        Route::delete('/cart/clear', [CashierController::class, 'clearCart'])->name('cart.clear');
+        
+        // Checkout
+        Route::post('/checkout', [CashierController::class, 'checkout'])->name('checkout');
+        
+        // API endpoints (for AJAX requests)
+        Route::get('/api/cart-summary', [CashierController::class, 'getCartSummary'])->name('api.cart-summary');
+        Route::get('/api/search-products', [CashierController::class, 'searchProducts'])->name('api.search-products');
+        Route::get('/api/transaction-history', [CashierController::class, 'getTransactionHistory'])->name('api.transaction-history');
+        
+        //Confirm Order Page
+        Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
+
+    });
 
 // Order routes with controller
 Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');

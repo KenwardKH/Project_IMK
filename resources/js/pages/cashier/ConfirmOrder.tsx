@@ -111,14 +111,16 @@ export default function OrderList() {
         }
     };
 
-    // Step 1: Filter semua data terlebih dahulu
-    const filteredOrders = orders.data.filter(order =>
+    // Step 1: Filter berdasarkan jenis pesanan (pickup/delivery)
+    const typeOrders = orders.data.filter(order => order.type === activeTab);
+
+    // Step 2: Filter berdasarkan pencarian nama
+    const filteredOrders = typeOrders.filter(order =>
         typeof order.name === 'string' &&
-        order.name.toLowerCase().includes(searchTerm.toLowerCase()) 
-        && order.type === activeTab
+        order.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Step 2: Hitung pagination berdasarkan data hasil filter
+    // Step 3: Pagination
     const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
@@ -132,7 +134,6 @@ export default function OrderList() {
             setCurrentPage(page);
         }
     };
-
 
     return (
         <AppLayout>

@@ -25,16 +25,16 @@ export function NavbarSection() {
 
     const navLinks = [
         { title: 'Home', href: '/' },
-        { title: 'Products', href: '#produk' },
-        { title: 'Contacts', href: '#footer' },
+        { title: 'Products', href: '/products' },
+        { title: 'Contacts', href: '/#footer' },
     ];
 
     // Function to get user initials for avatar fallback
-    const getUserInitials = (name) => {
+    const getUserInitials = (name: string) => {
         if (!name) return 'U';
         return name
             .split(' ')
-            .map(word => word.charAt(0))
+            .map((word) => word.charAt(0))
             .join('')
             .toUpperCase()
             .slice(0, 2);
@@ -43,36 +43,41 @@ export function NavbarSection() {
     return (
         <nav className="sticky top-0 z-50 w-full bg-[#f6f6f6] py-2 shadow-sm">
             <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 md:px-6">
-                {/* Logo */}
-                <Link href="/">
-                    <img src="/images/logo_apk.png" alt="Logo" className="h-10 w-auto" />
-                </Link>
+                {/* Kiri: Logo + Navigasi */}
+                <div className="flex items-center space-x-6">
+                    {/* Logo */}
+                    <Link href="/">
+                        <img src="/images/logo_apk.png" alt="Logo" className="h-10 w-auto" />
+                    </Link>
 
-                {/* Desktop Navigation */}
-                {navLinks.map((link, i) => {
-                    const isActive = currentUrl === link.href || (link.href !== '/' && currentUrl.startsWith(link.href));
-                    return (
-                        <Link
-                            key={i}
-                            href={link.href}
-                            className={`text-sm font-medium transition ${
-                                isActive ? 'font-semibold text-green-700' : 'text-gray-700 hover:text-green-700'
-                            }`}
-                        >
-                            {link.title}
-                        </Link>
-                    );
-                })}
+                    {/* Navigation */}
+                    <div className={`hidden space-x-14 md:flex`}>
+                        {navLinks.map((link, i) => {
+                            const isActive = currentUrl === link.href || (link.href !== '/' && currentUrl.startsWith(link.href));
+                            return (
+                                <Link
+                                    key={i}
+                                    href={link.href}
+                                    className={`text-sm font-medium transition ${
+                                        isActive ? 'font-semibold text-green-700' : 'text-gray-700 hover:text-green-700'
+                                    }`}
+                                >
+                                    {link.title}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
 
                 {/* Search Bar (Desktop) */}
-                <div className="relative hidden w-80 md:block">
+                {/* <div className="relative hidden w-80 md:block">
                     <Input
                         placeholder="Cari alat tulis..."
                         className="h-10 w-full rounded-md border-none bg-gray-200 px-4 pr-10 text-sm text-gray-800 placeholder:text-gray-500"
                     />
 
                     <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                </div>
+                </div> */}
 
                 {/* Cart & Auth */}
                 <div className="hidden items-center gap-4 md:flex">
@@ -180,20 +185,13 @@ export function NavbarSection() {
                             <div className="mt-4 flex items-center gap-3 rounded-lg bg-green-50 p-3">
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src="/images/default-avatar.png" alt="Avatar" />
-                                    <AvatarFallback className="bg-green-100 font-bold text-green-800">
-                                        {getUserInitials(user.name)}
-                                    </AvatarFallback>
+                                    <AvatarFallback className="bg-green-100 font-bold text-green-800">{getUserInitials(user.name)}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
                                     <p className="text-sm font-semibold text-green-800">{user.name}</p>
                                     <p className="text-xs text-green-600">{user.email}</p>
                                 </div>
-                                <Link
-                                    method="post"
-                                    href="/logout"
-                                    as="button"
-                                    className="text-red-500 hover:text-red-600"
-                                >
+                                <Link method="post" href="/logout" as="button" className="text-red-500 hover:text-red-600">
                                     <LogOut className="h-4 w-4" />
                                 </Link>
                             </div>

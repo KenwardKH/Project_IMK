@@ -157,3 +157,11 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer utilities {
+    .text-price {
+        color: #10af58;
+    }
+    .text-price-lighter{
+        color: #27ba69;
+    }}

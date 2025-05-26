@@ -15,7 +15,7 @@ return new class extends Migration
             $table->integer('PaymentID', true);
             $table->integer('InvoiceID')->nullable()->index('invoiceid');
             $table->dateTime('PaymentDate');
-            $table->decimal('AmountPaid', 10);
+            $table->decimal('AmountPaid', 16);
             $table->text('PaymentImage')->nullable();
         });
     }

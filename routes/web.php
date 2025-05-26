@@ -5,7 +5,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\ConfirmOrderController;
 use App\Http\Controllers\CustomerCartController;
-use App\Http\Controllers\CashierController;
+use App\Http\Controllers\OrderController;
+
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
 use App\Http\Controllers\ownerProduct;
@@ -13,82 +14,37 @@ use App\Http\Controllers\ownerDaftarKasir;
 use App\Http\Controllers\ownerDaftarCustomer;
 use App\Http\Controllers\ownerPembelianSupply;
 
-// Route::get('/', function () {
-//     return Inertia::render('LandingPage', [
-//         'auth' => [
-//             'user' => Auth::user(),
-//         ],
-//     ]);
-// })->name('home');
-
-// Route::get("tes", function(){
-//     return Inertia::render("dashboard");
-// });
-
-// Route::get("cart", function(){
-//     return Inertia::render("CartPage");
-// });
-
-Route::get('order/{status}', function ($status) {
-    $allowedStatuses = ['belum-bayar', 'sedang-proses', 'selesai', 'dibatalkan'];
-
-    if (!in_array($status, $allowedStatuses)) {
-        abort(404);
-    }
-
-    return Inertia::render('orders/OrderPage', [
-        'status' => $status,
-    ]);
-});
-Route::get('/test-cashier', function () {
-    return 'Cashier route is accessible!';
-});
-Route::prefix('cashier')->name('cashier.')->group(function () {
-        // Main cashier page
-        Route::get('/', [CashierController::class, 'index'])->name('index');
-        
-        // Cart operations
-        Route::post('/cart/update', [CashierController::class, 'updateCart'])->name('cart.update');
-        Route::delete('/cart/remove/{productId}', [CashierController::class, 'removeFromCart'])->name('cart.remove');
-        Route::delete('/cart/clear', [CashierController::class, 'clearCart'])->name('cart.clear');
-        
-        // Checkout
-        Route::post('/checkout', [CashierController::class, 'checkout'])->name('checkout');
-        
-        // API endpoints (for AJAX requests)
-        Route::get('/api/cart-summary', [CashierController::class, 'getCartSummary'])->name('api.cart-summary');
-        Route::get('/api/search-products', [CashierController::class, 'searchProducts'])->name('api.search-products');
-        Route::get('/api/transaction-history', [CashierController::class, 'getTransactionHistory'])->name('api.transaction-history');
-        
-        //Confirm Order Page
-        Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
-
-    });
+// Order routes with controller
+Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
 Route::middleware(['auth', 'verified'])->group(function () {
-        // Display cart
+    // Display cart
     Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
-    
+
     // Add to cart
     Route::post('/cart', [CustomerCartController::class, 'store'])->name('cart.store');
-    
+
     // Update cart item
     Route::put('/cart/{id}', [CustomerCartController::class, 'update'])->name('cart.update');
-    
+
     // Remove from cart
     Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
-    
+
     // Get cart count (for navbar)
     Route::get('/cart/count', [CustomerCartController::class, 'getCartCount'])->name('cart.count');
-    
+
     // CHECKOUT
     Route::post('/checkout', [CustomerCartController::class, 'checkout'])->name('cart.checkout');
 
+    // Order management routes
+    Route::get('/order/{id}/detail', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::post('/order/{id}/upload-payment', [OrderController::class, 'uploadPaymentProof'])->name('orders.upload-payment');
+    Route::get('/order/{id}/invoice', [OrderController::class, 'generateInvoice'])->name('orders.invoice');
 
     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
+    Route::get('products', [customerDashboard::class, 'indexProducts'])->name('products.index');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
 
-    //Cashier
-    
 
     Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
     Route::get('owner-produk', function () {
@@ -105,7 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('owner/owner-tambah-supplier');
     })->name('owner-tambah-supplier');
     Route::resource('owner-supplier', ownerSupplier::class);
-    Route::get('/owner-supplier/edit/{id}', 
+    Route::get('/owner-supplier/edit/{id}',
         [ownerSupplier::class, 'edit']
     )->name('owner-edit-supplier');
     Route::put('/owner-supplier/{id}',[ownerSupplier::class,'update']);
@@ -123,10 +79,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/owner-pembelian-supply/destroy/{id}', [ownerPembelianSupply::class, 'destroy'])->name('owner.pembelian.supply.destroy');
 
     Route::resource('owner-daftar-pelanggan', ownerDaftarCustomer::class);
-    
+
     // Owner Daftar Kasir Routes
     // Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
-    
+
     Route::get('owner-riwayat-kasir', function () {
         return Inertia::render('owner/owner-riwayat-kasir');
     })->name('owner-riwayat-kasir');

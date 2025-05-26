@@ -32,7 +32,7 @@ interface ProductDetailProps {
 export default function ProductDetail({ product, auth }: ProductDetailProps) {
     const [quantity, setQuantity] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
-    
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Beranda',
@@ -60,19 +60,19 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
         if (!auth.user) {
             // Redirect to login if not authenticated
             router.visit('/login', {
-                data: { 
-                    intended: window.location.pathname 
+                data: {
+                    intended: window.location.pathname
                 }
             });
             return;
         }
 
         setIsLoading(true);
-        
+
         try {
             // Get CSRF token
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            
+
             console.log('Adding to cart:', {
                 product_id: product.id,
                 quantity: quantity,
@@ -94,14 +94,14 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
             });
 
             console.log('Response status:', response.status);
-            
+
             const data = await response.json();
             console.log('Response data:', data);
 
             if (response.ok) {
                 // Show success message
                 alert(`Berhasil menambahkan ${quantity} ${product.nama_produk} ke keranjang!`);
-                
+
                 // Optionally redirect to cart or refresh cart count
                 // router.visit('/cart');
             } else {
@@ -124,7 +124,7 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
         }
 
         setIsLoading(true);
-        
+
         router.post('/cart', {
             product_id: product.id,
             quantity: quantity
@@ -152,15 +152,15 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${product.nama_produk} | Sinar Pelangi`} />
-            
+
             <div className="container mx-auto py-8 px-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Product Image */}
                     <div className="rounded-2xl overflow-hidden shadow-lg bg-white">
                         {product.gambar_produk ? (
-                            <img 
+                            <img
                                 src={`/storage/${product.gambar_produk}`}
-                                alt={product.nama_produk} 
+                                alt={product.nama_produk}
                                 className="w-full h-[400px] object-cover"
                             />
                         ) : (
@@ -169,23 +169,23 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                             </div>
                         )}
                     </div>
-                    
+
                     {/* Product Info */}
                     <Card className="bg-white rounded-2xl shadow-lg">
                         <CardContent className="p-6">
                             <h1 className="font-[Poppins] text-3xl font-bold text-[#1c283f] mb-2">
                                 {product.nama_produk}
                             </h1>
-                            
+
                             <div className="mb-6">
-                                <p className="font-[Poppins] text-2xl font-bold text-[#56b280]">
+                                <p className="font-[Poppins] text-2xl font-bold text-price">
                                     {formatPrice(product.harga_jual)}
                                 </p>
                                 <p className="text-sm text-gray-500 mt-1">
                                     Tersedia {product.stock} {product.satuan}
                                 </p>
                             </div>
-                            
+
                             <div className="mb-6">
                                 <h3 className="font-[Poppins] text-lg font-semibold text-[#1c283f] mb-2">
                                     Deskripsi
@@ -194,23 +194,23 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                                     {product.deskripsi || "Tidak ada deskripsi tersedia."}
                                 </p>
                             </div>
-                            
-                           
+
+
                             {/* Quantity Selector */}
                             <div className="mb-6">
                                 <h3 className="font-[Poppins] text-lg font-semibold text-[#1c283f] mb-2">
                                     Jumlah
                                 </h3>
                                 <div className="flex items-center">
-                                    <button 
+                                    <button
                                         onClick={handleDecrement}
                                         disabled={quantity <= 1}
                                         className="bg-gray-100 px-4 py-2 rounded-l-lg text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         -
                                     </button>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         value={quantity}
                                         onChange={(e) => {
                                             const val = parseInt(e.target.value, 10);
@@ -222,7 +222,7 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                                         min="1"
                                         max={product.stock}
                                     />
-                                    <button 
+                                    <button
                                         onClick={handleIncrement}
                                         disabled={quantity >= product.stock}
                                         className="bg-gray-100 px-4 py-2 rounded-r-lg text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -231,7 +231,7 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             {/* Stock Alert */}
                             {product.stock === 0 ? (
                                 <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -242,10 +242,10 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                                     <p className="text-yellow-600 font-medium">Stok terbatas: {product.stock} {product.satuan}</p>
                                 </div>
                             ) : null}
-                            
+
                             {/* Add to Cart Buttons */}
                             <div className="space-y-2">
-                                <Button 
+                                <Button
                                     onClick={handleAddToCart}
                                     disabled={isLoading || product.stock === 0}
                                     className="w-full bg-[#153e98] hover:bg-[#0f2e73] text-white font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -263,6 +263,8 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                                         'Login untuk Membeli'
                                     )}
                                 </Button>
+
+
                             </div>
 
                             {/* Total Price Display */}
@@ -277,7 +279,7 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                         </CardContent>
                     </Card>
                 </div>
-                
+
                 {/* Price History */}
                 {product.riwayat_harga && product.riwayat_harga.length > 0 && (
                     <Card className="mt-10 bg-white rounded-2xl shadow-lg">
@@ -314,7 +316,7 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                         </CardContent>
                     </Card>
                 )}
-                
+
                 {/* Related Products (placeholder for future implementation) */}
                 <div className="mt-10">
                     <h2 className="font-[Poppins] text-2xl font-bold text-[#1c283f] mb-4">

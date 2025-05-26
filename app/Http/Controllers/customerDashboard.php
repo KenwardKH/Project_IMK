@@ -36,9 +36,27 @@ class CustomerDashboard extends Controller
                     'name' => auth()->user()->name,
                     'email' => auth()->user()->email,
                 ] : null
-            ]
+                ]
+            ]);
+    }
+
+    public function indexProducts(Request $request)
+    {
+        $products = Product::all();
+
+        return Inertia::render('ProductsPage', [
+            'products' => $products,
+            'auth' => [
+                'user' => auth()->user() ? [
+                    'id' => auth()->user()->id,
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ] : null
+            ],
+            'search' => $request->input('search'), // penting!
         ]);
     }
+
 
     /**
      * Display a single product.
@@ -56,7 +74,8 @@ class CustomerDashboard extends Controller
                 'image as gambar_produk'
             )
             ->findOrFail($id);
-            
+
+
         // Load price history for the product if PricingLog exists
         try {
             $priceHistory = PricingLog::where('ProductID', $product->id)
@@ -64,7 +83,7 @@ class CustomerDashboard extends Controller
                 ->orderBy('TimeChanged', 'desc')
                 ->limit(10)
                 ->get();
-                    
+
             $product->riwayat_harga = $priceHistory;
         } catch (\Exception $e) {
             // If PricingLog doesn't exist or there's an error, provide empty array

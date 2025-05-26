@@ -53,6 +53,12 @@ class Product extends Model
 	{
 		return $this->hasMany(CustomerCart::class, 'ProductID');
 	}
+	// Relationship with TransactionDetail
+    public function transactionDetails()
+    {
+        return $this->hasMany(TransactionDetail::class);
+    }
+	
 	public function price_history()
 	{
 		return $this->hasMany(PricingLog::class, 'ProductID')

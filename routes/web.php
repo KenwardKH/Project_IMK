@@ -39,6 +39,8 @@ Route::prefix('cashier')->name('cashier.')->group(function () {
         
         //Confirm Order Page
         Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
+        Route::delete('/orders/{id}', [ConfirmOrderController::class, 'destroy'])->name('order.destroy');
+        Route::post('/confirm/{id}', [ConfirmOrderController::class, 'confirmOrder'])->name('order.confirm');
 
     });
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -290,35 +290,32 @@ class OrderController extends Controller
      */
     public function uploadPaymentProof(Request $request, $id)
     {
-        $request->validate([
-            'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048'
-        ]);
+        // $request->validate([
+        //     'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+        // ]);
 
-        $user = Auth::user();
-        $customer = Customer::where('user_id', $user->id)->firstOrFail();
+        $usersWithCustomers = User::with('customer')->get();
 
         $invoice = Invoice::with(['pickup_order_statuses', 'delivery_order_statuses'])
             ->where('InvoiceID', $id)
-            ->where('CustomerID', $customer->CustomerID)
+            ->where('CustomerID', $usersWithCustomers->CustomerID)
             ->firstOrFail();
             
-        
+        // // Store the uploaded file
+        // $imagePath = $request->file('payment_proof')->store('payment_proofs', 'public');
 
-        // Store the uploaded file
-        $imagePath = $request->file('payment_proof')->store('payment_proofs', 'public');
-
-        // Create or update payment record
-        $payment = Payment::updateOrCreate(
-            ['InvoiceID' => $invoice->InvoiceID],
-            [
-                'AmountPaid' => $invoice->invoicedetails->sum(function($detail) {
-                    return (float)$detail->price * $detail->Quantity;
-                }),
-                'PaymentDate' => now(),
-                'InvoiceID' => $invoice->InvoiceID,
-                'PaymentImage' => $imagePath
-            ]
-        );
+        // // Create or update payment record
+        // $payment = Payment::updateOrCreate(
+        //     ['InvoiceID' => $invoice->InvoiceID],
+        //     [
+        //         'AmountPaid' => $invoice->invoicedetails->sum(function($detail) {
+        //             return (float)$detail->price * $detail->Quantity;
+        //         }),
+        //         'PaymentDate' => now(),
+        //         'InvoiceID' => $invoice->InvoiceID,
+        //         'PaymentImage' => $imagePath
+        //     ]
+        // );
 
         // Determine order type and update status to processing
         $isPickup = $invoice->type === 'pickup' || $invoice->pickup_order_statuses->count() > 0;

@@ -10,6 +10,7 @@ import {
     XAxis,
     YAxis
 } from 'recharts';
+import { usePage } from '@inertiajs/react';
 
 interface BanyakPenjualan {
     id: number;
@@ -18,36 +19,19 @@ interface BanyakPenjualan {
     hasil_penjualan: number;
 }
 
+interface FinancialData {
+    month: string;
+    sales: number;
+    expenses: number;
+    profit: number;
+}
+
 const OwnerLaporanPenjualan = () => {
+    const { props } = usePage();
+    const salesData = props.salesData as BanyakPenjualan[];
+    const financialData = props.financialData as FinancialData[];
+    
     const [chartType, setChartType] = useState<'jumlah' | 'hasil'>('jumlah');
-
-    const banyakPenjualan: BanyakPenjualan[] = [
-        { id: 1, tanggal: '2023-10-01', jumlah_penjualan: 100, hasil_penjualan: 1000000 },
-        { id: 2, tanggal: '2023-10-02', jumlah_penjualan: 150, hasil_penjualan: 1500000 },
-        { id: 3, tanggal: '2023-10-03', jumlah_penjualan: 220, hasil_penjualan: 2200000 },
-        { id: 4, tanggal: '2023-10-04', jumlah_penjualan: 258, hasil_penjualan: 2580000 },
-        { id: 5, tanggal: '2023-10-05', jumlah_penjualan: 310, hasil_penjualan: 3100000 },
-        { id: 6, tanggal: '2023-10-06', jumlah_penjualan: 365, hasil_penjualan: 3650000 },
-        { id: 7, tanggal: '2023-10-07', jumlah_penjualan: 410, hasil_penjualan: 4100000 },
-        { id: 8, tanggal: '2023-10-08', jumlah_penjualan: 470, hasil_penjualan: 4700000 },
-        { id: 9, tanggal: '2023-10-09', jumlah_penjualan: 520, hasil_penjualan: 5200000 },
-        { id: 10, tanggal: '2023-10-10', jumlah_penjualan: 580, hasil_penjualan: 5800000 },
-        { id: 11, tanggal: '2023-10-11', jumlah_penjualan: 640, hasil_penjualan: 6400000 },
-        { id: 12, tanggal: '2023-10-12', jumlah_penjualan: 700, hasil_penjualan: 7000000 },
-        { id: 13, tanggal: '2023-10-13', jumlah_penjualan: 760, hasil_penjualan: 7600000 },
-        { id: 14, tanggal: '2023-10-14', jumlah_penjualan: 820, hasil_penjualan: 8200000 },
-        { id: 15, tanggal: '2023-10-15', jumlah_penjualan: 880, hasil_penjualan: 8800000 },
-        { id: 16, tanggal: '2023-10-16', jumlah_penjualan: 940, hasil_penjualan: 9400000 },
-        { id: 17, tanggal: '2023-10-17', jumlah_penjualan: 1000, hasil_penjualan: 10000000 },
-        { id: 18, tanggal: '2023-10-18', jumlah_penjualan: 1060, hasil_penjualan: 10600000 },
-    ];
-
-    const financialData = [
-        { month: '2025-5', sales: 7000000, expenses: 3000000, profit: 4000000 },
-        { month: '2025-4', sales: 8000000, expenses: 3500000, profit: 4500000 },
-        { month: '2025-3', sales: 6000000, expenses: 2000000, profit: 4000000 },
-        { month: '2025-2', sales: 8000000, expenses: 4000000, profit: 4000000 },
-    ];
 
     const formatCurrency = (value: number): string => {
         return new Intl.NumberFormat('id-ID', {
@@ -88,7 +72,7 @@ const OwnerLaporanPenjualan = () => {
                     <div className="h-64 min-w-[900px] sm:h-72 lg:h-96">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart
-                                data={banyakPenjualan}
+                                data={salesData}
                                 margin={{ top: 10, right: 30, left: 50, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -108,6 +92,13 @@ const OwnerLaporanPenjualan = () => {
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
+                    
+                    {/* No Data Message */}
+                    {(!salesData || salesData.length === 0) && (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">Tidak ada data penjualan tersedia untuk 30 hari terakhir</p>
+                        </div>
+                    )}
                 </section>
 
                 {/* Tabel Laporan Finansial */}
@@ -119,18 +110,28 @@ const OwnerLaporanPenjualan = () => {
                                 <th className="border px-4 py-3 text-center font-semibold">Bulan</th>
                                 <th className="border px-4 py-3 text-center font-semibold">Penjualan</th>
                                 <th className="border px-4 py-3 text-center font-semibold">Pengeluaran</th>
-                                <th className="border px-4 py-3 text-center font-semibold">Keuntungan</th>
+                                <th className="border px-4 py-3 text-center font-semibold">Keuntungan/Kerugian</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {financialData.map((item, idx) => (
-                                <tr key={idx} className="text-center even:bg-gray-100">
-                                    <td className="border px-4 py-2">{item.month}</td>
-                                    <td className="border px-4 py-2">{formatCurrency(item.sales)}</td>
-                                    <td className="border px-4 py-2">{formatCurrency(item.expenses)}</td>
-                                    <td className="border px-4 py-2">{formatCurrency(item.profit)}</td>
+                            {financialData && financialData.length > 0 ? (
+                                financialData.map((item, idx) => (
+                                    <tr key={idx} className="text-center even:bg-gray-100">
+                                        <td className="border px-4 py-2">{item.month}</td>
+                                        <td className="border px-4 py-2">{formatCurrency(item.sales)}</td>
+                                        <td className="border px-4 py-2">{formatCurrency(item.expenses)}</td>
+                                        <td className={`border px-4 py-2 ${item.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {formatCurrency(item.profit)}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={4} className="border px-4 py-2 text-center text-gray-500">
+                                        Tidak ada data finansial tersedia
+                                    </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

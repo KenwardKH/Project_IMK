@@ -48,4 +48,9 @@ class CashierCart extends Model
 	{
 		return $this->belongsTo(Product::class, 'ProductID');
 	}
+	// Calculate total price for this cart item
+    public function getTotalPriceAttribute()
+    {
+        return $this->price * $this->quantity;
+    }
 }

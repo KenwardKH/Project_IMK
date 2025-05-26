@@ -19,6 +19,7 @@ const OwnerDashboard = () => {
     const productCount = props.productCount as number;
     const customerCount = props.customerCount as number;
     const transactionCount = props.transactionCount as number;
+    const financialData = props.financialData as FinancialData[];
 
     const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
 
@@ -27,13 +28,6 @@ const OwnerDashboard = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-
-    const financialData: FinancialData[] = [
-        { month: '2025-5', sales: 7000000, expenses: 3000000, profit: 4000000 },
-        { month: '2025-4', sales: 8000000, expenses: 3500000, profit: 4500000 },
-        { month: '2025-3', sales: 6000000, expenses: 2000000, profit: 4000000 },
-        { month: '2025-2', sales: 8000000, expenses: 4000000, profit: 4000000 },
-    ];
 
     const formatCurrency = (value: number): string => {
         return new Intl.NumberFormat('id-ID', {
@@ -72,7 +66,7 @@ const OwnerDashboard = () => {
                 <section>
                     <h2 className="mb-4 text-2xl font-bold text-black sm:text-3xl lg:text-4xl">Laporan Finansial</h2>
 
-                    {/* Financial Chart */}
+                    {/* Financial Chart - Only Sales and Expenses */}
                     <div className="mb-6 h-64 sm:h-72 lg:h-96">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={financialData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
@@ -83,12 +77,11 @@ const OwnerDashboard = () => {
                                 <Legend />
                                 <Bar dataKey="sales" name="Penjualan" fill="#6366f1" />
                                 <Bar dataKey="expenses" name="Pengeluaran" fill="#10b981" />
-                                <Bar dataKey="profit" name="Keuntungan" fill="#f59e0b" />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
 
-                    {/* Financial Table */}
+                    {/* Financial Table - Including Profit */}
                     <div className="overflow-x-auto rounded-xl shadow">
                         <table className="min-w-full border-collapse bg-white text-sm sm:text-base">
                             <thead className="bg-gray-700 text-white">
@@ -100,14 +93,24 @@ const OwnerDashboard = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {financialData.map((item, idx) => (
-                                    <tr key={idx} className="text-center even:bg-gray-100">
-                                        <td className="border px-4 py-2">{item.month}</td>
-                                        <td className="border px-4 py-2">{formatCurrency(item.sales)}</td>
-                                        <td className="border px-4 py-2">{formatCurrency(item.expenses)}</td>
-                                        <td className="border px-4 py-2">{formatCurrency(item.profit)}</td>
+                                {financialData && financialData.length > 0 ? (
+                                    financialData.map((item, idx) => (
+                                        <tr key={idx} className="text-center even:bg-gray-100">
+                                            <td className="border px-4 py-2">{item.month}</td>
+                                            <td className="border px-4 py-2">{formatCurrency(item.sales)}</td>
+                                            <td className="border px-4 py-2">{formatCurrency(item.expenses)}</td>
+                                            <td className={`border px-4 py-2 ${item.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {formatCurrency(item.profit)}
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={4} className="border px-4 py-2 text-center text-gray-500">
+                                            Tidak ada data finansial tersedia
+                                        </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>

@@ -2,7 +2,10 @@ import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Link, router, usePage } from '@inertiajs/react';
 import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 const OwnerProduct = () => {
     interface RiwayatHarga {
@@ -23,10 +26,14 @@ const OwnerProduct = () => {
 
     interface Props {
         products: ProductData[];
+        flash: {
+            success?: string;
+            error?: string;
+        };
         [key: string]: any;
     }
 
-    const { products } = usePage<Props>().props;
+    const { products, flash = {} } = usePage<Props>().props;
     const [modalImage, setModalImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -34,6 +41,16 @@ const OwnerProduct = () => {
     const [selectedRiwayat, setSelectedRiwayat] = useState<RiwayatHarga[] | null>(null);
     const [selectedNamaProduk, setSelectedNamaProduk] = useState<string>('');
     const [searchTerm, setSearchTerm] = useState<string>('');
+
+    const MySwal = withReactContent(Swal);
+
+    useEffect(() => {
+        if (flash.success) {
+            toast.success(flash.success, { duration: 5000 });
+        } else if (flash.error) {
+            toast.error(flash.error, { duration: 5000 });
+        }
+    }, [flash]);
 
     const openModal = (imageUrl: string) => {
         setModalImage(imageUrl);
@@ -58,9 +75,27 @@ const OwnerProduct = () => {
     };
 
     const handleDelete = (id: number) => {
-        if (confirm('Yakin ingin menghapus produk ini?')) {
-            router.delete(`/owner-produk/${id}`);
-        }
+        MySwal.fire({
+            title: 'Yakin ingin menghapus produk ini?',
+            text: 'Tindakan ini tidak dapat dibatalkan!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.delete(`/owner-produk/${id}`, {
+                    onSuccess: () => {
+                        MySwal.fire('Berhasil!', 'Produk telah dihapus.', 'success');
+                    },
+                    onError: () => {
+                        MySwal.fire('Gagal!', 'Terjadi kesalahan saat menghapus produk.', 'error');
+                    },
+                });
+            }
+        });
     };
 
     // Format numbers for display

@@ -213,7 +213,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                                                     </Button>
                                                 </td>
                                                 <td className="border p-4 text-center">
-                                                    <span
+                                                    <div
                                                         className={`rounded-full px-2 py-1 text-xs font-medium ${
                                                             item.OrderStatus === 'Selesai'
                                                                 ? 'bg-green-100 text-green-800'
@@ -227,7 +227,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                                                         }`}
                                                     >
                                                         {item.OrderStatus}
-                                                    </span>
+                                                    </div>
                                                 </td>
                                                 <td className="border p-4 text-center">{formatDate(item.InvoiceDate)}</td>
                                             </tr>

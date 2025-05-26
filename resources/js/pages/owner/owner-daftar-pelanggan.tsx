@@ -1,14 +1,38 @@
 import OwnerLayout from '@/components/owner/owner-layout';
-import { Button } from '@/components/ui/button';
-import { Search, Trash2 } from 'lucide-react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import { Search} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+
+interface Props {
+    flash: {
+        success?: string;
+        error?: string;
+    };
+}
 
 const OwnerDaftarPelanggan = ({ customerData }) => {
+    const { flash = {} } = usePage<Props>().props;
+    const [searchTerm, setSearchTerm] = useState<string>('');
+
     const handleDeleteCustomer = (id) => {
         if (confirm('Anda yakin ingin menghapus pelanggan ini?')) {
             router.delete(`/owner-daftar-pelanggan/${id}`);
         }
     };
+
+    useEffect(() => {
+        if (flash.success) {
+            toast.success(flash.success, { duration: 5000 });
+        } else if (flash.error) {
+            toast.error(flash.error, { duration: 5000 });
+        }
+    }, [flash]);
+
+    const filteredCustomers = useMemo(() => {
+        if (!searchTerm.trim()) return customerData;
+        return customerData.filter((item) => item.nama.toLowerCase().includes(searchTerm.toLowerCase()));
+    }, [customerData, searchTerm]);
 
     return (
         <OwnerLayout>
@@ -20,6 +44,8 @@ const OwnerDaftarPelanggan = ({ customerData }) => {
                         <input
                             type="text"
                             placeholder="Cari Pelanggan"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="h-12 w-full rounded-md border border-gray-600 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
                     </div>
@@ -35,28 +61,26 @@ const OwnerDaftarPelanggan = ({ customerData }) => {
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Email</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Kontak</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Alamat</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Hapus</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
-                                    {customerData && customerData.map((item, index) => (
-                                        <tr key={index} className="transition duration-200 hover:bg-gray-100">
-                                            <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
-                                            <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nama}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.email}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.kontak}</td>
-                                            <td className="border border-gray-200 p-4 text-center">{item.alamat}</td>
-                                            <td className="border border-gray-200 p-4 text-center">
-                                                <Button
-                                                    className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
-                                                    size="icon"
-                                                    onClick={() => handleDeleteCustomer(item.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                    {filteredCustomers &&
+                                        filteredCustomers.map((item, index) => (
+                                            <tr key={index} className="transition duration-200 hover:bg-gray-100">
+                                                <td className="border border-gray-200 p-4 text-center">{index + 1}</td>
+                                                <td className="border border-gray-200 p-4 text-center whitespace-nowrap">{item.nama}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.email}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.kontak}</td>
+                                                <td className="border border-gray-200 p-4 text-center">{item.alamat}</td>
+                                            </tr>
+                                        ))}
+                                        {filteredCustomers.length === 0 && (
+                                        <tr>
+                                            <td colSpan={10} className="border border-gray-200 p-8 text-center text-gray-500">
+                                                Tidak ada pelanggan yang ditemukan
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>

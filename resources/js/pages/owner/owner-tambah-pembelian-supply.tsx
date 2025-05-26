@@ -4,6 +4,8 @@ import { Link, useForm } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FaSearch, FaTrash } from 'react-icons/fa';
 import { FiArrowLeftCircle } from 'react-icons/fi';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
     // Form state using Inertia useForm
@@ -35,6 +37,8 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
 
     // Initialize dropdown refs and position state
     const [dropdownPositions, setDropdownPositions] = useState([]);
+
+    const MySwal = withReactContent(Swal);
 
     // Initialize dropdown refs
     useEffect(() => {
@@ -267,11 +271,39 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('owner.pembelian.supply.store'), {
-            onSuccess: () => {
-                reset();
-                setPreview(null);
-            },
+
+        MySwal.fire({
+            title: 'Apakah data sudah benar?',
+            text: 'Data yang disimpan tidak dapat diubah lagi.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, simpan!',
+            cancelButtonText: 'Batal',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                post(route('owner.pembelian.supply.store'), {
+                    onSuccess: () => {
+                        reset();
+                        setPreview(null);
+                        MySwal.fire({
+                            title: 'Berhasil!',
+                            text: 'Data berhasil disimpan.',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                        });
+                    },
+                    onError: () => {
+                        MySwal.fire({
+                            title: 'Gagal!',
+                            text: 'Terjadi kesalahan saat menyimpan data.',
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                        });
+                    },
+                });
+            }
         });
     };
 
@@ -348,6 +380,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                 value={data.supplier_id}
                                 onChange={(e) => setData('supplier_id', e.target.value)}
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                required
                             >
                                 <option value="">Pilih Supplier</option>
                                 {suppliers.map((supplier) => (
@@ -366,6 +399,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                 value={data.tanggal_supply}
                                 onChange={(e) => setData('tanggal_supply', e.target.value)}
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                required
                             />
                             {errors.tanggal_supply && <div className="mt-1 text-sm text-red-500">{errors.tanggal_supply}</div>}
                         </div>
@@ -425,7 +459,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
 
                         <div>
                             <label className="mb-1 block font-semibold">Produk yang dipesan</label>
-                            <div className="space-y-2 flex flex-col gap-4">
+                            <div className="flex flex-col gap-4 space-y-2">
                                 <div className="overflow-x-auto">
                                     <table className="w-full table-fixed border text-sm">
                                         <thead className="bg-gray-100 text-left font-semibold">
@@ -455,6 +489,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                                                     className="w-full p-1 outline-none"
                                                                     placeholder="Cari produk..."
                                                                     autoComplete="off"
+                                                                    required
                                                                 />
                                                                 <div className="px-2 text-gray-500">
                                                                     <FaSearch />
@@ -463,7 +498,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
 
                                                             {dropdownOpen[index] && filteredProducts[index] && filteredProducts[index].length > 0 && (
                                                                 <div
-                                                                    className="fixed max-h-60 overflow-y-auto shadow-lg"
+                                                                    className="fixed max-h-53 overflow-y-auto shadow-lg"
                                                                     style={{
                                                                         zIndex: 9999,
                                                                         backgroundColor: 'white',
@@ -508,6 +543,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                                                 onChange={(e) => handleChange(index, 'jumlah', e.target.value)}
                                                                 min="1"
                                                                 max="10000"
+                                                                required
                                                                 onInput={(e) => {
                                                                     if (e.target.value.length > 5) {
                                                                         e.target.value = e.target.value.slice(0, 5); // maksimal 5 digit
@@ -528,6 +564,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                                             onChange={(e) => handleChange(index, 'harga', e.target.value)}
                                                             min="1"
                                                             max="1000000000"
+                                                            required
                                                             onInput={(e) => {
                                                                 if (e.target.value.length > 10) {
                                                                     e.target.value = e.target.value.slice(0, 10); // maksimal 10 digit

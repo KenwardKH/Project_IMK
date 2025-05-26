@@ -75,24 +75,5 @@ class ownerDaftarCustomer extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        try {
-            // Find the customer
-            $customer = Customer::findOrFail($id);
-            
-            // Get the associated user ID
-            $userId = $customer->user_id;
-            
-            // Delete the customer
-            $customer->delete();
-            
-            // Optional: Delete the associated user if needed
-            User::findOrFail($userId)->delete();
-            
-            return redirect()->back()->with('success', 'Pelanggan berhasil dihapus');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menghapus pelanggan: ' . $e->getMessage());
-        }
-    }
+    
 }

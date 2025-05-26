@@ -103,21 +103,21 @@ const Sidebar: FC = () => {
                     icon={<Box size={20} />}
                     label="Produk"
                     href="/owner-produk"
-                    active={currentPath === '/owner-produk' || currentPath === '/owner-produk/tambah' || currentPath === '/owner-produk/edit'}
+                    active={currentPath.startsWith('/owner-produk')}
                     collapsed={collapsed}
                 />
                 <SidebarItem
                     icon={<Truck size={20} />}
                     label="Supplier"
                     href="/owner-supplier"
-                    active={currentPath === '/owner-supplier' || currentPath === '/owner-supplier/tambah' || currentPath === '/owner-supplier/edit'}
+                    active={currentPath.startsWith('/owner-supplier')}
                     collapsed={collapsed}
                 />
                 <SidebarItem
                     icon={<MdOutlineFactory size={20} />}
                     label="Pembelian Supply"
                     href="/owner-pembelian-supply"
-                    active={currentPath === '/owner-pembelian-supply' || currentPath === '/owner-pembelian-supply/tambah' || currentPath === '/owner-pembelian-supply/edit'}
+                    active={currentPath.startsWith('/owner-pembelian-supply')}
                     collapsed={collapsed}
                 />
             </SidebarGroup>
@@ -134,7 +134,7 @@ const Sidebar: FC = () => {
                     icon={<TbCashRegister size={20} />}
                     label="Kasir"
                     href="/owner-daftar-kasir"
-                    active={currentPath === '/owner-daftar-kasir' || currentPath === '/owner-daftar-kasir/tambah' || currentPath === '/owner-daftar-kasir/edit'}
+                    active={currentPath.startsWith('/owner-daftar-kasir')}
                     collapsed={collapsed}
                 />
                 <SidebarItem

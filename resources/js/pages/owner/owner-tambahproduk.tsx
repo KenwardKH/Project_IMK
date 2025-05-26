@@ -2,8 +2,9 @@ import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@headlessui/react';
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { FiArrowLeftCircle } from "react-icons/fi";
-
+import { FiArrowLeftCircle } from 'react-icons/fi';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 const OwnerTambahProduk = () => {
     const [form, setForm] = useState({
@@ -16,14 +17,16 @@ const OwnerTambahProduk = () => {
     const [gambarProduk, setGambarProduk] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const MySwal = withReactContent(Swal);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        setForm((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         const data = new FormData();
         data.append('nama_produk', form.nama_produk);
         data.append('harga_jual', form.harga_jual);
@@ -33,9 +36,23 @@ const OwnerTambahProduk = () => {
             data.append('gambar_produk', gambarProduk);
         }
 
-        router.post('/owner-produk', data);
+        router.post('/owner-produk', data, {
+            onSuccess: () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Produk berhasil ditambahkan.',
+                });
+            },
+            onError: () => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Terjadi kesalahan saat menambahkan produk.',
+                });
+            },
+        });
     };
-
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
@@ -60,7 +77,7 @@ const OwnerTambahProduk = () => {
             <div className="flex justify-center py-8 text-black">
                 <div className="mx-auto w-11/12 rounded-lg bg-white p-6 shadow-md">
                     <Link href="/owner-produk" className="mb-4 inline-block text-blue-600 hover:underline">
-                        <FiArrowLeftCircle size={50} className='text-black' />
+                        <FiArrowLeftCircle size={50} className="text-black" />
                     </Link>
 
                     <h1 className="mb-6 text-center text-2xl font-bold">Tambah Produk</h1>
@@ -70,11 +87,12 @@ const OwnerTambahProduk = () => {
                             <label className="mb-1 block font-semibold">Nama Produk</label>
                             <input
                                 type="text"
-                                name='nama_produk'
+                                name="nama_produk"
                                 value={form.nama_produk}
                                 onChange={handleChange}
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 placeholder="Nama Produk"
+                                required
                             />
                         </div>
 
@@ -87,6 +105,7 @@ const OwnerTambahProduk = () => {
                                 onChange={handleChange}
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 placeholder="Harga Produk"
+                                required
                             />
                         </div>
 
@@ -99,6 +118,7 @@ const OwnerTambahProduk = () => {
                                 onChange={handleChange}
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 placeholder="Satuan Produk (misal: kotak, lusin)"
+                                required
                             />
                         </div>
 
@@ -154,7 +174,12 @@ const OwnerTambahProduk = () => {
                             )}
                         </div>
 
-                        <Button className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:bg-green-700 hover:cursor-pointer" type='submit'>Simpan Produk</Button>
+                        <Button
+                            className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:cursor-pointer hover:bg-green-700"
+                            type="submit"
+                        >
+                            Simpan Produk
+                        </Button>
                     </form>
                 </div>
             </div>

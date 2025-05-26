@@ -1,8 +1,10 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Plus, Search, SquarePen, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 // Define the interface for kasir data
 interface KasirData {
@@ -19,7 +21,15 @@ interface OwnerDaftarKasirProps {
     kasirData: KasirData[];
 }
 
+interface Props {
+    flash: {
+        success?: string;
+        error?: string;
+    };
+}
+
 const OwnerDaftarKasir = ({ kasirData }: OwnerDaftarKasirProps) => {
+    const { flash = {} } = usePage<Props>().props;
     const [searchTerm, setSearchTerm] = useState('');
 
     // Filter cashiers based on search term
@@ -35,10 +45,36 @@ const OwnerDaftarKasir = ({ kasirData }: OwnerDaftarKasirProps) => {
 
     // Handle delete kasir
     const handleDeleteKasir = (id: number) => {
-        if (confirm('Anda yakin ingin menghapus kasir ini?')) {
-            router.delete(`/owner-daftar-kasir/${id}`);
-        }
+        Swal.fire({
+            title: 'Yakin hapus kasir ini?',
+            text: 'Data kasir yang dihapus tidak bisa dikembalikan!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.delete(`/owner-daftar-kasir/${id}`, {
+                    onSuccess: () => {
+                        Swal.fire('Terhapus!', 'Kasir berhasil dihapus.', 'success');
+                    },
+                    onError: () => {
+                        Swal.fire('Gagal!', 'Gagal menghapus kasir.', 'error');
+                    },
+                });
+            }
+        });
     };
+
+    useEffect(() => {
+        if (flash.success) {
+            toast.success(flash.success, { duration: 5000 });
+        } else if (flash.error) {
+            toast.error(flash.error, { duration: 5000 });
+        }
+    }, [flash]);
 
     return (
         <OwnerLayout>

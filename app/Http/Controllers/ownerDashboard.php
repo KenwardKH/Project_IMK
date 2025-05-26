@@ -52,6 +52,7 @@ class ownerDashboard extends Controller
                 SUM(CASE WHEN OrderStatus = "selesai" THEN AmountPaid ELSE 0 END) as hasil_penjualan
             ')
             ->whereNotNull('PaymentDate') // Only include transactions with payment date
+            ->where('OrderStatus','selesai')
             ->whereDate('PaymentDate', '>=', now()->subDays(30)) // Last 30 days
             ->groupBy('tanggal')
             ->orderBy('tanggal', 'asc')

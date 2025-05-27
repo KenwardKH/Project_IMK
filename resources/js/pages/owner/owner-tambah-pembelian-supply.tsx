@@ -1,6 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FaSearch, FaTrash } from 'react-icons/fa';
 import { FiArrowLeftCircle } from 'react-icons/fi';
@@ -365,6 +365,7 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
 
     return (
         <OwnerLayout>
+            <Head title="Tambah Supply" />
             <div className="flex justify-center py-8 text-black">
                 <div className="mx-auto w-17/17 rounded-lg bg-white p-6 shadow-md">
                     <Link href="/owner-pembelian-supply" className="mb-4 inline-block text-blue-600 hover:underline">

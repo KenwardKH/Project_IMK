@@ -1,6 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -87,6 +87,7 @@ const OwnerRiwayatKasir = () => {
 
     return (
         <OwnerLayout>
+            <Head title="Riwayat" />
             <div className="flex w-full flex-col gap-6 px-6 py-4">
                 <h1 className="flex w-full justify-center text-3xl font-bold">Riwayat Aktifitas Kasir</h1>
                 <section className="mb-6 w-full rounded-xl bg-[#F8FAFC] p-4 shadow-md">

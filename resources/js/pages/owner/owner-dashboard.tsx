@@ -5,7 +5,7 @@ import {
     Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer,
     Tooltip, XAxis, YAxis
 } from 'recharts';
-import { usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
 interface FinancialData {
     month: string;
@@ -45,6 +45,7 @@ const OwnerDashboard = () => {
 
     return (
         <OwnerLayout>
+            <Head title="Dashboard" />
             <div className="flex flex-col gap-6 px-4 py-6">
                 {/* Stats Cards */}
                 <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

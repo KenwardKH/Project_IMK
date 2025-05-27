@@ -1,6 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -121,6 +121,7 @@ const OwnerProduct = () => {
 
     return (
         <OwnerLayout>
+            <Head title="Daftar Produk" />
             <div className="flex w-full flex-col gap-6 px-6 py-4">
                 <h1 className="flex w-full justify-center text-3xl font-bold">Daftar Produk</h1>
                 <section className="flex w-full items-center justify-between px-4 py-3">

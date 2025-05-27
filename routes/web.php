@@ -119,7 +119,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('owner-riwayat-transaksi', [OwnerTransaksiController::class, 'index'])->name('owner-riwayat-transaksi');
     Route::get('owner-laporan-penjualan', [ownerDashboard::class, 'laporanPenjualan'])->name('owner-laporan-penjualan');
-
+    
+    Route::get('owner-profile', function () {
+        return Inertia::render('owner/owner-profile');
+    })->name('owner-profile');
 });
 
 require __DIR__.'/settings.php';

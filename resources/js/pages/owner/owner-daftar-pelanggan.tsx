@@ -1,5 +1,5 @@
 import OwnerLayout from '@/components/owner/owner-layout';
-import { router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Search} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -36,6 +36,7 @@ const OwnerDaftarPelanggan = ({ customerData }) => {
 
     return (
         <OwnerLayout>
+            <Head title="Daftar Pelanggan" />
             <div className="flex w-full flex-col gap-6 px-6 py-4">
                 <h1 className="flex w-full justify-center text-3xl font-bold">Daftar Pelanggan</h1>
                 <section className="flex w-full items-center justify-between px-4 py-3">

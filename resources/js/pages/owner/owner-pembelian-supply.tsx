@@ -1,6 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -141,6 +141,7 @@ const OwnerPembelianSupply = ({ pembelianSupplyData, filters }) => {
 
     return (
         <OwnerLayout>
+            <Head title="Pembelian Supply" />
             <div className="flex w-full flex-col gap-6 px-6 py-4">
                 <h1 className="flex w-full justify-center text-3xl font-bold">Daftar Pembelian Supply</h1>
                 <section className="mb-6 w-full rounded-xl bg-[#F8FAFC] p-4 shadow-md">

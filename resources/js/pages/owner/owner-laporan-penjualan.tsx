@@ -10,7 +10,7 @@ import {
     XAxis,
     YAxis
 } from 'recharts';
-import { usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
 interface BanyakPenjualan {
     id: number;
@@ -43,6 +43,7 @@ const OwnerLaporanPenjualan = () => {
 
     return (
         <OwnerLayout>
+            <Head title="Laporan Penjualan" />
             <div className="flex w-full flex-col gap-6 px-6 py-4">
                 <h1 className="text-center text-4xl font-bold text-gray-800">Laporan Penjualan</h1>
 

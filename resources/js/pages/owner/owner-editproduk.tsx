@@ -1,6 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@headlessui/react';
-import { Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { FiArrowLeftCircle } from 'react-icons/fi';
 import Swal from 'sweetalert2';
@@ -71,6 +71,7 @@ const OwnerEditProduk = ({ product }: { product: Product }) => {
 
     return (
         <OwnerLayout>
+            <Head title="Edit Produk" />
             <div className="flex justify-center py-8 text-black">
                 <div className="mx-auto w-11/12 rounded-lg bg-white p-6 shadow-md">
                     <Link href="/owner-produk" className="mb-4 inline-block text-blue-600 hover:underline">

@@ -1,5 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
+import { Head } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -95,6 +96,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
 
     return (
         <OwnerLayout>
+            <Head title="Riwayat Transaksi" />
             <div className="flex w-full flex-col gap-6 px-6 py-4">
                 <h1 className="flex w-full justify-center text-3xl font-bold">Riwayat Transaksi</h1>
 

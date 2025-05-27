@@ -1,6 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { FiArrowLeftCircle } from 'react-icons/fi';
 import Swal from 'sweetalert2';
 
@@ -39,6 +39,7 @@ const OwnerTambahKasir = () => {
 
     return (
         <OwnerLayout>
+            <Head title="Tambah Kasir" />
             <div className="flex justify-center py-8 text-black">
                 <div className="mx-auto w-11/12 rounded-lg bg-white p-6 shadow-md">
                     <Link href="/owner-daftar-kasir" className="mb-4 inline-block text-blue-600 hover:underline">

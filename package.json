@@ -58,6 +58,7 @@
         "react-joyride": "^2.9.3",
         "rechart": "^0.0.1",
         "recharts": "^2.15.3",
+        "sweetalert": "^2.1.2",
         "sweetalert2": "^11.22.0",
         "sweetalert2-react-content": "^5.1.0",
         "tailwind-merge": "^3.0.1",

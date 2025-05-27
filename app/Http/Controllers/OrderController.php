@@ -20,13 +20,13 @@ class OrderController extends Controller
     public function index($status)
 {
     $allowedStatuses = ['belum-bayar', 'sedang-proses', 'selesai', 'dibatalkan'];
-    
+
     if (!in_array($status, $allowedStatuses)) {
         abort(404);
     }
 
     $user = Auth::user();
-    
+
     // Map frontend status to database values
     $statusMap = [
         'belum-bayar' => ['menunggu pembayaran', 'pending', 'belum_bayar'],
@@ -39,7 +39,7 @@ class OrderController extends Controller
 
     // Get customer
     $customer = Customer::where('user_id', $user->id)->first();
-    
+
     if (!$customer) {
         return Inertia::render('orders/OrderPage', [
             'status' => $status,
@@ -62,27 +62,27 @@ class OrderController extends Controller
         $latestDeliveryStatus = $invoice->delivery_order_statuses
             ->sortByDesc('created_at')
             ->first();
-        
+
         // Determine which status to use
         $currentStatus = null;
-        
+
         // If both exist, use the most recent one
         if ($latestPickupStatus && $latestDeliveryStatus) {
-            $currentStatus = $latestPickupStatus->created_at > $latestDeliveryStatus->created_at 
-                ? $latestPickupStatus->status 
+            $currentStatus = $latestPickupStatus->created_at > $latestDeliveryStatus->created_at
+                ? $latestPickupStatus->status
                 : $latestDeliveryStatus->status;
         } elseif ($latestPickupStatus) {
             $currentStatus = $latestPickupStatus->status;
         } elseif ($latestDeliveryStatus) {
             $currentStatus = $latestDeliveryStatus->status;
         }
-        
+
         // If no status found, check if invoice has payments (might be pending payment)
         if (!$currentStatus) {
             $hasPayment = $invoice->payments->count() > 0;
             $currentStatus = $hasPayment ? 'diproses' : 'menunggu pembayaran';
         }
-        
+
         // Check if current status matches any of the required statuses
         return in_array($currentStatus, $dbStatuses);
     })
@@ -90,20 +90,20 @@ class OrderController extends Controller
         // Determine order type
         $hasPickupStatus = $invoice->pickup_order_statuses->count() > 0;
         $hasDeliveryStatus = $invoice->delivery_order_statuses->count() > 0;
-        
+
         // Get the latest status
-        $latestPickupStatus = $hasPickupStatus 
+        $latestPickupStatus = $hasPickupStatus
             ? $invoice->pickup_order_statuses->sortByDesc('created_at')->first()
             : null;
-        $latestDeliveryStatus = $hasDeliveryStatus 
+        $latestDeliveryStatus = $hasDeliveryStatus
             ? $invoice->delivery_order_statuses->sortByDesc('created_at')->first()
             : null;
-        
+
         // Determine current status and type
         $currentStatus = null;
         $orderType = 'pickup'; // default
         $deliveryAddress = null;
-        
+
         if ($latestPickupStatus && $latestDeliveryStatus) {
             if ($latestPickupStatus->created_at > $latestDeliveryStatus->created_at) {
                 $currentStatus = $latestPickupStatus->status;
@@ -187,7 +187,7 @@ class OrderController extends Controller
         // Determine if this is pickup or delivery order
         $isPickup = $invoice->type === 'pickup' || $invoice->pickup_order_statuses->count() > 0;
         $isDelivery = $invoice->type === 'delivery' || $invoice->delivery_order_statuses->count() > 0;
-        
+
         // Get the latest status from appropriate table
         $latestStatus = null;
         if ($isPickup && $invoice->pickup_order_statuses->count() > 0) {
@@ -195,14 +195,14 @@ class OrderController extends Controller
         } elseif ($isDelivery && $invoice->delivery_order_statuses->count() > 0) {
             $latestStatus = $invoice->delivery_order_statuses->sortByDesc('created_at')->first();
         }
-        
+
         $totalAmount = $invoice->invoicedetails->sum(function($detail) {
             return (float)$detail->price * $detail->Quantity;
         });
 
         $orderDetail = [
             'invoice_id' => $invoice->InvoiceID,
-            'customer_name' => $invoice->customerName,
+            'customer_name' => $invoice->customerName,  
             'customer_contact' => $invoice->customerContact,
             'invoice_date' => $invoice->InvoiceDate,
             'type' => $invoice->type ?? ($isPickup ? 'pickup' : 'delivery'),
@@ -251,7 +251,7 @@ class OrderController extends Controller
         // Determine order type and get latest status
         $isPickup = $invoice->type === 'pickup' || $invoice->pickup_order_statuses->count() > 0;
         $isDelivery = $invoice->type === 'delivery' || $invoice->delivery_order_statuses->count() > 0;
-        
+
         $latestStatus = null;
         if ($isPickup && $invoice->pickup_order_statuses->count() > 0) {
             $latestStatus = $invoice->pickup_order_statuses->sortByDesc('created_at')->first();
@@ -300,7 +300,7 @@ class OrderController extends Controller
             ->where('InvoiceID', $id)
             ->where('CustomerID', $usersWithCustomers->CustomerID)
             ->firstOrFail();
-            
+
         // // Store the uploaded file
         // $imagePath = $request->file('payment_proof')->store('payment_proofs', 'public');
 
@@ -365,7 +365,7 @@ class OrderController extends Controller
         // Determine order type and get latest status
         $isPickup = $invoice->type === 'pickup' || $invoice->pickup_order_statuses->count() > 0;
         $isDelivery = $invoice->type === 'delivery' || $invoice->delivery_order_statuses->count() > 0;
-        
+
         $latestStatus = null;
         if ($isPickup && $invoice->pickup_order_statuses->count() > 0) {
             $latestStatus = $invoice->pickup_order_statuses->sortByDesc('created_at')->first();
@@ -408,13 +408,13 @@ class OrderController extends Controller
         $invoices = Invoice::with(['pickup_order_statuses', 'delivery_order_statuses'])
             ->where('CustomerID', $customer->CustomerID)
             ->get();
-            
+
         $debug_data = [];
-        
+
         foreach($invoices as $invoice) {
             $pickup_statuses = $invoice->pickup_order_statuses->pluck('status')->toArray();
             $delivery_statuses = $invoice->delivery_order_statuses->pluck('status')->toArray();
-            
+
             $debug_data[] = [
                 'invoice_id' => $invoice->InvoiceID,
                 'type' => $invoice->type,
@@ -424,7 +424,7 @@ class OrderController extends Controller
                 'latest_delivery' => $invoice->delivery_order_statuses->sortByDesc('created_at')->first()?->status,
             ];
         }
-        
+
         return response()->json([
             'user_id' => $user->id,
             'total_invoices' => $invoices->count(),

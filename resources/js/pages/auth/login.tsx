@@ -51,8 +51,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-10 space-y-6 border border-[#e2e8f0] transition-all">
           {/* Header */}
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold text-[#1e293b]">Welcome Back 👋</h1>
-            <p className="text-sm text-[#64748b]">Login to your account to continue</p>
+            <h1 className="text-3xl font-bold text-[#1e293b]">Selamat datang 👋</h1>
+            <p className="text-sm text-[#64748b]">Silahkan daftar jika anda belum memiliki akun</p>
           </div>
 
           {status && (
@@ -72,7 +72,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 value={data.email}
                 onChange={(e) => setData('email', e.target.value)}
                 className="mt-2 text-[#0f172a] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-[#2563eb] transition-all"
-                placeholder="you@example.com"
+                placeholder="Masukkan email anda"
               />
               <InputError message={errors.email} />
             </div>
@@ -82,14 +82,14 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 <Label htmlFor="password" className="text-sm text-[#334155] font-medium">
                   Password
                 </Label>
-                {canResetPassword && (
+                {/* {canResetPassword && (
                   <TextLink
                     href={route('password.request')}
                     className="text-sm text-[#2563eb] hover:underline"
                   >
-                    Forgot?
+                    Lupa Password?
                   </TextLink>
-                )}
+                )} */}
               </div>
               <Input
                 id="password"
@@ -98,12 +98,12 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 value={data.password}
                 onChange={(e) => setData('password', e.target.value)}
                 className="mt-2 text-[#0f172a] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-[#2563eb] transition-all"
-                placeholder="Enter your password"
+                placeholder="Masukkan password anda"
               />
               <InputError message={errors.password} />
             </div>
 
-            <div className="flex items-center space-x-2">
+            {/* <div className="flex items-center space-x-2">
               <Checkbox
                 id="remember"
                 name="remember"
@@ -111,7 +111,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 onClick={() => setData('remember', !data.remember)}
               />
               <Label htmlFor="remember" className="text-sm text-[#334155]">Remember me</Label>
-            </div>
+            </div> */}
 
             <Button
               type="submit"
@@ -123,9 +123,9 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             </Button>
 
             <p className="text-sm text-center text-[#64748b]">
-              Don’t have an account?{' '}
+              Belum punya akun?{' '}
               <TextLink href={route('register')} className="text-[#2563eb] hover:underline font-medium">
-                Sign up
+                Daftar
               </TextLink>
             </p>
           </form>

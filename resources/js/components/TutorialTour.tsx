@@ -131,6 +131,39 @@ const TutorialTour = ({ isDropdownOpen, setIsDropdownOpen }: TutorialTourProps) 
                 placement: 'bottom' as const,
             },
             {
+                target: 'a[href="/contact"]',
+                content: (
+                    <div>
+                        <div className="mb-3 flex items-center gap-2">
+                            <div className="rounded-lg bg-green-100 p-2">
+                                <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 5h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 7M7 13l-2 5m0 0h14m-14 0a1 1 0 001 1h12a1 1 0 001-1m-4-6v2a2 2 0 104 0v-2"
+                                    />
+                                </svg>
+                            </div>
+                            <h4 className="font-bold text-green-700">Hubungi Kami</h4>
+                        </div>
+                        <p className="mb-3 text-sm text-gray-600">
+                            Ada pertanyaan atau butuh bantuan? Tim kami siap membantu melalui berbagai saluran komunikasi yang tersedia.
+                        </p>
+                        <div className="space-y-1 text-sm text-gray-700">
+                            <div>
+                                📞 Telepon: <span className="font-medium text-green-800">021-1234-5678</span>
+                            </div>
+                            <div>
+                                ✉️ Email: <span className="font-medium text-green-800">sinarpelangi@contoh.com</span>
+                            </div>
+                        </div>
+                    </div>
+                ),
+                placement: 'bottom' as const,
+            },
+
+            {
                 target: 'button[aria-label="Keranjang Belanja"]',
                 content: (
                     <div>
@@ -263,21 +296,21 @@ const TutorialTour = ({ isDropdownOpen, setIsDropdownOpen }: TutorialTourProps) 
                             <div className="rounded-md border border-orange-200 bg-orange-50 p-2">
                                 <div className="mb-1 flex items-center gap-1">
                                     <div className="h-2 w-2 rounded-full bg-orange-400"></div>
-                                    <span className="font-medium text-orange-700">Diproses</span>
+                                    <span className="font-medium text-orange-700 text-left">Diproses</span>
                                 </div>
                                 <p className="text-orange-600">Sedang dikemas</p>
                             </div>
                             <div className="rounded-md border border-blue-200 bg-blue-50 p-2">
                                 <div className="mb-1 flex items-center gap-1">
                                     <div className="h-2 w-2 rounded-full bg-blue-400"></div>
-                                    <span className="font-medium text-blue-700">Dikirim</span>
+                                    <span className="font-medium text-blue-700 text-left">Dikirim</span>
                                 </div>
                                 <p className="text-blue-600">Dalam perjalanan</p>
                             </div>
                             <div className="rounded-md border border-green-200 bg-green-50 p-2">
                                 <div className="mb-1 flex items-center gap-1">
                                     <div className="h-2 w-2 rounded-full bg-green-400"></div>
-                                    <span className="font-medium text-green-700">Selesai</span>
+                                    <span className="font-medium text-green-700 text-left">Selesai</span>
                                 </div>
                                 <p className="text-green-600">Sudah diterima</p>
                             </div>
@@ -287,7 +320,7 @@ const TutorialTour = ({ isDropdownOpen, setIsDropdownOpen }: TutorialTourProps) 
                 placement: 'left' as const,
             },
             {
-                target: '#buttonlogout',
+                target: '#logoutdrop',
 
                 content: (
                     <div>
@@ -338,7 +371,7 @@ const TutorialTour = ({ isDropdownOpen, setIsDropdownOpen }: TutorialTourProps) 
                         <p className="mb-4 leading-relaxed text-gray-600">
                             Anda sekarang siap untuk menjelajahi dan berbelanja alat tulis kantor berkualitas tinggi di Sinar Pelangi ATK.
                         </p>
-                        <div className="rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-4">
+                        {/* <div className="rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-4">
                             <p className="mb-3 text-sm font-bold text-blue-700">🎯 Tips Berbelanja Cerdas:</p>
                             <div className="grid grid-cols-2 gap-2 text-xs">
                                 <div className="rounded-lg border border-blue-100 bg-white/60 p-2">
@@ -354,7 +387,7 @@ const TutorialTour = ({ isDropdownOpen, setIsDropdownOpen }: TutorialTourProps) 
                                     <span className="font-medium text-pink-700">❤️ Simpan favorit</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         <div className="mt-4 text-xs text-gray-500">Butuh bantuan? Klik tombol bantuan di pojok kanan bawah kapan saja! 🆘</div>
                     </div>
                 ),
@@ -417,7 +450,7 @@ const TutorialTour = ({ isDropdownOpen, setIsDropdownOpen }: TutorialTourProps) 
                 nextIndex = index + 1;
 
                 // Jika next step adalah 5, buka dropdown dulu baru lanjutkan tour
-                if (nextIndex >= 5 && nextIndex < 8) {
+                if (nextIndex >= 6 && nextIndex < 9) {
                     handleDropdownInteraction('open');
 
                     // Tunggu sampai dropdown element untuk step 5 muncul
@@ -429,17 +462,17 @@ const TutorialTour = ({ isDropdownOpen, setIsDropdownOpen }: TutorialTourProps) 
                 }
 
                 // Tutup dropdown kalau sudah lewat step 8
-                if (nextIndex > 7 && isDropdownOpen) {
+                if (nextIndex > 8 && isDropdownOpen) {
                     handleDropdownInteraction('close');
                 }
             } else if (action === ACTIONS.PREV) {
                 nextIndex = index - 1;
 
-                if (nextIndex < 5 && isDropdownOpen) {
+                if (nextIndex < 6 && isDropdownOpen) {
                     handleDropdownInteraction('close');
                 }
 
-                if (nextIndex >= 5 && nextIndex <= 8 && !isDropdownOpen) {
+                if (nextIndex >= 6 && nextIndex <= 9 && !isDropdownOpen) {
                     handleDropdownInteraction('open');
                     await new Promise((r) => setTimeout(r, 300));
                 }

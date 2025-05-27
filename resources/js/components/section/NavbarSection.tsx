@@ -160,6 +160,7 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
                                         href="/logout"
                                         as="button"
                                         className="flex w-full items-center gap-3 py-3 text-red-600 hover:text-red-700"
+                                        id='logoutdrop'
                                     >
                                         <div className="rounded-lg bg-red-100 p-1.5" id="buttonlogout">
                                             <LogOut className="h-4 w-4 text-red-500" />

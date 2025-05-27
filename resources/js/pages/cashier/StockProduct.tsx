@@ -118,7 +118,7 @@ export default function OrderList() {
                             <input
                                 type="text"
                                 placeholder="Cari Nama Produk"
-                                className="h-12 w-full rounded-md border border-gray-300 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                className="h-12 w-full rounded-md border border-gray-500 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 value={searchTerm}
                                 onChange={(e) => {
                                     setSearchTerm(e.target.value);

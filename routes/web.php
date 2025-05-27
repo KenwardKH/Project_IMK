@@ -6,6 +6,7 @@ use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\ConfirmOrderController;
 use App\Http\Controllers\CustomerCartController;
 use App\Http\Controllers\StockProductController;
+use App\Http\Controllers\OrderStatusController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ownerDashboard;
@@ -68,6 +69,9 @@ Route::prefix('cashier')->name('cashier.')->group(function () {
         //Stock Product
         Route::get('/stock', [StockProductController::class, 'index'])->name('stock');
 
+        //Order Status 
+        Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.status');
+
     });
 Route::middleware(['auth', 'verified'])->group(function () {
     // Display cart
@@ -89,7 +93,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Owner-only routes
 Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
     // Owner Dashboard
-    Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
+    Route::get('/dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
     Route::post('/owner/update-timeout', [ownerDashboard::class, 'updatePaymentTimeout'])->name('owner.update-timeout');
 
 

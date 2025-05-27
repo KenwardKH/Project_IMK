@@ -16,6 +16,18 @@ use App\Http\Controllers\ownerPembelianSupply;
 use App\Http\Controllers\OwnerTransaksiController;
 
 // Order routes with controller
+Route::get('/about', function (){
+      return Inertia::render("footer/AboutUsPage");
+});
+
+Route::get('/contact', function (){
+      return Inertia::render("footer/ContactUsPage");
+});
+
+Route::get('/faq', function (){
+      return Inertia::render("footer/FAQPage");
+});
+
 Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
 Route::get('/test-cashier', function () {
     return 'Cashier route is accessible!';

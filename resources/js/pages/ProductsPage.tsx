@@ -1,11 +1,12 @@
-import NavbarSection from '@/components/section/NavbarSection';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Link, usePage } from '@inertiajs/react';
+import { Skeleton } from '@/components/ui/skeleton';
+import AppLayout from '@/layouts/app-layout';
+import { Link, router, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Filter, Grid, List, Search, X } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
@@ -122,6 +123,7 @@ const ProductsPage = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
+
     const itemsPerPage = 6;
 
     const { search } = usePage().props as { search?: string };
@@ -160,11 +162,11 @@ const ProductsPage = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
-    useEffect(()=>{
+    useEffect(() => {
         if (search) {
             setSearchTerm(search);
-          }
-    }, [])
+        }
+    }, []);
 
     React.useEffect(() => {
         setCurrentPage(1);
@@ -199,8 +201,7 @@ const ProductsPage = () => {
     };
 
     return (
-        <>
-            <NavbarSection />
+        <AppLayout>
             <div className="bg-background my-6 min-h-screen p-6">
                 <div className="mx-auto max-w-7xl">
                     {/* Header */}
@@ -491,7 +492,7 @@ const ProductsPage = () => {
                     )}
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 };
 

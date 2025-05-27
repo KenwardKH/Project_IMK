@@ -16,19 +16,25 @@
 
 // resources/js/Layouts/AppLayout.jsx\
 
-import Footer from '@/components/section/Footer';
 import NavbarSection from '@/components/section/NavbarSection';
-import { ReactNode } from 'react';
+import TutorialTour from '@/components/TutorialTour';
+import { ReactNode, useState } from 'react';
 
 interface AppLayoutProps {
     children: ReactNode;
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     return (
         <>
-            <NavbarSection />
-            <main className="min-h-screen bg-gray-50 p-4">{children}</main>
+            <div className="flex w-full flex-col items-center">
+                <div className="relative w-full max-w-[1440px]">
+                    <TutorialTour isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} />
+                    <NavbarSection isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} />
+                    <main className="min-h-screen p-4">{children}</main>
+                </div>
+            </div>
             {/* <Footer /> */}
         </>
     );

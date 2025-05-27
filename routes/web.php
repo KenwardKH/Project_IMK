@@ -77,6 +77,8 @@ Route::middleware(['auth', 'verified', 'role:customer'])->group(function () {
 Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
     // Owner Dashboard
     Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
+    Route::post('/owner/update-timeout', [ownerDashboard::class, 'updatePaymentTimeout'])->name('owner.update-timeout');
+
     
     // Product Management
     Route::resource('/owner-produk', ownerProduct::class)->names('owner.produk');

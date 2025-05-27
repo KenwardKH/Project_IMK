@@ -9,7 +9,7 @@ use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\FinancialReport;
 use App\Models\TransactionList;
-
+use App\Models\CancellationTime;
 
 use Inertia\Inertia;
 
@@ -35,11 +35,15 @@ class ownerDashboard extends Controller
                 ];
             });
 
+        // Get current payment timeout setting
+        $currentTimeout = CancellationTime::getCurrentTimeoutHours();
+
         return Inertia::render('owner/owner-dashboard', [
             'productCount' => $productCount,
             'customerCount' => $customerCount,
             'transactionCount' => $transactionCount,
             'financialData' => $financialData,
+            'currentTimeout' => $currentTimeout,
         ]);
     }
 
@@ -99,5 +103,26 @@ class ownerDashboard extends Controller
             'salesData' => $salesData,
             'financialData' => $financialData,
         ]);
+    }
+
+    public function updatePaymentTimeout(Request $request)
+    {
+        $validated = $request->validate([
+            'hours' => 'required|numeric|min:1|max:168', // hingga 7 hari
+        ]);
+
+        try {
+            // Hapus data sebelumnya
+            CancellationTime::truncate();
+
+            // Simpan data baru - langsung simpan sebagai float, bukan time format
+            $timeout = new CancellationTime();
+            $timeout->paymentTime = (float) $validated['hours']; // Simpan langsung sebagai float
+            $timeout->save();
+
+            return back()->with('success', 'Lama pembayaran berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui lama pembayaran: ' . $e->getMessage());
+        }
     }
 }

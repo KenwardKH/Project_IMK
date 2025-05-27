@@ -18,10 +18,10 @@ return new class extends Migration
             ON COMPLETION NOT PRESERVE 
             ENABLE 
             DO BEGIN
-                DECLARE timeout_hours INT DEFAULT 48;
+                DECLARE timeout_hours DECIMAL(5,2) DEFAULT 48.0;
                 
-                -- Get timeout from your cancellationtime table (convert TIME to hours)
-                SELECT COALESCE(HOUR(paymentTime) + (MINUTE(paymentTime)/60), 48) INTO timeout_hours 
+                -- Get timeout from cancellationtime table (direct float/decimal value)
+                SELECT COALESCE(paymentTime, 48.0) INTO timeout_hours 
                 FROM cancellationtime 
                 ORDER BY id DESC 
                 LIMIT 1;

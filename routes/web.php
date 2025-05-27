@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
     Route::delete('/cart/clear', [CashierController::class, 'clearCart'])->name('cart.clear');
     
     // Checkout
-    Route::post('/checkout', [CashierController::class, 'checkout'])->name('checkout');
+    Route::post('/checkout', [CashierController::class, 'checkout'])->name('cashier/checkout');
     
     // API endpoints (for AJAX requests)
     Route::get('/api/cart-summary', [CashierController::class, 'getCartSummary'])->name('api.cart-summary');

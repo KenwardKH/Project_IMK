@@ -1,8 +1,8 @@
 import OwnerLayout from '@/components/owner/owner-layout';
-import { useForm } from '@inertiajs/react';
-import { FiArrowLeftCircle } from 'react-icons/fi';
-import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { FiArrowLeftCircle } from 'react-icons/fi';
+import Swal from 'sweetalert2';
 
 const OwnerTambahKasir = () => {
     const { data, setData, post, processing, errors } = useForm({
@@ -15,11 +15,31 @@ const OwnerTambahKasir = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        post('/owner-daftar-kasir');
+
+        post(
+            '/owner-daftar-kasir',
+            {
+                onSuccess: () => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Kasir berhasil ditambahkan.',
+                    });
+                },
+                onError: () => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Terjadi kesalahan saat menambahkan kasir.',
+                    });
+                },
+            },
+        );
     };
 
     return (
         <OwnerLayout>
+            <Head title="Tambah Kasir" />
             <div className="flex justify-center py-8 text-black">
                 <div className="mx-auto w-11/12 rounded-lg bg-white p-6 shadow-md">
                     <Link href="/owner-daftar-kasir" className="mb-4 inline-block text-blue-600 hover:underline">
@@ -30,7 +50,9 @@ const OwnerTambahKasir = () => {
 
                     <form className="space-y-4" onSubmit={handleSubmit}>
                         <div>
-                            <label className="mb-1 block font-semibold">Nama Kasir <span className="text-red-500">*</span></label>
+                            <label className="mb-1 block font-semibold">
+                                Nama Kasir <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={data.nama}
@@ -47,7 +69,10 @@ const OwnerTambahKasir = () => {
                             <input
                                 type="text"
                                 value={data.kontak}
-                                onChange={(e) => setData('kontak', e.target.value)}
+                                onChange={(e) => {
+                                    const onlyNumbers = e.target.value.replace(/\D/g, ''); // Hanya ambil angka
+                                    setData('kontak', onlyNumbers);
+                                }}
                                 className={`w-full rounded border p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${errors.kontak ? 'border-red-500' : 'border-gray-300'}`}
                                 placeholder="Kontak Kasir"
                             />
@@ -55,7 +80,9 @@ const OwnerTambahKasir = () => {
                         </div>
 
                         <div>
-                            <label className="mb-1 block font-semibold">Email Kasir <span className="text-red-500">*</span></label>
+                            <label className="mb-1 block font-semibold">
+                                Email Kasir <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="email"
                                 value={data.email}
@@ -68,7 +95,9 @@ const OwnerTambahKasir = () => {
                         </div>
 
                         <div>
-                            <label className="mb-1 block font-semibold">Password <span className="text-red-500">*</span></label>
+                            <label className="mb-1 block font-semibold">
+                                Password <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="password"
                                 value={data.password}
@@ -95,7 +124,7 @@ const OwnerTambahKasir = () => {
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:bg-green-700 hover:cursor-pointer disabled:opacity-50"
+                            className="mt-4 w-full rounded bg-[#009a00] px-4 py-2 font-bold text-white hover:cursor-pointer hover:bg-green-700 disabled:opacity-50"
                         >
                             {processing ? 'Menyimpan...' : 'Simpan Kasir'}
                         </Button>

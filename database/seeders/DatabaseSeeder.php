@@ -15,6 +15,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+         $this->call([
+            OwnerSeeder::class,
+        ]);
         // User::factory(10)->create();
 
 // Membuat 1 user dulu

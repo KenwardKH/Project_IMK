@@ -18,9 +18,18 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        if ($request->routeIs('owner.profile.edit')) {
+            return Inertia::render('owner/owner-profile', [
+                'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+                'status' => session('status'),
+                'user' => $request->user(),
+            ]);
+        }
+        
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => $request->session()->get('status'),
+            'status' => session('status'),
+            'user' => $request->user(),
         ]);
     }
 
@@ -29,15 +38,25 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
+        
+        // Redirect ke route asal dengan status success
+        if ($request->routeIs('owner.profile.update')) {
+            return redirect()->route('owner.profile.edit')
+                ->with('status', 'profile-updated')
+                ->with('message', 'Profile updated successfully!');
+        }
 
-        return to_route('profile.edit');
+        return redirect()->route('profile.edit')
+            ->with('status', 'profile-updated')
+            ->with('message', 'Profile updated successfully!');
     }
 
     /**

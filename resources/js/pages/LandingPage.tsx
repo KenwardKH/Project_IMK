@@ -4,6 +4,8 @@ import Footer from '@/components/section/Footer';
 import HeroSlider from '@/components/section/HeroSlider';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
+import AboutUsPage from './footer/AboutUsPage';
+import AboutUs from '@/components/section/AboutUsSection';
 
 export default function LandingPage({ products = [] }) {
     return (
@@ -16,8 +18,10 @@ export default function LandingPage({ products = [] }) {
                 {/* Featured Products */}
                 <FeaturedProductsSection products={products} />
 
+                <AboutUs />
+
                 {/* Categories */}
-                <CategoriesSection />
+                {/* <CategoriesSection /> */}
             </AppLayout>
             <Footer />
         </>

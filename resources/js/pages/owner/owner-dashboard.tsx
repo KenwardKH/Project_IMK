@@ -1,11 +1,8 @@
 import OwnerLayout from '@/components/owner/owner-layout';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Box, ClipboardList, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import {
-    Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer,
-    Tooltip, XAxis, YAxis
-} from 'recharts';
-import { usePage } from '@inertiajs/react';
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface FinancialData {
     month: string;
@@ -19,6 +16,7 @@ const OwnerDashboard = () => {
     const productCount = props.productCount as number;
     const customerCount = props.customerCount as number;
     const transactionCount = props.transactionCount as number;
+    const currentTimeout = props.currentTimeout as number;
     const financialData = props.financialData as FinancialData[];
 
     const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
@@ -38,13 +36,23 @@ const OwnerDashboard = () => {
     };
 
     const stats = [
-        { title: 'Banyak Produk', icon: <Box className="w-10 h-10 sm:w-12 sm:h-12" />, value: productCount },
-        { title: 'Banyak Pelanggan', icon: <Users className="w-10 h-10 sm:w-12 sm:h-12" />, value: customerCount },
-        { title: 'Banyak Transaksi', icon: <ClipboardList className="w-10 h-10 sm:w-12 sm:h-12" />, value: transactionCount },
+        { title: 'Banyak Produk', icon: <Box className="h-10 w-10 sm:h-12 sm:w-12" />, value: productCount },
+        { title: 'Banyak Pelanggan', icon: <Users className="h-10 w-10 sm:h-12 sm:w-12" />, value: customerCount },
+        { title: 'Banyak Transaksi', icon: <ClipboardList className="h-10 w-10 sm:h-12 sm:w-12" />, value: transactionCount },
     ];
+
+    const { data, setData, post, processing, errors } = useForm({
+        hours: currentTimeout ?? '',
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post(route('owner.update-timeout'));
+    };
 
     return (
         <OwnerLayout>
+            <Head title="Dashboard" />
             <div className="flex flex-col gap-6 px-4 py-6">
                 {/* Stats Cards */}
                 <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -54,12 +62,43 @@ const OwnerDashboard = () => {
                             className="flex flex-col items-center justify-between rounded-2xl bg-[#FFD9B3] p-4 text-black shadow-md ring-2 transition-all duration-300 hover:scale-[1.02]"
                         >
                             <p className="text-lg font-semibold sm:text-xl">{stat.title}</p>
-                            <div className="mt-2 flex w-full items-center justify-around px-2 sm:px-4 gap-1">
+                            <div className="mt-2 flex w-full items-center justify-around gap-1 px-2 sm:px-4">
                                 {stat.icon}
                                 <p className="text-3xl font-bold sm:text-4xl lg:text-5xl">{stat.value}</p>
                             </div>
                         </div>
                     ))}
+                </section>
+
+                {/* Update Timeout Section */}
+                <section className="mt-8">
+                    <h2 className="mb-4 text-2xl font-bold text-black sm:text-3xl">Atur Lama Pembayaran</h2>
+                    <form onSubmit={handleSubmit} className="flex max-w-md flex-col gap-4">
+                        <label className="text-sm font-medium text-gray-700">
+                            Lama Pembayaran (jam):
+                            <input
+                                type="number"
+                                name="hours"
+                                value={data.hours}
+                                onChange={(e) => setData('hours', parseFloat(e.target.value))}
+                                min={1}
+                                max={168}
+                                step="0.1"
+                                className="mt-1 w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200"
+                                placeholder="Contoh: 24"
+                                required
+                            />
+                        </label>
+                        {errors.hours && <p className="text-red-600">{errors.hours}</p>}
+
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="w-fit rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                            Simpan Lama Pembayaran
+                        </button>
+                    </form>
                 </section>
 
                 {/* Financial Section */}
@@ -69,7 +108,7 @@ const OwnerDashboard = () => {
                     {/* Financial Chart - Only Sales and Expenses */}
                     <div className="mb-6 h-64 sm:h-72 lg:h-96">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={financialData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                            <BarChart data={financialData} margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="month" />
                                 <YAxis />

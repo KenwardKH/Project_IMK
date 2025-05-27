@@ -39,12 +39,12 @@ export default function Footer() {
               >
                 Kontak
               </a>
-              <a
+              {/* <a
                 href="/faq"
                 className="block text-sm text-slate-300 hover:text-white transition-colors duration-200 hover:translate-x-1 transform"
               >
                 FAQ
-              </a>
+              </a> */}
             </nav>
           </div>
 

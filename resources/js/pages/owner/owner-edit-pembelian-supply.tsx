@@ -1,6 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import { FiArrowLeftCircle } from 'react-icons/fi';
@@ -142,6 +142,7 @@ const OwnerTambahPembelianSupply = () => {
 
     return (
         <OwnerLayout>
+            <Head title="Edit Pembelian Supply" />
             <div className="flex justify-center py-8 text-black">
                 <div className="mx-auto w-15/17 rounded-lg bg-white p-6 shadow-md">
                     <Link href="/owner-pembelian-supply" className="mb-4 inline-block text-blue-600 hover:underline">

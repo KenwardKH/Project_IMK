@@ -50,7 +50,7 @@ export default function HeroSlider() {
     return (
         <div className="group relative">
             {/* Main Slider Container */}
-            <div className="mt-6 relative h-[200px] overflow-hidden rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl md:h-[300px] lg:h-[450px] max-w-[1200px] mx-auto ">
+            <div className="relative mx-auto mt-6 h-[200px] max-w-[1200px] overflow-hidden rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl md:h-[300px] lg:h-[450px]">
                 {/* Image Slides */}
                 <div className="relative h-full w-full">
                     {slides.map((slide, index) => (
@@ -67,7 +67,7 @@ export default function HeroSlider() {
                             <img
                                 src={slide.image}
                                 alt={slide.alt}
-                                className={`h-full w-full object-cover transition-transform duration-1000 ${
+                                className={`h-full w-full object-cover object-top transition-transform duration-1000 ${
                                     index === currentSlide ? 'scale-100' : 'scale-105'
                                 }`}
                             />

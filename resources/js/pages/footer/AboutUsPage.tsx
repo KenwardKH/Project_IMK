@@ -207,7 +207,7 @@ export default function AboutUsPage() {
                             </a>
                             <a
                                 className="rounded-xl border-2 border-gray-300 px-8 py-4 font-semibold text-gray-700 transition-all duration-300 hover:border-blue-500 hover:text-blue-600"
-                                href="/contacts"
+                                href="/contact"
                             >
                                 Hubungi Kami
                             </a>

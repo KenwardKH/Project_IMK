@@ -86,7 +86,7 @@ class ownerSupplier extends Controller
         $supplier->SupplierAddress = $request->SupplierAddress;
         $supplier->save();
 
-        return redirect()->route('owner-supplier.index');
+        return redirect()->route('owner-supplier.index')->with('success', 'Supplier berhasil diperbarui.');
     }
 
     /**

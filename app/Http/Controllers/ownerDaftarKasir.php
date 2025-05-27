@@ -62,7 +62,7 @@ class ownerDaftarKasir extends Controller
             'alamat_kasir' => $validated['alamat'] ?? null,
         ]);
 
-        return redirect()->route('owner-daftar-kasir.index')->with('message', 'Kasir berhasil ditambahkan');
+        return redirect()->route('owner-daftar-kasir.index')->with('success', 'Kasir berhasil ditambahkan');
     }
 
     /**
@@ -122,7 +122,7 @@ class ownerDaftarKasir extends Controller
             'email' => $validated['email']
         ]);
 
-        return redirect()->route('owner-daftar-kasir.index')->with('message', 'Kasir berhasil diperbarui');
+        return redirect()->route('owner-daftar-kasir.index')->with('success', 'Kasir berhasil diperbarui');
     }
 
     /**
@@ -139,6 +139,6 @@ class ownerDaftarKasir extends Controller
         // Delete associated user
         User::destroy($userId);
         
-        return redirect()->route('owner-daftar-kasir.index')->with('message', 'Kasir berhasil dihapus');
+        return redirect()->route('owner-daftar-kasir.index')->with('success', 'Kasir berhasil dihapus');
     }
 }

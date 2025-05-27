@@ -1,5 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
+import { Head } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -95,6 +96,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
 
     return (
         <OwnerLayout>
+            <Head title="Riwayat Transaksi" />
             <div className="flex w-full flex-col gap-6 px-6 py-4">
                 <h1 className="flex w-full justify-center text-3xl font-bold">Riwayat Transaksi</h1>
 
@@ -213,7 +215,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                                                     </Button>
                                                 </td>
                                                 <td className="border p-4 text-center">
-                                                    <span
+                                                    <div
                                                         className={`rounded-full px-2 py-1 text-xs font-medium ${
                                                             item.OrderStatus === 'Selesai'
                                                                 ? 'bg-green-100 text-green-800'
@@ -227,7 +229,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                                                         }`}
                                                     >
                                                         {item.OrderStatus}
-                                                    </span>
+                                                    </div>
                                                 </td>
                                                 <td className="border p-4 text-center">{formatDate(item.InvoiceDate)}</td>
                                             </tr>

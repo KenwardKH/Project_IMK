@@ -1,7 +1,7 @@
 import CategoriesSection from '@/components/section/CategoriesSection';
 import FeaturedProductsSection from '@/components/section/FeaturedProductSection';
 import Footer from '@/components/section/Footer';
-import HeroSection from '@/components/section/HeroSection';
+import HeroSlider from '@/components/section/HeroSlider';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 
@@ -11,8 +11,8 @@ export default function LandingPage({ products = [] }) {
             <Head title="Beranda | Sinar Pelangi" />
             <AppLayout>
                 {/* Hero */}
-                <HeroSection />
-
+                {/* <HeroSection /> */}
+                <HeroSlider />
                 {/* Featured Products */}
                 <FeaturedProductsSection products={products} />
 

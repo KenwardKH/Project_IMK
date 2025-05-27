@@ -99,7 +99,7 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
                             <Skeleton className="h-4 w-24" />
                         </div>
                     ) : user ? (
-                        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+                        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen} modal={false}>
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"
@@ -120,13 +120,15 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
                                 className="w-56 rounded-xl border border-green-100 bg-white shadow-lg backdrop-blur-sm"
                                 sideOffset={5}
                                 onCloseAutoFocus={(e) => e.preventDefault()}
+                                onPointerDownOutside={(e) => e.preventDefault()}
+                                onInteractOutside={(e) => e.preventDefault()} // penting agar klik di luar tidak menutup menu
                             >
-                                <div className="border-b border-green-50 px-3 py-2" id='dropdowntest'>
+                                <div className="border-b border-green-50 px-3 py-2" id="dropdowntest">
                                     <p className="text-sm font-medium text-green-800">Menu Profil</p>
                                     <p className="text-xs text-green-600">Kelola akun Anda</p>
                                 </div>
 
-                                <DropdownMenuItem asChild className="font-medium text-green-700 hover:bg-green-50 focus:bg-green-50 cursor-pointer  ">
+                                <DropdownMenuItem asChild className="cursor-pointer font-medium text-green-700 hover:bg-green-50 focus:bg-green-50">
                                     <Link href="/settings/profile" className="flex w-full items-center gap-3 py-3">
                                         <div className="rounded-lg bg-blue-100 p-1.5">
                                             <User className="h-4 w-4 text-blue-600" />
@@ -138,7 +140,7 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
                                     </Link>
                                 </DropdownMenuItem>
 
-                                <DropdownMenuItem asChild className="font-medium text-green-700 hover:bg-green-50 focus:bg-green-50 cursor-pointer  ">
+                                <DropdownMenuItem asChild className="cursor-pointer font-medium text-green-700 hover:bg-green-50 focus:bg-green-50">
                                     <Link href="/order/belum-bayar" className="flex w-full items-center gap-3 py-3">
                                         <div className="rounded-lg bg-amber-100 p-1.5">
                                             <PackageSearch className="h-4 w-4 text-amber-600" />
@@ -152,14 +154,14 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
 
                                 <DropdownMenuSeparator className="bg-green-100" />
 
-                                <DropdownMenuItem asChild className="font-medium hover:bg-red-50 focus:bg-red-50 cursor-pointer ">
+                                <DropdownMenuItem asChild className="cursor-pointer font-medium hover:bg-red-50 focus:bg-red-50">
                                     <Link
                                         method="post"
                                         href="/logout"
                                         as="button"
                                         className="flex w-full items-center gap-3 py-3 text-red-600 hover:text-red-700"
                                     >
-                                        <div className="rounded-lg bg-red-100 p-1.5" id='buttonlogout'>
+                                        <div className="rounded-lg bg-red-100 p-1.5" id="buttonlogout">
                                             <LogOut className="h-4 w-4 text-red-500" />
                                         </div>
                                         <div className="flex flex-col">

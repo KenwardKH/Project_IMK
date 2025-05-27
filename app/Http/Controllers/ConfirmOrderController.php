@@ -32,8 +32,7 @@ class ConfirmOrderController extends Controller
         'CashierID as cid',
         'CashierName as cname',
         )
-        ->paginate();
-        // dd($orders);
+        ->paginate(100);
 
         //Memanggil data InvoiceDetail
         foreach ($orders as $order) {
@@ -71,6 +70,37 @@ class ConfirmOrderController extends Controller
 
         // Assign to key matching frontend interface
         $order->payments = $payment;
+        }
+
+        foreach ($orders as $order) {
+            $pickupStatus = PickupOrderStatus::where('invoice_id', $order->id)
+            ->select(
+                'id',
+                'invoice_id as invid',
+                'status',
+                'updated_at',
+                'created_at',
+                'updated_by'
+            )
+            ->get()
+            ->toArray();
+            $order->pickup = $pickupStatus;
+        }
+
+        foreach ($orders as $order) {
+            $deliveryStatus = DeliveryOrderStatus::where('invoice_id', $order->id)
+            ->select(
+                'id',
+                'invoice_id as invid',
+                'status',
+                'alamat',
+                'updated_at',
+                'created_at',
+                'updated_by'
+            )
+            ->get()
+            ->toArray();
+            $order->delivery = $deliveryStatus;
         }
 
         return Inertia::render('cashier/ConfirmOrder', [

@@ -16,6 +16,8 @@ interface OrderData {
     cname: string;
     details: DetailData[];
     payments: PaymentData[];
+    pickup: PickupData[];
+    delivery: DeliveryData[];
 }
 
 interface DetailData {
@@ -26,6 +28,25 @@ interface DetailData {
     quantity: number;
     unit: string;
     price: number;
+}
+
+interface PickupData {
+    id: number;
+    invid: number;
+    status: string;
+    updated_at: string;
+    created_at: string;
+    updated_by: number;
+}
+
+interface DeliveryData {
+    id: number;
+    invid: number;
+    status: string;
+    alamat: string;
+    updated_at: string;
+    created_at: string;
+    updated_by: number;
 }
 
 interface PaymentData {
@@ -117,14 +138,17 @@ export default function OrderList() {
     // Step 2: Filter berdasarkan pencarian nama
     const filteredOrders = typeOrders.filter(order =>
         typeof order.name === 'string' &&
-        order.name.toLowerCase().includes(searchTerm.toLowerCase())
+        order.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (
+            (Array.isArray(order.pickup) && order.pickup.some(p => p.status === 'diproses')) ||
+            (Array.isArray(order.delivery) && order.delivery.some(d => d.status === 'diproses'))
+        )
     );
 
     // Step 3: Pagination
     const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
-
     // Step 3: Ambil hanya pesanan yang belum dikonfirmasi
     const activeOrders = paginatedOrders.filter(order => order.cid == null);
 
@@ -256,14 +280,14 @@ export default function OrderList() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="border border-gray-200 px-4 py-6 text-center text-gray-500">
+                                        <td colSpan={11} className="border border-gray-200 px-4 py-6 text-center text-gray-500">
                                             Tidak ada pesanan yang ditemukan.
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
-                        <div className="mt-4 flex justify-center gap-2">
+                        {/* <div className="mt-4 flex justify-center gap-2">
                             <button
                                 onClick={() => goToPage(currentPage - 1)}
                                 disabled={currentPage === 1}
@@ -279,7 +303,7 @@ export default function OrderList() {
                             >
                                 Next
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
                 {isModalOpen && modalImage && (

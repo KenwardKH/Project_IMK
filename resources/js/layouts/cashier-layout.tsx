@@ -23,7 +23,7 @@ const CashierLayout: React.FC<CashierLayoutProps> = ({ children, title = "Kasir"
         if (url.startsWith('/cashier/orders')) {
             return 'konfirmasi-pesanan'; // ini harus diletakkan setelah 'status' agar tidak tertimpa
         }
-        if (url.startsWith('/cashier/inventory')) {
+        if (url.startsWith('/cashier/stock')) {
             return 'stok-barang';
         }
         return 'buat-pesanan';
@@ -42,7 +42,7 @@ const CashierLayout: React.FC<CashierLayoutProps> = ({ children, title = "Kasir"
                 router.visit('/cashier/orders/status');
                 break;
             case 'stok-barang':
-                router.visit('/cashier/inventory');
+                router.visit('/cashier/stock');
                 break;
             default:
                 router.visit('/cashier');

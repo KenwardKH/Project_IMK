@@ -87,7 +87,7 @@ class User extends Authenticatable
     }
 	public function kasirs()
 	{
-		return $this->hasOne(Kasir::class);
+		return $this->hasMany(Kasir::class);
 	}
 
 	public function sessions()

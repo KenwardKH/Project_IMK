@@ -228,14 +228,10 @@ export default function OrderList() {
                                                     Detail
                                                 </Button>
                                             </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.payments.length > 0 ? (
-                                                    item.payments.map((detail, idx) => (
-                                                        <span key={idx}>{detail.amount}</span>
-                                                    ))
-                                                ) : (
+                                            <td className="border border-gray-200 px-4 py-3 ">
+                                                
                                                     <span> Rp{item.details.reduce((total, detail) => total + detail.price * detail.quantity, 0).toLocaleString('id-ID')}</span>
-                                                )}
+
                                             </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 {item.payments.length > 0 ? (

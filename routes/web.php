@@ -5,6 +5,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\ConfirmOrderController;
 use App\Http\Controllers\CustomerCartController;
+use App\Http\Controllers\OrderStatusController;
+use App\Http\Controllers\StockProductController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ownerDashboard;
@@ -22,9 +24,14 @@ use App\Http\Controllers\OwnerRiwayatKasir;
 // });
 
 // routes (accessible to multiple roles)
-// Route::middleware(['auth', 'verified', 'role:customer,cashier,owner'])->group(function () {
-
-// });
+Route::middleware(['auth', 'verified', 'role:customer,cashier,owner'])->group(function () {
+    Route::get('owner-supplier/tambah', function () {
+        return Inertia::render('owner/owner-tambah-supplier');
+    })->name('owner-tambah-supplier');
+    Route::get('owner-produk/tambah', function () {
+        return Inertia::render('owner/owner-tambahproduk');
+    })->name('owner-tambah-produk');
+});
 
 Route::get('/about', function (){
       return Inertia::render("footer/AboutUsPage");
@@ -60,6 +67,13 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
     Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
     Route::delete('/orders/{id}', [ConfirmOrderController::class, 'destroy'])->name('order.destroy');
     Route::post('/confirm/{id}', [ConfirmOrderController::class, 'confirmOrder'])->name('order.confirm');
+
+    //confirm
+    Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.confirm');
+    
+    //Stock Product
+    Route::get('/stock', [StockProductController::class, 'index'])->name('order.confirm');
+
 });
 
 // Customer-only routes
@@ -91,7 +105,9 @@ Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
     Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
     Route::post('/owner/update-timeout', [ownerDashboard::class, 'updatePaymentTimeout'])->name('owner.update-timeout');
 
-
+    Route::get('owner-supplier/tambah', function () {
+        return Inertia::render('owner/owner-tambah-supplier');
+    })->name('owner-tambah-supplier');
     // Product Management
     Route::resource('/owner-produk', ownerProduct::class)->names('owner.produk');
     Route::get('/owner-produk/edit/{id}', [ownerProduct::class, 'edit'])->name('owner.produk.edit');
@@ -108,9 +124,7 @@ Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
 
     // Supplier Management
     Route::resource('owner-supplier', ownerSupplier::class);
-    Route::get('owner-supplier/tambah', function () {
-        return Inertia::render('owner/owner-tambah-supplier');
-    })->name('owner-tambah-supplier');
+
     Route::get('/owner-supplier/edit/{id}', [ownerSupplier::class, 'edit'])->name('owner-edit-supplier');
     Route::put('/owner-supplier/{id}', [ownerSupplier::class, 'update']);
 

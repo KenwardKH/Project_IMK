@@ -6,6 +6,8 @@ import {
     Package, 
     LogOut 
 } from 'lucide-react';
+import { router } from '@inertiajs/react';
+
 
 type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'logout';
 
@@ -54,16 +56,14 @@ const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
     ];
 
     const handleItemClick = (itemId: string) => {
-        if (itemId === 'logout') {
-            // Handle logout logic here
-            if (confirm('Apakah Anda yakin ingin logout?')) {
-                // Redirect to logout route or call logout function
-                window.location.href = '/logout';
-            }
-        } else {
-            onSectionChange?.(itemId);
+    if (itemId === 'logout') {
+        if (confirm('Apakah Anda yakin ingin logout?')) {
+            router.post('/logout');
         }
-    };
+    } else {
+        onSectionChange?.(itemId as SectionId);
+    }
+};
 
     return (
         <div className="fixed left-0 top-0 h-full w-16 bg-white shadow-lg border-r border-gray-200 flex flex-col items-center py-6 z-50">

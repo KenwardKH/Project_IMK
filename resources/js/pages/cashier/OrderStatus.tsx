@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/cashier-layout';
 import { Button } from '@/components/ui/button';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
 import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -74,13 +74,13 @@ interface Props {
     orders: PaginatedOrders;
 }
 
-
 export default function OrderList() {
     const [searchTerm, setSearchTerm] = useState('');
     const [modalImage, setModalImage] = useState<string | null>(null);
     const { orders } = usePage<Props>().props;
     const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
-    const itemsPerPage = 5;
+    const itemsPerPage = 100;
+    const statuses = ['diproses', 'diantar', 'selesai', 'dibatalkan'];
     const [currentPage, setCurrentPage] = useState(1);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'pickup' | 'delivery'>('pickup');
@@ -113,24 +113,41 @@ export default function OrderList() {
         }
     };
 
-    const handleConfirm = async (orderId: number) => {
-        try {
-            await router.post(`/cashier/confirm/${orderId}`, {}, {
-                onSuccess: () => {
-                    alert('Pesanan berhasil dikonfirmasi!');
-                    // Optional: reload atau refresh data
-                    router.reload({ only: ['orders'] });
-                },
-                onError: (errors) => {
-                    console.error('Gagal mengonfirmasi pesanan:', errors);
-                    alert('Terjadi kesalahan saat mengonfirmasi pesanan.');
-                }
-            });
-        } catch (err) {
-            console.error('Unexpected error:', err);
-            alert('Terjadi kesalahan tak terduga saat mengonfirmasi pesanan.');
-        }
+    const handleStatusChange = (orderId: number, newStatus: string, type: 'pickup' | 'delivery') => {
+        router.post(`/cashier/update-status/${orderId}`, {
+            status: newStatus,
+            type: type,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                console.log('Status berhasil diupdate');
+                router.reload({ only: ['orders'] }); // opsional agar data terupdate
+            },
+            onError: () => {
+                alert('Gagal mengubah status');
+            }
+        });
     };
+
+
+    // const handleConfirm = async (orderId: number) => {
+    //     try {
+    //         await router.post(`/cashier/confirm/${orderId}`, {}, {
+    //             onSuccess: () => {
+    //                 alert('Pesanan berhasil dikonfirmasi!');
+    //                 // Optional: reload atau refresh data
+    //                 router.reload({ only: ['orders'] });
+    //             },
+    //             onError: (errors) => {
+    //                 console.error('Gagal mengonfirmasi pesanan:', errors);
+    //                 alert('Terjadi kesalahan saat mengonfirmasi pesanan.');
+    //             }
+    //         });
+    //     } catch (err) {
+    //         console.error('Unexpected error:', err);
+    //         alert('Terjadi kesalahan tak terduga saat mengonfirmasi pesanan.');
+    //     }
+    // };
 
     // Step 1: Filter berdasarkan jenis pesanan (pickup/delivery)
     const typeOrders = orders.data.filter(order => order.type === activeTab);
@@ -140,17 +157,17 @@ export default function OrderList() {
         typeof order.name === 'string' &&
         order.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         (
-            (Array.isArray(order.pickup) && order.pickup.some(p => p.status === 'diproses')) ||
-            (Array.isArray(order.delivery) && order.delivery.some(d => d.status === 'diproses'))
+            (Array.isArray(order.pickup) && order.pickup.some(p => p.status !== 'menunggu pembayaran')) ||
+            (Array.isArray(order.delivery) && order.delivery.some(d => d.status !== 'menunggu pembayaran'))
         )
     );
 
     // Step 3: Pagination
     const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+    const activeOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
     // Step 3: Ambil hanya pesanan yang belum dikonfirmasi
-    const activeOrders = paginatedOrders.filter(order => order.cid == null);
+    // const activeOrders = paginatedOrders.filter(order => order.cid == null);
 
     // Step 4: Fungsi navigasi halaman
     const goToPage = (page: number) => {
@@ -161,10 +178,10 @@ export default function OrderList() {
 
     return (
         <AppLayout>
-            <Head title="Konfirmasi Pesanan" />
-            <section id="konfirmasi-pesanan" className="mb-12">
+            <Head title="Status Pesanan" />
+            <section id="status-pesanan" className="mb-12">
                 <div className="flex w-full flex-col px-6 ">
-                    <h1 className="text-3xl font-bold text-center">Daftar Pesanan Online</h1>
+                    <h1 className="text-3xl font-bold text-center">Status Pesanan Online</h1>
                     <div className="flex justify-between items-center flex-wrap gap-4 mb-4 py-4">
                         {/* Button Type Option */}
                         <div className=" flex gap-4">
@@ -172,13 +189,13 @@ export default function OrderList() {
                                 onClick={() => setActiveTab('pickup')}
                                 className={`px-4 py-2 rounded ${activeTab === 'pickup' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
                             >
-                                Pickup
+                                Ambil Sendiri
                             </button>
                             <button
                                 onClick={() => setActiveTab('delivery')}
                                 className={`px-4 py-2 rounded ${activeTab === 'delivery' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
                             >
-                                Delivery
+                                Antar ke Tempat
                             </button>
                         </div>
                         {/* Search */}
@@ -203,15 +220,16 @@ export default function OrderList() {
                                 <tr>
                                     <th className="border border-gray-300 px-4 py-3 text-center">No.</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Invoice ID</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Nama Pemesan</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">No. Telepon</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Jumlah Produk</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Total Harga</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Bukti Pembayaran</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Nama Customer</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pesanan</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Tenggat Pembayaran</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Alamat</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pembayaran</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Batal</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Hapus</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white text-gray-700">
@@ -220,6 +238,30 @@ export default function OrderList() {
                                         <tr key={item.id} className="hover:bg-gray-100 transition duration-200">
                                             <td className="border border-gray-200 px-4 py-3 text-center">{index + 1}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.id}</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.contact}</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">
+                                                {item.details.reduce((sum, detail) => sum + detail.quantity, 0)}
+                                            </td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">
+                                                {item.payments.length > 0 ? (
+                                                    item.payments.map((detail, idx) => (
+                                                        <span key={idx}>{detail.amount}</span>
+                                                    ))
+                                                ) : (
+                                                    <span> Rp{item.details.reduce((total, detail) => total + detail.price * detail.quantity, 0).toLocaleString('id-ID')}</span>
+                                                )}
+                                            </td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">
+                                                {item.delivery.length > 0 ? (
+                                                    item.delivery.map((detail, idx) => (
+                                                        <span key={idx}>{detail.alamat}</span>
+                                                    ))
+                                                ) : (
+                                                    <span>Tidak ada alamat/ Diambil di tempat</span>
+                                                )}
+                                            </td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
                                                     onClick={() => handleOpenModal(item)}
@@ -228,41 +270,18 @@ export default function OrderList() {
                                                     Detail
                                                 </Button>
                                             </td>
-                                            <td className="border border-gray-200 px-4 py-3 ">
-                                                
-                                                    <span> Rp{item.details.reduce((total, detail) => total + detail.price * detail.quantity, 0).toLocaleString('id-ID')}</span>
-
-                                            </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.payments.length > 0 ? (
-                                                    <ul className="list-disc list-inside text-left">
-                                                        {item.payments.map((detail, idx) => (
-                                                            <li key={idx} className='list-none'>
-                                                                <img
-                                                                    src={`/storage/${detail.gambar}`}
-                                                                    alt={detail.gambar}
-                                                                    className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
-                                                                    onClick={() => openModal(`/storage/${detail.gambar}`)}
-                                                                />
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                ) : (
-                                                    <span className="text-gray-500">Tidak ada gambar</span>
-                                                )}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center"></td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                <button
-                                                    onClick={() => handleConfirm(item.id)}
-                                                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                                                <select
+                                                    value={currentStatus}
+                                                    onChange={e => handleStatusChange(order.id, e.target.value, order.type as 'pickup' | 'delivery')}
+                                                    className="border rounded px-2 py-1"
                                                 >
-                                                    Konfirmasi
-                                                </button>
+                                                    {statuses.map(status => (
+                                                        <option key={status} value={status}>{status}</option>
+                                                    ))}
+                                                </select>
                                             </td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
                                                     onClick={() => handleDelete(item.id)}
@@ -276,7 +295,7 @@ export default function OrderList() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={11} className="border border-gray-200 px-4 py-6 text-center text-gray-500">
+                                        <td colSpan={13} className="border border-gray-200 px-4 py-6 text-center text-gray-500">
                                             Tidak ada pesanan yang ditemukan.
                                         </td>
                                     </tr>

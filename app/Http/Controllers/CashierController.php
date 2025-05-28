@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\CashierCart;
+use App\Models\Kasir;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -33,8 +34,14 @@ class CashierController extends Controller
                     ];
                 });
 
+
+            $user = Auth::user();
+            $cashier = $user->kasirs()->first(); 
+
             // // Get current cart items with product details
+            
             $cartItems = CashierCart::with('product')
+                ->where('CashierID', $cashier->id_kasir) // ⬅️ Hanya data milik kasir login
                 ->get()
                 ->map(function ($item) {
                     return [
@@ -159,14 +166,16 @@ class CashierController extends Controller
      */
     public function clearCart()
     {
-        try {
-            CashierCart::truncate();
-            
-            return redirect()->back()->with('success', 'Keranjang berhasil dikosongkan!');
-        } catch (\Exception $e) {
-            Log::error('Error clearing cart: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengosongkan keranjang.');
+         $kasir = Kasir::where('user_id', Auth::id())->first();
+
+        if (!$kasir) {
+            return redirect()->back()->with('error', 'Kasir tidak ditemukan.');
         }
+
+        // Hapus data dari cart berdasarkan CashierID
+        CashierCart::where('CashierID', $kasir->id_kasir)->delete();
+
+        return redirect()->back()->with('success', 'Keranjang berhasil dikosongkan!');
     }
 
     /**

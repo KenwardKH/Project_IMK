@@ -9,6 +9,7 @@ use App\Models\DeliveryOrderStatus;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Customer;
+
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -348,7 +349,6 @@ class OrderController extends Controller
         }
 
         return redirect()->back()->with('success', 'Bukti pembayaran berhasil diupload');
-
     }
 
     /**

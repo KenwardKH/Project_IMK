@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Invoice;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\Invoicedetail;
 use App\Models\DeliveryOrderStatus;
 use App\Models\PickupOrderStatus;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
-class ConfirmOrderController extends Controller
+class OrderStatusController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -103,56 +103,9 @@ class ConfirmOrderController extends Controller
             $order->delivery = $deliveryStatus;
         }
 
-        return Inertia::render('cashier/ConfirmOrder', [
+        return Inertia::render('cashier/OrderStatus', [
                 'orders' => $orders,
             ]);
-    }
-
-    public function confirmOrder(Request $request, $id)
-    {
-        // Ambil invoice beserta relasi pickup/delivery
-        $invoice = Invoice::with(['pickup_order_statuses', 'delivery_order_statuses'])
-            ->where('InvoiceID', $id)
-            ->firstOrFail();
-
-        // Optional: Jika kamu tetap ingin validasi agar hanya invoice yang memiliki customer yang valid
-        if (!$invoice->CustomerID) {
-            return redirect()->back()->withErrors('Invoice tidak memiliki CustomerID.');
-        }
-
-        // Tentukan tipe order
-        $isPickup = $invoice->type === 'pickup' || $invoice->pickup_order_statuses->count() > 0;
-        $isDelivery = $invoice->type === 'delivery' || $invoice->delivery_order_statuses->count() > 0;
-
-        $user = Auth::user(); // Pastikan user ada, atau bisa gunakan user default
-        $cashier = $user->kasirs;
-        
-        if ($isPickup) {
-            $pickupStatus = PickupOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
-            if ($pickupStatus) {
-                $pickupStatus->update([
-                    'status' => 'menunggu pengambilan',
-                    'updated_by' => $cashier?->id_kasir ?? null,
-                ]);
-            }
-        } elseif ($isDelivery) {
-            $currentAddress = '';
-            if ($invoice->delivery_order_statuses->count() > 0) {
-                $latestDeliveryStatus = $invoice->delivery_order_statuses->sortByDesc('created_at')->first();
-                $currentAddress = $latestDeliveryStatus->alamat ?? '';
-            }
-
-            $deliveryStatus = DeliveryOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
-            if ($deliveryStatus) {
-                $deliveryStatus->update([
-                    'status' => 'diantar',
-                    'alamat' => $currentAddress,
-                    'updated_by' => $cashier?->id_kasir ?? null,
-                ]);
-            }
-        }
-
-        return redirect()->back()->with('success', 'Pesanan berhasil dikonfirmasi.');
     }
 
     /**
@@ -190,9 +143,30 @@ class ConfirmOrderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function updateStatus(Request $request, $id)
     {
-        //
+        $request->validate([
+            'status' => 'required|in:diproses,diantar,selesai,dibatalkan',
+            'type' => 'required|in:pickup,delivery',
+        ]);
+
+        if ($request->type === 'pickup') {
+            $pickup = PickupOrderStatus::where('invoice_id', $id)->first();
+            if ($pickup) {
+                $pickup->status = $request->status;
+                $pickup->updated_by = auth()->id();
+                $pickup->save();
+            }
+        } elseif ($request->type === 'delivery') {
+            $delivery = DeliveryOrderStatus::where('invoice_id', $id)->first();
+            if ($delivery) {
+                $delivery->status = $request->status;
+                $delivery->updated_by = auth()->id();
+                $delivery->save();
+            }
+        }
+
+        return back();
     }
 
     /**
@@ -200,25 +174,6 @@ class ConfirmOrderController extends Controller
      */
     public function destroy(string $id)
     {
-        $invoice = Invoice::findOrFail($id);
-
-        // Hapus semua invoice detail terkait
-        foreach ($invoice->invoicedetails as $detail) {
-            $detail->delete();
-        }
-
-        // Hapus semua payment terkait
-        foreach ($invoice->payments as $payment) {
-            if ($payment->PaymentImage && \Storage::disk('public')->exists($payment->PaymentImage)) {
-                \Storage::disk('public')->delete($payment->PaymentImage);
-            }
-            $payment->delete();
-        }
-
-        // Terakhir, hapus invoice utama
-        $invoice->delete();
-
-        return redirect()->back()->with('success', 'Invoice dan seluruh relasinya berhasil dihapus.');
+        //
     }
-
 }

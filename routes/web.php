@@ -5,6 +5,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\ConfirmOrderController;
 use App\Http\Controllers\CustomerCartController;
+use App\Http\Controllers\OrderStatusController;
+use App\Http\Controllers\StockProductController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ownerDashboard;
@@ -65,6 +67,13 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
     Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
     Route::delete('/orders/{id}', [ConfirmOrderController::class, 'destroy'])->name('order.destroy');
     Route::post('/confirm/{id}', [ConfirmOrderController::class, 'confirmOrder'])->name('order.confirm');
+
+    //confirm
+    Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.confirm');
+    
+    //Stock Product
+    Route::get('/stock', [StockProductController::class, 'index'])->name('order.confirm');
+
 });
 
 // Customer-only routes

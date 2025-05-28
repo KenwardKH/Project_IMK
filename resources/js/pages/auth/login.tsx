@@ -1,88 +1,87 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle, ArrowLeft } from 'lucide-react'; // Import ikon panah kiri
+import { LoaderCircle } from 'lucide-react'; // Import ikon panah kiri
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface LoginForm {
-  email: string;
-  password: string;
-  remember: boolean;
+    email: string;
+    password: string;
+    remember: boolean;
 }
 
 interface LoginProps {
-  status?: string;
-  canResetPassword: boolean;
+    status?: string;
+    canResetPassword: boolean;
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
-  const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-    email: '',
-    password: '',
-    remember: false,
-  });
-
-  const submit: FormEventHandler = (e) => {
-    e.preventDefault();
-    post(route('login'), {
-      onFinish: () => reset('password'),
+    const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
+        email: '',
+        password: '',
+        remember: false,
     });
-  };
 
-  return (
-    <>
-      <Head title="Log in" />
-      <div className="min-h-screen bg-[#f1f5f9] flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        post(route('login'), {
+            onFinish: () => {
+                reset('password');
+                window.location.reload();
+            },
+        });
+    };
 
-        {/* Back Button */}
-        <button
+    return (
+        <>
+            <Head title="Log in" />
+            <div className="relative flex min-h-screen items-center justify-center bg-[#f1f5f9] px-4 sm:px-6 lg:px-8">
+                {/* Back Button */}
+                {/* <button
           onClick={() => window.history.back()}
           className="absolute top-4 left-4 flex items-center text-[#2563eb] hover:text-[#1e40af] transition-colors text-sm font-medium cursor-pointer "
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
           Back
-        </button>
+        </button> */}
 
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-10 space-y-6 border border-[#e2e8f0] transition-all">
-          {/* Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold text-[#1e293b]">Selamat datang 👋</h1>
-            <p className="text-sm text-[#64748b]">Silahkan daftar jika anda belum memiliki akun</p>
-          </div>
+                <div className="w-full max-w-md space-y-6 rounded-3xl border border-[#e2e8f0] bg-white p-10 shadow-xl transition-all">
+                    {/* Header */}
+                    <div className="space-y-2 text-center">
+                        <h1 className="text-3xl font-bold text-[#1e293b]">Selamat datang 👋</h1>
+                        <p className="text-sm text-[#64748b]">Silahkan daftar jika anda belum memiliki akun</p>
+                    </div>
 
-          {status && (
-            <div className="text-sm text-green-600 text-center font-medium">{status}</div>
-          )}
+                    {status && <div className="text-center text-sm font-medium text-green-600">{status}</div>}
 
-          <form className="space-y-5" onSubmit={submit}>
-            <div>
-              <Label htmlFor="email" className="text-sm text-[#334155] font-medium">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                autoFocus
-                value={data.email}
-                onChange={(e) => setData('email', e.target.value)}
-                className="mt-2 text-[#0f172a] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-[#2563eb] transition-all"
-                placeholder="Masukkan email anda"
-              />
-              <InputError message={errors.email} />
-            </div>
+                    <form className="space-y-5" onSubmit={submit}>
+                        <div>
+                            <Label htmlFor="email" className="text-sm font-medium text-[#334155]">
+                                Email
+                            </Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                required
+                                autoFocus
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
+                                className="mt-2 text-[#0f172a] transition-all placeholder:text-[#94a3b8] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]"
+                                placeholder="Masukkan email anda"
+                            />
+                            <InputError message={errors.email} />
+                        </div>
 
-            <div>
-              <div className="flex justify-between items-center">
-                <Label htmlFor="password" className="text-sm text-[#334155] font-medium">
-                  Password
-                </Label>
-                {/* {canResetPassword && (
+                        <div>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="password" className="text-sm font-medium text-[#334155]">
+                                    Password
+                                </Label>
+                                {/* {canResetPassword && (
                   <TextLink
                     href={route('password.request')}
                     className="text-sm text-[#2563eb] hover:underline"
@@ -90,20 +89,20 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     Lupa Password?
                   </TextLink>
                 )} */}
-              </div>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={data.password}
-                onChange={(e) => setData('password', e.target.value)}
-                className="mt-2 text-[#0f172a] placeholder:text-[#94a3b8] focus:ring-2 focus:ring-[#2563eb] focus:border-[#2563eb] transition-all"
-                placeholder="Masukkan password anda"
-              />
-              <InputError message={errors.password} />
-            </div>
+                            </div>
+                            <Input
+                                id="password"
+                                type="password"
+                                required
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                className="mt-2 text-[#0f172a] transition-all placeholder:text-[#94a3b8] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]"
+                                placeholder="Masukkan password anda"
+                            />
+                            <InputError message={errors.password} />
+                        </div>
 
-            {/* <div className="flex items-center space-x-2">
+                        {/* <div className="flex items-center space-x-2">
               <Checkbox
                 id="remember"
                 name="remember"
@@ -113,24 +112,24 @@ export default function Login({ status, canResetPassword }: LoginProps) {
               <Label htmlFor="remember" className="text-sm text-[#334155]">Remember me</Label>
             </div> */}
 
-            <Button
-              type="submit"
-              className="w-full bg-[#2563eb] hover:bg-[#1e40af] text-white font-semibold py-2 rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
-              disabled={processing}
-            >
-              {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-              Log in
-            </Button>
+                        <Button
+                            type="submit"
+                            className="w-full rounded-xl bg-[#2563eb] py-2 font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#1e40af] hover:shadow-lg"
+                            disabled={processing}
+                        >
+                            {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                            Log in
+                        </Button>
 
-            <p className="text-sm text-center text-[#64748b]">
-              Belum punya akun?{' '}
-              <TextLink href={route('register')} className="text-[#2563eb] hover:underline font-medium">
-                Daftar
-              </TextLink>
-            </p>
-          </form>
-        </div>
-      </div>
-    </>
-  );
+                        <p className="text-center text-sm text-[#64748b]">
+                            Belum punya akun?{' '}
+                            <TextLink href={route('register')} className="font-medium text-[#2563eb] hover:underline">
+                                Daftar
+                            </TextLink>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </>
+    );
 }

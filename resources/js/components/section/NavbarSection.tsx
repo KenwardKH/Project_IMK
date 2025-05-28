@@ -160,7 +160,7 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
                                         href="/logout"
                                         as="button"
                                         className="flex w-full items-center gap-3 py-3 text-red-600 hover:text-red-700"
-                                        id='logoutdrop'
+                                        id="logoutdrop"
                                     >
                                         <div className="rounded-lg bg-red-100 p-1.5" id="buttonlogout">
                                             <LogOut className="h-4 w-4 text-red-500" />
@@ -216,18 +216,46 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
                                 </div>
                             </div>
                         ) : user ? (
-                            <div className="mt-4 flex items-center gap-3 rounded-lg bg-green-50 p-3">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src="/images/default-avatar.png" alt="Avatar" />
-                                    <AvatarFallback className="bg-green-100 font-bold text-green-800">{getUserInitials(user.name)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                    <p className="text-sm font-semibold text-green-800">{user.name}</p>
-                                    <p className="text-xs text-green-600">{user.email}</p>
+                            <div className="mt-4 flex flex-col gap-3 rounded-lg bg-green-50 p-3">
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage src="/images/default-avatar.png" alt="Avatar" />
+                                        <AvatarFallback className="bg-green-100 font-bold text-green-800">
+                                            {getUserInitials(user.name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-semibold text-green-800">{user.name}</p>
+                                        <p className="text-xs text-green-600">{user.email}</p>
+                                    </div>
+                                    <Link method="post" href="/logout" as="button" className="text-red-500 hover:text-red-600">
+                                        <LogOut className="h-4 w-4" />
+                                    </Link>
                                 </div>
-                                <Link method="post" href="/logout" as="button" className="text-red-500 hover:text-red-600">
-                                    <LogOut className="h-4 w-4" />
-                                </Link>
+
+                                {/* Tambahan navigasi versi mobile */}
+                                <div className="flex flex-col gap-2 text-sm">
+                                    <Link
+                                        href="/settings/profile"
+                                        className="flex items-center gap-3 rounded-md bg-blue-100 p-2 text-blue-700 hover:bg-blue-200"
+                                    >
+                                        <User className="h-4 w-4" />
+                                        <div>
+                                            <p className="font-medium">Pengaturan Profil</p>
+                                            <p className="text-xs text-gray-500">Edit informasi pribadi</p>
+                                        </div>
+                                    </Link>
+                                    <Link
+                                        href="/order/belum-bayar"
+                                        className="flex items-center gap-3 rounded-md bg-amber-100 p-2 text-amber-700 hover:bg-amber-200"
+                                    >
+                                        <PackageSearch className="h-4 w-4" />
+                                        <div>
+                                            <p className="font-medium">Pesanan Saya</p>
+                                            <p className="text-xs text-gray-500">Lacak status pesanan</p>
+                                        </div>
+                                    </Link>
+                                </div>
                             </div>
                         ) : (
                             <div className="mt-4 flex gap-3">

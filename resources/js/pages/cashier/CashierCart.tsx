@@ -210,7 +210,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                   </h1>
                                   {/* Customer Info Section (optional / manual) */}
                                     <div className="mb-6">
-                                      <h3 className="font-semibold text-[#1c283f] mb-3">Data Pelanggan (Opsional)</h3>
+                                      <h3 className="font-semibold text-[#1c283f] mb-3">Data Pelanggan</h3>
                                       
                                       <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700">
                                         Nama Pelanggan
@@ -222,6 +222,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                         onChange={(e) => setCustomerName(e.target.value)}
                                         placeholder="Masukkan nama pelanggan (opsional)"
                                         className="w-full mt-1 mb-4"
+                                        required
                                       />
 
                                       <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700">
@@ -234,6 +235,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                         onChange={(e) => setCustomerContact(e.target.value)}
                                         placeholder="Masukkan nomor telepon atau email"
                                         className="w-full mt-1"
+                                        required
                                       />
                                     </div>
 

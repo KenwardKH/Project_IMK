@@ -21,7 +21,7 @@ class CreateProductPriceTriggers extends Migration
 
         DB::unprepared('
             CREATE TRIGGER before_insert_new_stock
-            BEFORE INSERT ON products
+            AFTER INSERT ON products
             FOR EACH ROW
             BEGIN
                 INSERT INTO pricing_logs (ProductID, OldPrice, NewPrice, TimeChanged)

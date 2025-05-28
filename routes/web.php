@@ -5,8 +5,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\ConfirmOrderController;
 use App\Http\Controllers\CustomerCartController;
-use App\Http\Controllers\StockProductController;
 use App\Http\Controllers\OrderStatusController;
+use App\Http\Controllers\StockProductController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ownerDashboard;
@@ -45,41 +45,45 @@ Route::get('/faq', function (){
       return Inertia::render("footer/FAQPage");
 });
 
-Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
-Route::get('/test-cashier', function () {
-    return 'Cashier route is accessible!';
+// Cashier-only routes
+Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name('cashier.')->group(function () {
+    // Main cashier page
+    Route::get('/', [CashierController::class, 'index'])->name('index');
+
+    // Cart operations
+    Route::post('/cart/update', [CashierController::class, 'updateCart'])->name('cart.update');
+    Route::delete('/cart/remove/{productId}', [CashierController::class, 'removeFromCart'])->name('cart.remove');
+    Route::delete('/cart/clear', [CashierController::class, 'clearCart'])->name('cart.clear');
+
+    // Checkout
+    Route::post('/checkout', [CashierController::class, 'checkout'])->name('cashier/checkout');
+
+    // API endpoints (for AJAX requests)
+    Route::get('/api/cart-summary', [CashierController::class, 'getCartSummary'])->name('api.cart-summary');
+    Route::get('/api/search-products', [CashierController::class, 'searchProducts'])->name('api.search-products');
+    Route::get('/api/transaction-history', [CashierController::class, 'getTransactionHistory'])->name('api.transaction-history');
+
+    //Confirm Order Page
+    Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
+    Route::delete('/orders/{id}', [ConfirmOrderController::class, 'destroy'])->name('order.destroy');
+    Route::post('/confirm/{id}', [ConfirmOrderController::class, 'confirmOrder'])->name('order.confirm');
+
+    //confirm
+    Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.confirm');
+    
+    //Stock Product
+    Route::get('/stock', [StockProductController::class, 'index'])->name('order.confirm');
+
 });
-Route::prefix('cashier')->name('cashier.')->group(function () {
-        // Main cashier page
-        Route::get('/', [CashierController::class, 'index'])->name('index');
-        
-        // Cart operations
-        Route::post('/cart/update', [CashierController::class, 'updateCart'])->name('cart.update');
-        Route::delete('/cart/remove/{productId}', [CashierController::class, 'removeFromCart'])->name('cart.remove');
-        Route::delete('/cart/clear', [CashierController::class, 'clearCart'])->name('cart.clear');
-        
-        // Checkout
-        Route::post('/checkout', [CashierController::class, 'checkout'])->name('checkout');
-        
-        // API endpoints (for AJAX requests)
-        Route::get('/api/cart-summary', [CashierController::class, 'getCartSummary'])->name('api.cart-summary');
-        Route::get('/api/search-products', [CashierController::class, 'searchProducts'])->name('api.search-products');
-        Route::get('/api/transaction-history', [CashierController::class, 'getTransactionHistory'])->name('api.transaction-history');
-        
-        //Confirm Order Page
-        Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
-        Route::delete('/orders/{id}', [ConfirmOrderController::class, 'destroy'])->name('order.destroy');
-        Route::post('/confirm/{id}', [ConfirmOrderController::class, 'confirmOrder'])->name('order.confirm');
 
-        //Stock Product
-        Route::get('/stock', [StockProductController::class, 'index'])->name('stock');
+// Customer-only routes
+Route::middleware(['auth', 'verified', 'role:customer'])->group(function () {
+    // Customer Dashboard
+    Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
+    Route::get('products', [customerDashboard::class, 'indexProducts'])->name('products.index');
+    Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
 
-        //Order Status 
-        Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.status');
-
-    });
-Route::middleware(['auth', 'verified'])->group(function () {
-    // Display cart
+    // Cart management
     Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [CustomerCartController::class, 'store'])->name('cart.store');
     Route::put('/cart/{id}', [CustomerCartController::class, 'update'])->name('cart.update');
@@ -98,7 +102,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Owner-only routes
 Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
     // Owner Dashboard
-    Route::get('/dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
+    Route::get('owner-dashboard', [OwnerDashboard::class, 'index'])->name('owner-dashboard');
     Route::post('/owner/update-timeout', [ownerDashboard::class, 'updatePaymentTimeout'])->name('owner.update-timeout');
 
     Route::get('owner-supplier/tambah', function () {

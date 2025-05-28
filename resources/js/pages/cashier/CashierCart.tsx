@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2, Minus, Plus, ShoppingBag, ArrowLeft, Truck, Package } from 'lucide-react';
-import { type BreadcrumbItem } from '@/types';
 
 // Interfaces
 interface Product {
@@ -37,330 +36,444 @@ interface Props {
 }
 
 export default function CashierCart({ products, cartItems, total, subtotal }: Props) {
-// const CashierCart: React.FC<Props> = ({ products, cartItems, total, subtotal }) => {
   const [loading, setLoading] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-    const [showCheckout, setShowCheckout] = useState(false);
-    const [shippingOption, setShippingOption] = useState('pickup');
-    const [alamat, setAlamat] = useState('');
-    const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
-    const [customerName, setCustomerName] = useState('');
-    const [customerContact, setCustomerContact] = useState('');
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [shippingOption, setShippingOption] = useState('pickup');
+  const [alamat, setAlamat] = useState('');
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [customerContact, setCustomerContact] = useState('');
+  
+  // State untuk data cart yang diupdate secara real-time
+  const [currentCartItems, setCurrentCartItems] = useState<CartItem[]>(cartItems);
+  const [currentSubtotal, setCurrentSubtotal] = useState(subtotal);
+  const [currentTotal, setCurrentTotal] = useState(total);
 
+  // Update state ketika props berubah
+  useEffect(() => {
+    setCurrentCartItems(cartItems);
+    setCurrentSubtotal(subtotal);
+    setCurrentTotal(total);
+  }, [cartItems, subtotal, total]);
+
+  // Helper function untuk mendapatkan CSRF token
+  const getCSRFToken = (): string => {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+  };
+
+  // Helper function untuk format harga
+  const formatPrice = (price: number) => {
+    return price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+  };
 
   // Filter products berdasarkan search term
   const filteredProducts = products.filter(product =>
-  typeof product.name === 'string' &&
-  product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    typeof product.name === 'string' &&
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Function untuk update quantity di cart
+  // Async function untuk update quantity di cart
   const updateCartQuantity = async (productId: number, action: 'increment' | 'decrement') => {
     setLoading(productId);
     
     try {
-      await router.post('/cashier/cart/update', {
-        product_id: productId,
-        action: action,
-      }, {
-        preserveState: true,
-        preserveScroll: true,
-        onFinish: () => setLoading(null),
+      const response = await fetch('/cashier/cart/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': getCSRFToken(),
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          action: action,
+        })
       });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Update state secara optimistic
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        setCurrentCartItems(prevItems => {
+          const existingItem = prevItems.find(item => item.product_id === productId);
+          
+          if (action === 'increment') {
+            if (existingItem) {
+              // Update existing item
+              return prevItems.map(item =>
+                item.product_id === productId
+                  ? { ...item, quantity: item.quantity + 1 }
+                  : item
+              );
+            } else {
+              // Add new item
+              const newItem: CartItem = {
+                id: Date.now(), // temporary ID
+                product_id: productId,
+                quantity: 1,
+                price: product.price,
+                product: product
+              };
+              return [...prevItems, newItem];
+            }
+          } else {
+            // decrement
+            if (existingItem) {
+              if (existingItem.quantity <= 1) {
+                // Remove item
+                return prevItems.filter(item => item.product_id !== productId);
+              } else {
+                // Decrease quantity
+                return prevItems.map(item =>
+                  item.product_id === productId
+                    ? { ...item, quantity: item.quantity - 1 }
+                    : item
+                );
+              }
+            }
+            return prevItems;
+          }
+        });
+
+        // Recalculate totals
+        setTimeout(() => {
+          const newSubtotal = currentCartItems.reduce((sum, item) => 
+            sum + (item.product.price * item.quantity), 0
+          );
+          setCurrentSubtotal(newSubtotal);
+          setCurrentTotal(newSubtotal);
+        }, 0);
+
+        // Show success message if provided
+        if (data.message) {
+          console.log('Success:', data.message);
+        }
+      } else {
+        // Handle error
+        console.error('Error response:', data);
+        alert(data.error || 'Gagal memperbarui keranjang');
+      }
     } catch (error) {
       console.error('Error updating cart:', error);
+      alert('Terjadi kesalahan saat memperbarui keranjang');
+    } finally {
       setLoading(null);
     }
   };
 
-  // Function untuk hapus item dari cart
+  // Async function untuk hapus item dari cart
   const removeFromCart = async (productId: number) => {
     setLoading(productId);
     
     try {
-      await router.delete(`/cashier/cart/remove/${productId}`, {
-        preserveState: true,
-        preserveScroll: true,
-        onFinish: () => setLoading(null),
+      const response = await fetch(`/cashier/cart/remove/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': getCSRFToken(),
+          'Accept': 'application/json',
+        }
       });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Update state optimistically
+        setCurrentCartItems(prevItems => 
+          prevItems.filter(item => item.product_id !== productId)
+        );
+
+        // Recalculate totals
+        setTimeout(() => {
+          const newSubtotal = currentCartItems
+            .filter(item => item.product_id !== productId)
+            .reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+          setCurrentSubtotal(newSubtotal);
+          setCurrentTotal(newSubtotal);
+        }, 0);
+
+        console.log('Success:', data.message || 'Item berhasil dihapus');
+      } else {
+        console.error('Error response:', data);
+        alert(data.error || 'Gagal menghapus item dari keranjang');
+      }
     } catch (error) {
       console.error('Error removing item:', error);
+      alert('Terjadi kesalahan saat menghapus item');
+    } finally {
       setLoading(null);
     }
   };
 
-    const formatPrice = (price: number) => {
-        return price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
-    };
-
-  // Function untuk checkout
-  // const handleCheckout = async () => {
-  //   if (cartItems.length === 0) {
-  //     alert('Keranjang belanja kosong!');
-  //     return;
-  //   }
-
-  //   setLoading(-1); // Loading state untuk checkout
+  // Async function untuk clear cart
+  const clearCart = async () => {
+    if (currentCartItems.length === 0) return;
     
-  //   try {
-  //     await router.post('/cashier/checkout', {}, {
-  //       onSuccess: () => {
-  //         alert('Checkout berhasil!');
-  //       },
-  //       onError: (errors) => {
-  //         console.error('Checkout error:', errors);
-  //         alert('Checkout gagal!');
-  //       },
-  //       onFinish: () => setLoading(null),
-  //     });
-  //   } catch (error) {
-  //     console.error('Error during checkout:', error);
-  //     setLoading(null);
-  //   }
-  // };
-
-    const handleCheckout = () => {
-        setShowCheckout(true);
-    };
-
-    const processCheckout = async () => {
-    if (shippingOption === 'diantar' && !alamat.trim()) {
-        alert('Mohon masukkan alamat pengiriman');
-        return;
-    }
-
-    // Validasi jika customerName atau contact diperlukan
-    if (!customerName.trim() || !customerContact.trim()) {
-        const confirmLanjut = confirm('Data pelanggan belum lengkap. Lanjutkan mengisi!');
-        if (!confirmLanjut) return;
-    }
-
-    setIsProcessingCheckout(true);
-
-    try {
-        const response = await fetch('/cashier/checkout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                shipping_option: shippingOption,
-                payment_option: 'transfer',
-                alamat: shippingOption === 'diantar' ? alamat : null,
-                customer_name: customerName || null,
-                customer_contact: customerContact || null,
-            })
+    if (confirm('Apakah Anda yakin ingin mengosongkan keranjang?')) {
+      try {
+        const response = await fetch('/cashier/cart/clear', {
+          method: 'DELETE',
+          headers: {
+            'X-CSRF-TOKEN': getCSRFToken(),
+            'Accept': 'application/json',
+          }
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            alert('Checkout berhasil! Silakan lakukan pembayaran.');
-            router.visit('/cashier/'); // Redirect ke halaman dashboard atau order
+          // Update state
+          setCurrentCartItems([]);
+          setCurrentSubtotal(0);
+          setCurrentTotal(0);
+          
+          console.log('Success:', data.message || 'Keranjang berhasil dikosongkan');
         } else {
-            console.error('Response error:', data);
-            alert(data.error || 'Gagal melakukan checkout');
+          console.error('Error response:', data);
+          alert(data.error || 'Gagal mengosongkan keranjang');
         }
-    } catch (error) {
-        console.error('Error during checkout:', error);
-        alert('Terjadi kesalahan saat checkout');
-    } finally {
-        setIsProcessingCheckout(false);
-    }
-};
-
-
-  // Function untuk clear cart
-  const clearCart = async () => {
-    if (cartItems.length === 0) return;
-    
-    if (confirm('Apakah Anda yakin ingin mengosongkan keranjang?')) {
-      try {
-        await router.delete('/cashier/cart/clear', {
-          preserveState: true,
-          preserveScroll: true,
-        });
       } catch (error) {
         console.error('Error clearing cart:', error);
+        alert('Terjadi kesalahan saat mengosongkan keranjang');
       }
+    }
+  };
+
+  // Function untuk checkout
+  const handleCheckout = () => {
+    if (currentCartItems.length === 0) {
+      alert('Keranjang belanja kosong!');
+      return;
+    }
+    setShowCheckout(true);
+  };
+
+  // Async function untuk process checkout
+  const processCheckout = async () => {
+    if (shippingOption === 'diantar' && !alamat.trim()) {
+      alert('Mohon masukkan alamat pengiriman');
+      return;
+    }
+
+    if (!customerName.trim() || !customerContact.trim()) {
+      const confirmLanjut = confirm('Data pelanggan belum lengkap. Lanjutkan checkout?');
+      if (!confirmLanjut) return;
+    }
+
+    setIsProcessingCheckout(true);
+
+    try {
+      const response = await fetch('/cashier/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': getCSRFToken(),
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          shipping_option: shippingOption,
+          payment_option: 'transfer',
+          alamat: shippingOption === 'diantar' ? alamat : null,
+          customer_name: customerName || null,
+          customer_contact: customerContact || null,
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Checkout berhasil! Silakan lakukan pembayaran.');
+        
+        // Clear cart state
+        setCurrentCartItems([]);
+        setCurrentSubtotal(0);
+        setCurrentTotal(0);
+        
+        // Redirect
+        router.visit('/cashier/');
+      } else {
+        console.error('Response error:', data);
+        alert(data.error || 'Gagal melakukan checkout');
+      }
+    } catch (error) {
+      console.error('Error during checkout:', error);
+      alert('Terjadi kesalahan saat checkout');
+    } finally {
+      setIsProcessingCheckout(false);
     }
   };
 
   // Get quantity for specific product in cart
   const getProductQuantityInCart = (productId: number): number => {
-    const cartItem = cartItems.find(item => item.product_id === productId);
+    const cartItem = currentCartItems.find(item => item.product_id === productId);
     return cartItem ? cartItem.quantity : 0;
   };
 
+  // Checkout UI
   if (showCheckout) {
-          return (
-              <AppLayout > 
-                {/* breadcrumbs={breadcrumbs}> */}
-                <section id="buat-pesanan" className="mb-12">
-                  <Head title="Checkout | Sinar Pelangi" />
-                  
-                  <div className="container mx-auto py-8 px-4" id="CashierCart">
-                      <div className="max-w-2xl mx-auto">
-                          <Card className="bg-white rounded-2xl shadow-lg">
-                              <CardContent className="p-6">
-                                  <h1 className="font-[Poppins] text-2xl font-bold text-[#1c283f] mb-6">
-                                      Checkout
-                                  </h1>
-                                  {/* Customer Info Section (optional / manual) */}
-                                    <div className="mb-6">
-                                      <h3 className="font-semibold text-[#1c283f] mb-3">Data Pelanggan (Opsional)</h3>
-                                      
-                                      <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700">
-                                        Nama Pelanggan
-                                      </Label>
-                                      <Input
-                                        id="customerName"
-                                        type="text"
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        placeholder="Masukkan nama pelanggan (opsional)"
-                                        className="w-full mt-1 mb-4"
-                                      />
+    return (
+      <AppLayout>
+        <section id="buat-pesanan" className="mb-12">
+          <Head title="Checkout | Sinar Pelangi" />
+          
+          <div className="container mx-auto py-8 px-4" id="CashierCart">
+            <div className="max-w-2xl mx-auto">
+              <Card className="bg-white rounded-2xl shadow-lg">
+                <CardContent className="p-6">
+                  <h1 className="font-[Poppins] text-2xl font-bold text-[#1c283f] mb-6">
+                    Checkout
+                  </h1>
 
-                                      <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700">
-                                        Kontak Pelanggan
-                                      </Label>
-                                      <Input
-                                        id="customerContact"
-                                        type="text"
-                                        value={customerContact}
-                                        onChange={(e) => setCustomerContact(e.target.value)}
-                                        placeholder="Masukkan nomor telepon atau email"
-                                        className="w-full mt-1"
-                                      />
-                                    </div>
+                  {/* Customer Info Section */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-[#1c283f] mb-3">Data Pelanggan (Opsional)</h3>
+                    
+                    <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700">
+                      Nama Pelanggan
+                    </Label>
+                    <Input
+                      id="customerName"
+                      type="text"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="Masukkan nama pelanggan (opsional)"
+                      className="w-full mt-1 mb-4"
+                    />
 
-                                  {/* Order Summary */}
-                                  <div className="mb-6">
-                                      <h3 className="font-semibold text-[#1c283f] mb-3">Ringkasan Pesanan</h3>
-                                      <div className="bg-gray-50 p-4 rounded-lg">
-                                          <div className="flex justify-between mb-2">
-                                              <span>Subtotal ({cartItems.length} item)</span>
-                                              <span>{formatPrice(subtotal)}</span>
-                                          </div>
-                                          <div className="flex justify-between mb-2">
-                                              <span>Ongkos Kirim</span>
-                                              <span>Gratis</span>
-                                          </div>
-                                          <hr className="my-2" />
-                                          <div className="flex justify-between font-bold text-lg">
-                                              <span>Total</span>
-                                              <span className="text-[#56b280]">{formatPrice(subtotal)}</span>
-                                          </div>
-                                      </div>
-                                  </div>
-  
-                                  {/* Payment Method */}
-                                  <div className="mb-6">
-                                      <h3 className="font-semibold text-[#1c283f] mb-3">Metode Pembayaran</h3>
-                                      <div className="bg-gray-50 p-4 rounded-lg">
-                                          <div className="flex items-center space-x-2">
-                                              <div className="w-3 h-3 bg-[#56b280] rounded-full"></div>
-                                              <span>Transfer Bank</span>
-                                          </div>
-                                          <p className="text-sm text-gray-600 mt-2">
-                                              Pembayaran melalui transfer bank. Detail rekening akan diberikan setelah checkout.
-                                          </p>
-                                      </div>
-                                  </div>
-  
-                                  {/* Shipping Options */}
-                                  <div className="mb-6">
-                                      <Label className="font-semibold text-[#1c283f] mb-3 block">Pilih Cara Pengiriman</Label>
-                                      <RadioGroup value={shippingOption} onValueChange={setShippingOption}>
-                                          <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                                              <RadioGroupItem value="pickup" id="pickup" />
-                                              <Package className="h-5 w-5 text-[#153e98]" />
-                                              <div className="flex-1">
-                                                  <Label htmlFor="pickup" className="font-medium cursor-pointer">
-                                                      Pickup di Toko
-                                                  </Label>
-                                                  <p className="text-sm text-gray-600">
-                                                      Ambil pesanan langsung di toko kami
-                                                  </p>
-                                              </div>
-                                              <span className="font-semibold text-[#56b280]">Gratis</span>
-                                          </div>
-                                          <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                                              <RadioGroupItem value="diantar" id="delivery" />
-                                              <Truck className="h-5 w-5 text-[#153e98]" />
-                                              <div className="flex-1">
-                                                  <Label htmlFor="delivery" className="font-medium cursor-pointer">
-                                                      Diantar ke Alamat
-                                                  </Label>
-                                                  <p className="text-sm text-gray-600">
-                                                      Pesanan akan diantar ke alamat Anda
-                                                  </p>
-                                              </div>
-                                              <span className="font-semibold text-[#56b280]">Gratis</span>
-                                          </div>
-                                      </RadioGroup>
-                                  </div>
-  
-                                  {/* Delivery Address */}
-                                  {shippingOption === 'diantar' && (
-                                      <div className="mb-6">
-                                          <Label htmlFor="alamat" className="font-semibold text-[#1c283f] mb-2 block">
-                                              Alamat Pengiriman *
-                                          </Label>
-                                          <Textarea
-                                              id="alamat"
-                                              value={alamat}
-                                              onChange={(e) => setAlamat(e.target.value)}
-                                              placeholder="Masukkan alamat lengkap untuk pengiriman..."
-                                              className="w-full"
-                                              rows={3}
-                                          />
-                                      </div>
-                                  )}
-  
-                                  {/* Action Buttons */}
-                                  <div className="flex space-x-3">
-                                      <Button 
-                                          onClick={() => setShowCheckout(false)}
-                                          variant="outline" 
-                                          className="flex-1 border-[#153e98] text-[#153e98] hover:bg-[#153e98] hover:text-white"
-                                          disabled={isProcessingCheckout}
-                                      >
-                                          <ArrowLeft className="mr-2 h-4 w-4" />
-                                          Kembali
-                                      </Button>
-                                      <Button 
-                                          onClick={processCheckout}
-                                          className="flex-1 bg-[#153e98] hover:bg-[#0f2e73] text-white"
-                                          disabled={isProcessingCheckout}
-                                      >
-                                          {isProcessingCheckout ? 'Memproses...' : 'Konfirmasi Pesanan'}
-                                      </Button>
-                                  </div>
-                              </CardContent>
-                          </Card>
-                      </div>
+                    <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700">
+                      Kontak Pelanggan
+                    </Label>
+                    <Input
+                      id="customerContact"
+                      type="text"
+                      value={customerContact}
+                      onChange={(e) => setCustomerContact(e.target.value)}
+                      placeholder="Masukkan nomor telepon atau email"
+                      className="w-full mt-1"
+                    />
                   </div>
-                </section>
-              </AppLayout>
-          );
-      }
 
+                  {/* Order Summary */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-[#1c283f] mb-3">Ringkasan Pesanan</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex justify-between mb-2">
+                        <span>Subtotal ({currentCartItems.length} item)</span>
+                        <span>{formatPrice(currentSubtotal)}</span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span>Ongkos Kirim</span>
+                        <span>Gratis</span>
+                      </div>
+                      <hr className="my-2" />
+                      <div className="flex justify-between font-bold text-lg">
+                        <span>Total</span>
+                        <span className="text-[#56b280]">{formatPrice(currentTotal)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Method */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-[#1c283f] mb-3">Metode Pembayaran</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-[#56b280] rounded-full"></div>
+                        <span>Transfer Bank</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">
+                        Pembayaran melalui transfer bank. Detail rekening akan diberikan setelah checkout.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Shipping Options */}
+                  <div className="mb-6">
+                    <Label className="font-semibold text-[#1c283f] mb-3 block">Pilih Cara Pengiriman</Label>
+                    <RadioGroup value={shippingOption} onValueChange={setShippingOption}>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="pickup" id="pickup" />
+                        <Package className="h-5 w-5 text-[#153e98]" />
+                        <div className="flex-1">
+                          <Label htmlFor="pickup" className="font-medium cursor-pointer">
+                            Pickup di Toko
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Ambil pesanan langsung di toko kami
+                          </p>
+                        </div>
+                        <span className="font-semibold text-[#56b280]">Gratis</span>
+                      </div>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="diantar" id="delivery" />
+                        <Truck className="h-5 w-5 text-[#153e98]" />
+                        <div className="flex-1">
+                          <Label htmlFor="delivery" className="font-medium cursor-pointer">
+                            Diantar ke Alamat
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Pesanan akan diantar ke alamat Anda
+                          </p>
+                        </div>
+                        <span className="font-semibold text-[#56b280]">Gratis</span>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Delivery Address */}
+                  {shippingOption === 'diantar' && (
+                    <div className="mb-6">
+                      <Label htmlFor="alamat" className="font-semibold text-[#1c283f] mb-2 block">
+                        Alamat Pengiriman *
+                      </Label>
+                      <Textarea
+                        id="alamat"
+                        value={alamat}
+                        onChange={(e) => setAlamat(e.target.value)}
+                        placeholder="Masukkan alamat lengkap untuk pengiriman..."
+                        className="w-full"
+                        rows={3}
+                      />
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-3">
+                    <Button 
+                      onClick={() => setShowCheckout(false)}
+                      variant="outline" 
+                      className="flex-1 border-[#153e98] text-[#153e98] hover:bg-[#153e98] hover:text-white"
+                      disabled={isProcessingCheckout}
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Kembali
+                    </Button>
+                    <Button 
+                      onClick={processCheckout}
+                      className="flex-1 bg-[#153e98] hover:bg-[#0f2e73] text-white"
+                      disabled={isProcessingCheckout}
+                    >
+                      {isProcessingCheckout ? 'Memproses...' : 'Konfirmasi Pesanan'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+      </AppLayout>
+    );
+  }
+
+  // Main Cart UI
   return (
     <AppLayout>
       <Head title="Kasir - Toko ATK" />
       <section id="buat-pesanan" className="mb-12">
         <div className="min-h-screen bg-gray-100">
-          {/* Header */}
-          {/* <div className="bg-white shadow-sm border-b">
-            <div className="max-w-full mx-auto px-6 py-4">
-              <h1 className="text-2xl font-bold text-gray-900">Kasir Toko ATK</h1>
-            </div>
-          </div> */}
-
           {/* Main Content */}
           <div className="max-w-full mx-auto px-6 py-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
@@ -463,7 +576,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
               <div className="bg-white rounded-lg shadow-sm p-6 overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-800">Ringkasan Pesanan</h2>
-                  {cartItems.length > 0 && (
+                  {currentCartItems.length > 0 && (
                     <button
                       onClick={clearCart}
                       className="text-red-500 hover:text-red-700 text-sm font-medium"
@@ -475,13 +588,13 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
 
                 {/* Cart Items */}
                 <div className="flex-1 overflow-y-auto mb-6">
-                  {cartItems.length === 0 ? (
+                  {currentCartItems.length === 0 ? (
                     <div className="text-center py-12">
                       <p className="text-gray-500">Keranjang belanja kosong</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {cartItems.map((item) => (
+                      {currentCartItems.map((item) => (
                         <div
                           key={item.id}
                           className="flex justify-between items-center p-3 border border-gray-200 rounded-lg"
@@ -489,19 +602,18 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900 text-sm">
                               {item.product?.name ?? 'Nama produk tidak tersedia'}
-                              
                             </h4>
                             <p className="text-sm text-gray-500">
                               {item.product?.price !== undefined
-                                    ? `Rp ${item.product.price.toLocaleString('id-ID')} x ${item.quantity}`
-                                    : 'Harga tidak tersedia'}
+                                ? `Rp ${item.product.price.toLocaleString('id-ID')} x ${item.quantity}`
+                                : 'Harga tidak tersedia'}
                             </p>
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-gray-900">
                               {item.product?.price !== undefined
-                                  ? `Rp ${(item.product.price * item.quantity).toLocaleString('id-ID')}`
-                                  : 'Total tidak tersedia'}
+                                ? `Rp ${(item.product.price * item.quantity).toLocaleString('id-ID')}`
+                                : 'Total tidak tersedia'}
                             </p>
                           </div>
                         </div>
@@ -515,24 +627,24 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Subtotal:</span>
                     <span className="font-medium">
-                      Rp {subtotal.toLocaleString('id-ID')}
+                      Rp {currentSubtotal.toLocaleString('id-ID')}
                     </span>
                   </div>
                   
                   <div className="flex justify-between items-center text-lg font-semibold">
                     <span>Total:</span>
                     <span className="text-blue-600">
-                      Rp {total.toLocaleString('id-ID')}
+                      Rp {currentTotal.toLocaleString('id-ID')}
                     </span>
                   </div>
 
                   {/* Checkout Button */}
                   <button
                     onClick={handleCheckout}
-                    disabled={cartItems.length === 0 || loading === -1}
+                    disabled={currentCartItems.length === 0}
                     className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                   >
-                    {loading === -1 ? 'Processing...' : 'Checkout'}
+                    Checkout
                   </button>
                 </div>
               </div>
@@ -542,6 +654,4 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
       </section>
     </AppLayout>
   );
-};
-
-// export default CashierCart;
+}

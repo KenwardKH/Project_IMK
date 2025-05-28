@@ -10,10 +10,11 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
 class CashierController extends Controller
 {
-/**
+    /**
      * Display the cashier interface
      */
     public function index()
@@ -34,14 +35,12 @@ class CashierController extends Controller
                     ];
                 });
 
-
             $user = Auth::user();
             $cashier = $user->kasirs()->first(); 
 
-            // // Get current cart items with product details
-            
+            // Get current cart items with product details
             $cartItems = CashierCart::with('product')
-                ->where('CashierID', $cashier->id_kasir) // ⬅️ Hanya data milik kasir login
+                ->where('CashierID', $cashier->id_kasir)
                 ->get()
                 ->map(function ($item) {
                     return [
@@ -58,13 +57,10 @@ class CashierController extends Controller
                         'subtotal' => $item->product->ProductPrice * $item->Quantity
                     ];
                 });
-                // dd($cartItems);
-                // dd($cartItems->toArray());
                 
             // Calculate totals
             $subtotal = $cartItems->sum('subtotal');
-
-            $total = $subtotal; // You can add tax or discount calculation here
+            $total = $subtotal;
 
             return Inertia::render('cashier/CashierCart', [
                 'products' => $products,
@@ -79,105 +75,202 @@ class CashierController extends Controller
     }
 
     /**
-     * Update cart quantity (increment/decrement)
+     * Update cart quantity (increment/decrement) - Async version
      */
-    public function updateCart(Request $request)
-    {
-        $request->validate([
-            'product_id' => 'required|exists:products,ProductID',
-            'action' => 'required|in:increment,decrement',
-        ]);
-        $user = Auth::user();
-        $cashier = $user->kasirs()->first(); 
-        try {
-            DB::beginTransaction();
+    public function updateCart(Request $request): JsonResponse
+{
+    $request->validate([
+        'product_id' => 'required|exists:products,ProductID',
+        'action' => 'required|in:increment,decrement',
+    ]);
 
-            $product = Product::where('ProductID', $request->product_id)->firstOrFail();
-            $cartItem = CashierCart::where('ProductID', $request->product_id)->first();
+    $user = Auth::user();
+    $cashier = $user->kasirs()->first(); 
 
-            if ($request->action === 'increment') {
-                // Check stock availability
-                $currentQuantityInCart = $cartItem ? $cartItem->Quantity : 0;
-                
-                if ($currentQuantityInCart >= $product->CurrentStock) {
-                    return redirect()->back()->with('error', 'Stok tidak mencukupi!');
-                }
+    if (!$cashier) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Kasir tidak ditemukan.'
+        ], 404);
+    }
 
-                if ($cartItem) {
-                    // Update existing cart item
-                    $cartItem->Quantity += 1;
-                    $cartItem->save();
-                } else {
-                    // Create new cart item
-                    CashierCart::create([
-                        'ProductID' => $product->ProductID,
-                        'Quantity' => 1,
-                        'CashierID' => $cashier->id_kasir,
-                    ]);
-                }
-            } else if ($request->action === 'decrement') {
-                if (!$cartItem) {
-                    return redirect()->back()->with('error', 'Item tidak ditemukan di keranjang!');
-                }
+    try {
+        DB::beginTransaction();
 
-                if ($cartItem->Quantity <= 1) {
-                    // Remove item if quantity becomes 0
-                    $cartItem->delete();
-                } else {
-                    // Decrease quantity
-                    $cartItem->Quantity -= 1;
-                    $cartItem->save();
-                }
+        $product = Product::where('ProductID', $request->product_id)->firstOrFail();
+        
+        // Find existing cart item
+        $cartItem = CashierCart::where('CashierID', $cashier->id_kasir)
+            ->where('ProductID', $request->product_id)
+            ->first();
+
+        if ($request->action === 'increment') {
+            // Check stock availability
+            $currentQuantityInCart = $cartItem ? $cartItem->Quantity : 0;
+            
+            if ($currentQuantityInCart >= $product->CurrentStock) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Stok tidak mencukupi. Stok tersedia: ' . $product->CurrentStock
+                ], 400);
             }
 
-            DB::commit();
+            if ($cartItem) {
+                // Update existing cart item
+                $cartItem->Quantity += 1;
+                $cartItem->save();
+                
+                $message = 'Kuantitas produk berhasil ditambah';
+            } else {
+                // Create new cart item
+                CashierCart::create([
+                    'CashierID' => $cashier->id_kasir,
+                    'ProductID' => $request->product_id,
+                    'Quantity' => 1,
+                ]);
+                
+                $message = 'Produk berhasil ditambahkan ke keranjang';
+            }
+        } 
+        elseif ($request->action === 'decrement') {
+            if (!$cartItem) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Produk tidak ada dalam keranjang'
+                ], 400);
+            }
 
-            return redirect()->back()->with('success', 'Keranjang berhasil diperbarui!');
+            if ($cartItem->Quantity <= 1) {
+                // Remove item from cart if quantity becomes 0
+                $cartItem->delete();
+                $message = 'Produk berhasil dihapus dari keranjang';
+            } else {
+                // Decrease quantity
+                $cartItem->Quantity -= 1;
+                $cartItem->save();
+                $message = 'Kuantitas produk berhasil dikurangi';
+            }
+        }
+
+        DB::commit();
+
+        // Get updated cart data
+        $updatedCartItems = CashierCart::with('product')
+            ->where('CashierID', $cashier->id_kasir)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->CartID,
+                    'product_id' => $item->ProductID,
+                    'quantity' => $item->Quantity,
+                    'product' => [
+                        'id' => $item->product?->ProductID,
+                        'name' => $item->product?->ProductName,
+                        'price' => $item->product?->ProductPrice,
+                        'stock' => $item->product?->CurrentStock,
+                        'image' => $item->product?->Image,
+                    ],
+                    'subtotal' => $item->product->ProductPrice * $item->Quantity
+                ];
+            });
+
+            $subtotal = $updatedCartItems->sum('subtotal');
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'cart_items' => $updatedCartItems,
+                'subtotal' => $subtotal,
+                'total' => $subtotal,
+            ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error updating cart: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat memperbarui keranjang.');
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Terjadi kesalahan saat memperbarui keranjang: ' . $e->getMessage()
+            ], 500);
         }
     }
 
-    /**
-     * Remove specific item from cart
-     */
-    public function removeFromCart($productId)
-    {
-        try {
-            $cartItem = CashierCart::where('ProductID', $productId)->first();
+ /**
+ * Remove item from cart
+ */
+public function removeFromCart($productId): JsonResponse
+{
+    $user = Auth::user();
+    $cashier = $user->kasirs()->first();
 
-            if (!$cartItem) {
-                return redirect()->back()->with('error', 'Item tidak ditemukan di keranjang!');
-            }
-
-            $cartItem->delete();
-
-            return redirect()->back()->with('success', 'Item berhasil dihapus dari keranjang!');
-        } catch (\Exception $e) {
-            Log::error('Error removing item from cart: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus item.');
-        }
+    if (!$cashier) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Kasir tidak ditemukan.'
+        ], 404);
     }
 
-    /**
-     * Clear all items from cart
-     */
-    public function clearCart()
-    {
-         $kasir = Kasir::where('user_id', Auth::id())->first();
+    try {
+        $cartItem = CashierCart::where('CashierID', $cashier->id_kasir)
+            ->where('ProductID', $productId)
+            ->first();
 
-        if (!$kasir) {
-            return redirect()->back()->with('error', 'Kasir tidak ditemukan.');
+        if (!$cartItem) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Item tidak ditemukan dalam keranjang'
+            ], 404);
         }
 
-        // Hapus data dari cart berdasarkan CashierID
-        CashierCart::where('CashierID', $kasir->id_kasir)->delete();
+        $cartItem->delete();
 
-        return redirect()->back()->with('success', 'Keranjang berhasil dikosongkan!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Item berhasil dihapus dari keranjang'
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error removing item from cart: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'error' => 'Terjadi kesalahan saat menghapus item dari keranjang'
+        ], 500);
+    }
+}
+
+/**
+ * Clear all items from cart
+ */
+public function clearCart(): JsonResponse
+{
+    $user = Auth::user();
+    $cashier = $user->kasirs()->first();
+
+    if (!$cashier) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Kasir tidak ditemukan.'
+        ], 404);
     }
 
+    try {
+        CashierCart::where('CashierID', $cashier->id_kasir)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Keranjang berhasil dikosongkan'
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error clearing cart: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'error' => 'Terjadi kesalahan saat mengosongkan keranjang'
+        ], 500);
+    }
+}
     /**
      * Process checkout
      */

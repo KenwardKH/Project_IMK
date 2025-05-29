@@ -314,47 +314,47 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
 
   // Checkout UI
   if (showCheckout) {
-    return (
-      <AppLayout>
-        <section id="buat-pesanan" className="mb-12">
-          <Head title="Checkout | Sinar Pelangi" />
-          
-          <div className="container mx-auto py-8 px-4" id="CashierCart">
-            <div className="max-w-2xl mx-auto">
-              <Card className="bg-white rounded-2xl shadow-lg">
-                <CardContent className="p-6">
-                  <h1 className="font-[Poppins] text-2xl font-bold text-[#1c283f] mb-6">
-                    Checkout
-                  </h1>
+          return (
+              <AppLayout > 
+                {/* breadcrumbs={breadcrumbs}> */}
+                <section id="buat-pesanan" className="mb-12">
+                  <Head title="Checkout | Sinar Pelangi" />
+                  
+                  <div className="container mx-auto py-8 px-4" id="CashierCart">
+                      <div className="max-w-2xl mx-auto">
+                          <Card className="bg-white rounded-2xl shadow-lg">
+                              <CardContent className="p-6">
+                                  <h1 className="font-[Poppins] text-2xl font-bold text-[#1c283f] mb-6">
+                                      Checkout
+                                  </h1>
+                                  {/* Customer Info Section (optional / manual) */}
+                                    <div className="mb-6">
+                                      <h3 className="font-semibold text-[#1c283f] mb-3">Data Pelanggan (Opsional)</h3>
+                                      
+                                      <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700">
+                                        Nama Pelanggan
+                                      </Label>
+                                      <Input
+                                        id="customerName"
+                                        type="text"
+                                        value={customerName}
+                                        onChange={(e) => setCustomerName(e.target.value)}
+                                        placeholder="Masukkan nama pelanggan (opsional)"
+                                        className="w-full mt-1 mb-4"
+                                      />
 
-                  {/* Customer Info Section */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-[#1c283f] mb-3">Data Pelanggan (Opsional)</h3>
-                    
-                    <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700">
-                      Nama Pelanggan
-                    </Label>
-                    <Input
-                      id="customerName"
-                      type="text"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="Masukkan nama pelanggan (opsional)"
-                      className="w-full mt-1 mb-4"
-                    />
-
-                    <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700">
-                      Kontak Pelanggan
-                    </Label>
-                    <Input
-                      id="customerContact"
-                      type="text"
-                      value={customerContact}
-                      onChange={(e) => setCustomerContact(e.target.value)}
-                      placeholder="Masukkan nomor telepon atau email"
-                      className="w-full mt-1"
-                    />
-                  </div>
+                                      <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700">
+                                        Kontak Pelanggan
+                                      </Label>
+                                      <Input
+                                        id="customerContact"
+                                        type="text"
+                                        value={customerContact}
+                                        onChange={(e) => setCustomerContact(e.target.value)}
+                                        placeholder="Masukkan nomor telepon atau email"
+                                        className="w-full mt-1"
+                                      />
+                                    </div>
 
                   {/* Order Summary */}
                   <div className="mb-6">

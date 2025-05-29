@@ -68,8 +68,9 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
     Route::delete('/orders/{id}', [ConfirmOrderController::class, 'destroy'])->name('order.destroy');
     Route::post('/confirm/{id}', [ConfirmOrderController::class, 'confirmOrder'])->name('order.confirm');
 
-    //confirm
-    Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.confirm');
+    //Order Status
+    Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.index');
+    Route::post('/update-status/{id}', [OrderStatusController::class, 'updateStatus'])->name('order.update');
     
     //Stock Product
     Route::get('/stock', [StockProductController::class, 'index'])->name('order.confirm');

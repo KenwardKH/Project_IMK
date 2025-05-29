@@ -153,14 +153,14 @@ class OrderStatusController extends Controller
         if ($request->type === 'pickup') {
             $pickup = PickupOrderStatus::where('invoice_id', $id)->first();
             if ($pickup) {
-                $pickup->status = $request->status;
+                $pickup->status = $request->input('status');
                 $pickup->updated_by = auth()->id();
                 $pickup->save();
             }
         } elseif ($request->type === 'delivery') {
             $delivery = DeliveryOrderStatus::where('invoice_id', $id)->first();
             if ($delivery) {
-                $delivery->status = $request->status;
+                $delivery->status = $request->input('status');
                 $delivery->updated_by = auth()->id();
                 $delivery->save();
             }

@@ -80,12 +80,21 @@ export default function OrderList() {
     const { orders } = usePage<Props>().props;
     const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
     const itemsPerPage = 100;
-    const statuses = ['diproses', 'diantar', 'selesai', 'dibatalkan'];
+    const statuses = ['diproses','menunggu pengambilan', 'diantar', 'selesai', 'dibatalkan'];
     const [currentPage, setCurrentPage] = useState(1);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'pickup' | 'delivery'>('pickup');
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const getCurrentStatus = (order: OrderData): string => {
+        if (order.type === 'pickup') {
+            return order.pickup?.[0]?.status ?? '';
+        } else if (order.type === 'delivery') {
+            return order.delivery?.[0]?.status ?? '';
+        }
+        return '';
+    };
 
     const handleOpenModal = (order: OrderData) => {
         setSelectedOrder(order);
@@ -129,26 +138,6 @@ export default function OrderList() {
         });
     };
 
-
-    // const handleConfirm = async (orderId: number) => {
-    //     try {
-    //         await router.post(`/cashier/confirm/${orderId}`, {}, {
-    //             onSuccess: () => {
-    //                 alert('Pesanan berhasil dikonfirmasi!');
-    //                 // Optional: reload atau refresh data
-    //                 router.reload({ only: ['orders'] });
-    //             },
-    //             onError: (errors) => {
-    //                 console.error('Gagal mengonfirmasi pesanan:', errors);
-    //                 alert('Terjadi kesalahan saat mengonfirmasi pesanan.');
-    //             }
-    //         });
-    //     } catch (err) {
-    //         console.error('Unexpected error:', err);
-    //         alert('Terjadi kesalahan tak terduga saat mengonfirmasi pesanan.');
-    //     }
-    // };
-
     // Step 1: Filter berdasarkan jenis pesanan (pickup/delivery)
     const typeOrders = orders.data.filter(order => order.type === activeTab);
 
@@ -165,9 +154,9 @@ export default function OrderList() {
     // Step 3: Pagination
     const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const activeOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+    const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
     // Step 3: Ambil hanya pesanan yang belum dikonfirmasi
-    // const activeOrders = paginatedOrders.filter(order => order.cid == null);
+    const activeOrders = paginatedOrders.filter(order => order.custid !== null);
 
     // Step 4: Fungsi navigasi halaman
     const goToPage = (page: number) => {
@@ -208,7 +197,7 @@ export default function OrderList() {
                                 value={searchTerm}
                                 onChange={(e) => {
                                     setSearchTerm(e.target.value);
-                                    //setCurrentPage(1); // Reset halaman saat pencarian berubah
+                                    setCurrentPage(1); // Reset halaman saat pencarian berubah
                                 }}
                             />
                         </div>
@@ -227,9 +216,9 @@ export default function OrderList() {
                                     <th className="border border-gray-300 px-4 py-3 text-center">Alamat</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pembayaran</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Hapus</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white text-gray-700">
@@ -258,7 +247,7 @@ export default function OrderList() {
                                                         <span key={idx}>{detail.alamat}</span>
                                                     ))
                                                 ) : (
-                                                    <span>Tidak ada alamat/ Diambil di tempat</span>
+                                                    <span>Diambil di Toko</span>
                                                 )}
                                             </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
@@ -270,17 +259,6 @@ export default function OrderList() {
                                                     Detail
                                                 </Button>
                                             </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                <select
-                                                    value={currentStatus}
-                                                    onChange={e => handleStatusChange(order.id, e.target.value, order.type as 'pickup' | 'delivery')}
-                                                    className="border rounded px-2 py-1"
-                                                >
-                                                    {statuses.map(status => (
-                                                        <option key={status} value={status}>{status}</option>
-                                                    ))}
-                                                </select>
-                                            </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
@@ -290,6 +268,20 @@ export default function OrderList() {
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
+                                            </td>
+                                            <td>
+                                                <select
+                                                    value={item.type === 'pickup'
+                                                        ? item.pickup?.[0]?.status
+                                                        : item.delivery?.[0]?.status
+                                                    }
+                                                    onChange={e => handleStatusChange(item.id, e.target.value, item.type as 'pickup' | 'delivery')}
+                                                    className="border rounded px-2 py-1"
+                                                >
+                                                    {statuses.map(status => (
+                                                        <option key={status} value={status}>{status}</option>
+                                                    ))}
+                                                </select>
                                             </td>
                                         </tr>
                                     ))

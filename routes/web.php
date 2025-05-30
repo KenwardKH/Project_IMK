@@ -123,6 +123,8 @@ Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
     Route::get('/owner-produk/edit/{id}', [ownerProduct::class, 'edit'])->name('owner.produk.edit');
     Route::post('/owner-produk/update/{id}', [ownerProduct::class, 'update'])->name('owner.produk.update');
     Route::delete('/owner-produk/{id}', [ownerProduct::class, 'destroy'])->name('owner.produk.destroy');
+    // Tambahkan route untuk generate barcode
+    Route::get('/owner-produk/barcode/{id}', [ownerProduct::class, 'generateBarcode'])->name('owner.produk.barcode');
 
     // Additional product routes
     Route::get('owner-produk/tambah', function () {

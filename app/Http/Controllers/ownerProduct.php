@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\PricingLog;
+use Milon\Barcode\DNS1D;
 
 class ownerProduct extends Controller
 {
@@ -42,6 +43,37 @@ class ownerProduct extends Controller
             'products' => $products
         ]);
     }
+
+    /**
+     * Generate barcode for a product
+     */
+    public function generateBarcode($id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+            
+            // Create barcode generator instance
+            $barcode = new DNS1D();
+            
+            // Generate barcode as SVG (you can also use 'HTML' or 'PNG')
+            $barcodeData = $barcode->getBarcodeSVG($id, 'C128', 2, 50);
+            
+            return response()->json([
+                'success' => true,
+                'barcode' => $barcodeData,
+                'product_name' => $product->ProductName,
+                'product_id' => $id
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate barcode: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
     /**
      * Show the form for creating a new resource.
      */

@@ -1,15 +1,15 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Barcode, Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 const OwnerProduct = () => {
     interface RiwayatHarga {
-        tanggal: string; // Changed from Date to string as it will come from the API as string
+        tanggal: string;
         harga: number;
     }
 
@@ -42,6 +42,14 @@ const OwnerProduct = () => {
     const [selectedNamaProduk, setSelectedNamaProduk] = useState<string>('');
     const [searchTerm, setSearchTerm] = useState<string>('');
 
+    // Barcode modal states
+    const [showBarcodeModal, setShowBarcodeModal] = useState(false);
+    const [barcodeData, setBarcodeData] = useState<string>('');
+    const [barcodeProductName, setBarcodeProductName] = useState<string>('');
+    const [barcodeProductId, setBarcodeProductId] = useState<string>('');
+    const [isLoadingBarcode, setIsLoadingBarcode] = useState(false);
+    const barcodeRef = useRef<HTMLDivElement | null>(null);
+
     const MySwal = withReactContent(Swal);
 
     useEffect(() => {
@@ -72,6 +80,94 @@ const OwnerProduct = () => {
         setShowPriceModal(false);
         setSelectedRiwayat(null);
         setSelectedNamaProduk('');
+    };
+
+    const openBarcodeModal = async (productId: number) => {
+        setIsLoadingBarcode(true);
+        setShowBarcodeModal(true);
+
+        try {
+            const response = await fetch(`/owner-produk/barcode/${productId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                setBarcodeData(data.barcode);
+                setBarcodeProductName(data.product_name);
+                setBarcodeProductId(data.product_id);
+            } else {
+                toast.error('Gagal memuat barcode');
+                setShowBarcodeModal(false);
+            }
+        } catch (error) {
+            console.error('Error generating barcode:', error);
+            toast.error('Terjadi kesalahan saat memuat barcode');
+            setShowBarcodeModal(false);
+        } finally {
+            setIsLoadingBarcode(false);
+        }
+    };
+
+    const downloadBarcodeAsPNG = () => {
+        if (!barcodeRef.current) return;
+
+        const svgElement = barcodeRef.current.querySelector('svg');
+        console.log(barcodeRef.current?.innerHTML);
+
+        if (!svgElement) {
+            toast.error('Barcode SVG tidak ditemukan');
+            return;
+        }
+
+        const svgData = new XMLSerializer().serializeToString(svgElement);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const context = canvas.getContext('2d');
+            if (context) {
+                context.fillStyle = '#ffffff'; // Optional: background putih
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(img, 0, 0);
+                const pngUrl = canvas.toDataURL('image/png');
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = pngUrl;
+                downloadLink.download = `barcode_${barcodeProductId}.png`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+
+                URL.revokeObjectURL(url);
+            }
+        };
+        img.onerror = () => {
+            toast.error('Gagal memuat gambar untuk PNG');
+            URL.revokeObjectURL(url);
+        };
+        img.src = url;
+    };
+
+    const closeBarcodeModal = () => {
+        setShowBarcodeModal(false);
+        setBarcodeData('');
+        setBarcodeProductName('');
+        setBarcodeProductId('');
     };
 
     const handleDelete = (id: number) => {
@@ -144,7 +240,7 @@ const OwnerProduct = () => {
                 <section>
                     <div className="relative overflow-hidden rounded-lg shadow-md">
                         <div className="w-full overflow-x-auto rounded-xl shadow-md">
-                            <table className="w-full min-w-[1000px] table-auto border-collapse">
+                            <table className="w-full min-w-[1200px] table-auto border-collapse">
                                 <thead className="bg-gray-700 text-sm text-gray-100">
                                     <tr>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">No.</th>
@@ -155,6 +251,7 @@ const OwnerProduct = () => {
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Satuan</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Deskripsi</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Riwayat Harga</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Barcode</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Edit</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Hapus</th>
                                     </tr>
@@ -194,6 +291,15 @@ const OwnerProduct = () => {
                                                 </Button>
                                             </td>
                                             <td className="border border-gray-200 p-4 text-center">
+                                                <Button
+                                                    onClick={() => openBarcodeModal(item.id)}
+                                                    className="rounded-full bg-green-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-green-600"
+                                                    size="icon"
+                                                >
+                                                    <Barcode className="h-4 w-4" />
+                                                </Button>
+                                            </td>
+                                            <td className="border border-gray-200 p-4 text-center">
                                                 <Link href={`/owner-produk/edit/${item.id}`}>
                                                     <Button
                                                         className="rounded-full bg-yellow-400 p-2 text-white shadow transition hover:cursor-pointer hover:bg-yellow-500"
@@ -216,7 +322,7 @@ const OwnerProduct = () => {
                                     ))}
                                     {filteredProducts.length === 0 && (
                                         <tr>
-                                            <td colSpan={10} className="border border-gray-200 p-8 text-center text-gray-500">
+                                            <td colSpan={11} className="border border-gray-200 p-8 text-center text-gray-500">
                                                 Tidak ada produk yang ditemukan
                                             </td>
                                         </tr>
@@ -227,6 +333,8 @@ const OwnerProduct = () => {
                     </div>
                 </section>
             </div>
+
+            {/* Image Modal */}
             {isModalOpen && modalImage && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={closeModal}>
                     <div className="relative w-full max-w-lg rounded-lg bg-white p-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
@@ -269,6 +377,50 @@ const OwnerProduct = () => {
                             </div>
                         ) : (
                             <p className="text-center text-gray-500">Tidak ada riwayat harga</p>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Barcode Modal */}
+            {showBarcodeModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={closeBarcodeModal}>
+                    <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            onClick={closeBarcodeModal}
+                            className="absolute top-2 right-2 rounded-full bg-gray-700 p-1 text-white hover:bg-gray-800"
+                        >
+                            <X size={20} />
+                        </button>
+                        <h2 className="mb-4 text-center text-xl font-semibold text-gray-800">Barcode Produk</h2>
+
+                        {isLoadingBarcode ? (
+                            <div className="flex items-center justify-center py-8">
+                                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
+                                <span className="ml-2">Memuat barcode...</span>
+                            </div>
+                        ) : (
+                            <div className="text-center">
+                                <h3 className="mb-2 font-medium text-gray-700">{barcodeProductName}</h3>
+                                <p className="mb-4 text-sm text-gray-500">ID Produk: {barcodeProductId}</p>
+
+                                <div className="mb-4 flex flex-col justify-center rounded-lg border-2 border-gray-200 bg-white p-4">
+                                    <div
+                                        ref={barcodeRef}
+                                        className="mb-4 flex justify-center rounded-lg border-2 border-gray-200 bg-white p-4"
+                                        dangerouslySetInnerHTML={{ __html: barcodeData }}
+                                    />
+
+                                    <button
+                                        onClick={downloadBarcodeAsPNG}
+                                        className="mt-2 inline-block rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                                    >
+                                        Download PNG
+                                    </button>
+                                </div>
+
+                                <p className="mt-2 text-xs text-gray-500">Barcode Type: Code 128</p>
+                            </div>
                         )}
                     </div>
                 </div>

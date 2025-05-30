@@ -23,6 +23,16 @@ use App\Http\Controllers\OwnerRiwayatKasir;
 //     return 'Cashier route is accessible!';
 // });
 
+Route::get('/sanctum/csrf-cookie', function () {
+    return response()->json(['message' => 'CSRF cookie refreshed']);
+})->name('csrf.cookie');
+
+Route::get('/api/csrf-token', function () {
+    return response()->json([
+        'csrf_token' => csrf_token()
+    ]);
+})->name('csrf.token');
+
 // routes (accessible to multiple roles)
 Route::middleware(['auth', 'verified', 'role:customer,cashier,owner'])->group(function () {
     Route::get('owner-supplier/tambah', function () {
@@ -113,6 +123,8 @@ Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
     Route::get('/owner-produk/edit/{id}', [ownerProduct::class, 'edit'])->name('owner.produk.edit');
     Route::post('/owner-produk/update/{id}', [ownerProduct::class, 'update'])->name('owner.produk.update');
     Route::delete('/owner-produk/{id}', [ownerProduct::class, 'destroy'])->name('owner.produk.destroy');
+    // Tambahkan route untuk generate barcode
+    Route::get('/owner-produk/barcode/{id}', [ownerProduct::class, 'generateBarcode'])->name('owner.produk.barcode');
 
     // Additional product routes
     Route::get('owner-produk/tambah', function () {

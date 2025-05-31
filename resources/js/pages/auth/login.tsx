@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react'; // Import ikon panah kiri
-import { FormEventHandler } from 'react';
+import { LoaderCircle } from 'lucide-react';
+import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -26,12 +26,38 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         remember: false,
     });
 
+    const [clientErrors, setClientErrors] = useState<Partial<LoginForm>>({});
+
+    const validate = () => {
+        const newErrors: Partial<LoginForm> = {};
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!data.email) {
+            newErrors.email = 'Email wajib diisi.';
+        } else if (!emailRegex.test(data.email)) {
+            newErrors.email = 'Format email tidak valid.';
+        }
+
+        if (!data.password) {
+            newErrors.password = 'Password wajib diisi.';
+        } else if (data.password.length < 6) {
+            newErrors.password = 'Password minimal 6 karakter.';
+        }
+
+        setClientErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+
+        // Validasi manual frontend
+        if (!validate()) return;
+
         post(route('login'), {
-            onFinish: () => {
+            onSuccess: () => {
                 reset('password');
-                window.location.reload();
+                window.location.reload(); // hanya reload jika login berhasil
             },
         });
     };
@@ -40,17 +66,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         <>
             <Head title="Log in" />
             <div className="relative flex min-h-screen items-center justify-center bg-[#f1f5f9] px-4 sm:px-6 lg:px-8">
-                {/* Back Button */}
-                {/* <button
-          onClick={() => window.history.back()}
-          className="absolute top-4 left-4 flex items-center text-[#2563eb] hover:text-[#1e40af] transition-colors text-sm font-medium cursor-pointer "
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Back
-        </button> */}
-
                 <div className="w-full max-w-md space-y-6 rounded-3xl border border-[#e2e8f0] bg-white p-10 shadow-xl transition-all">
-                    {/* Header */}
                     <div className="space-y-2 text-center">
                         <h1 className="text-3xl font-bold text-[#1e293b]">Selamat datang 👋</h1>
                         <p className="text-sm text-[#64748b]">Silahkan daftar jika anda belum memiliki akun</p>
@@ -73,23 +89,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 className="mt-2 text-[#0f172a] transition-all placeholder:text-[#94a3b8] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]"
                                 placeholder="Masukkan email anda"
                             />
-                            <InputError message={errors.email} />
+                            <InputError message={clientErrors.email || errors.email} />
                         </div>
 
                         <div>
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="password" className="text-sm font-medium text-[#334155]">
-                                    Password
-                                </Label>
-                                {/* {canResetPassword && (
-                  <TextLink
-                    href={route('password.request')}
-                    className="text-sm text-[#2563eb] hover:underline"
-                  >
-                    Lupa Password?
-                  </TextLink>
-                )} */}
-                            </div>
+                            <Label htmlFor="password" className="text-sm font-medium text-[#334155]">
+                                Password
+                            </Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -99,18 +105,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 className="mt-2 text-[#0f172a] transition-all placeholder:text-[#94a3b8] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]"
                                 placeholder="Masukkan password anda"
                             />
-                            <InputError message={errors.password} />
+                            <InputError message={clientErrors.password || errors.password} />
                         </div>
-
-                        {/* <div className="flex items-center space-x-2">
-              <Checkbox
-                id="remember"
-                name="remember"
-                checked={data.remember}
-                onClick={() => setData('remember', !data.remember)}
-              />
-              <Label htmlFor="remember" className="text-sm text-[#334155]">Remember me</Label>
-            </div> */}
 
                         <Button
                             type="submit"

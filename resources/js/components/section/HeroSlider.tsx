@@ -82,7 +82,7 @@ export default function HeroSlider() {
                 <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 transition-opacity duration-500 group-hover:opacity-100 md:px-8">
                     <button
                         onClick={prevSlide}
-                        className="group/btn relative rounded-full border border-white/20 bg-white/90 p-4 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-white hover:shadow-2xl md:p-5"
+                        className="group/btn relative cursor-pointer rounded-full border border-white/20 bg-white/90 p-4 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-white hover:shadow-2xl md:p-5"
                     >
                         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 transition-opacity duration-300 group-hover/btn:opacity-100"></div>
                         <ChevronLeft className="relative z-10 h-6 w-6 text-gray-700 transition-colors duration-300 group-hover/btn:text-blue-600 md:h-7 md:w-7" />
@@ -93,7 +93,7 @@ export default function HeroSlider() {
 
                     <button
                         onClick={nextSlide}
-                        className="group/btn relative rounded-full border border-white/20 bg-white/90 p-4 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-white hover:shadow-2xl md:p-5"
+                        className="group/btn relative cursor-pointer rounded-full border border-white/20 bg-white/90 p-4 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-white hover:shadow-2xl md:p-5"
                     >
                         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 transition-opacity duration-300 group-hover/btn:opacity-100"></div>
                         <ChevronRight className="relative z-10 h-6 w-6 text-gray-700 transition-colors duration-300 group-hover/btn:text-blue-600 md:h-7 md:w-7" />

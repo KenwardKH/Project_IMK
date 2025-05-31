@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-    ShoppingCart, 
-    CheckCircle, 
-    Clock, 
-    Package, 
-    LogOut 
+import {
+    ShoppingCart,
+    CheckCircle,
+    Clock,
+    Package,
+    LogOut
 } from 'lucide-react';
 import { router } from '@inertiajs/react';
 
@@ -16,9 +16,9 @@ interface NavbarSectionCashierProps {
     onSectionChange?: (sectionId: SectionId) => void;
 }
 
-const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({ 
-    activeSection = 'buat-pesanan', 
-    onSectionChange 
+const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
+    activeSection = 'buat-pesanan',
+    onSectionChange
 }) => {
     const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
@@ -79,7 +79,7 @@ const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
                 {menuItems.map((item) => {
                     const IconComponent = item.icon;
                     const isActive = activeSection === item.id;
-                    
+
                     return (
                         <div
                             key={item.id}
@@ -90,16 +90,16 @@ const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
                             <button
                                 onClick={() => handleItemClick(item.id)}
                                 className={`
-                                    w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200
-                                    ${isActive 
-                                        ? 'bg-blue-100 border-2 border-blue-300 shadow-md' 
+                                    w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer
+                                    ${isActive
+                                        ? 'bg-blue-100 border-2 border-blue-300 shadow-md'
                                         : 'hover:bg-gray-100 border-2 border-transparent hover:shadow-sm'
                                     }
                                     ${item.color}
                                 `}
                             >
-                                <IconComponent 
-                                    size={24} 
+                                <IconComponent
+                                    size={24}
                                     className={isActive ? 'text-blue-600' : ''}
                                 />
                             </button>

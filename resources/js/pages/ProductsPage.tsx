@@ -4,9 +4,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Filter, Grid, List, Search, X } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
@@ -403,7 +402,7 @@ const ProductsPage = () => {
                                                     </div>
                                                 </CardContent>
                                                 <CardFooter>
-                                                    <Button className="w-full bg-[#153e98] hover:bg-[#0f2e73]">Tambah ke Keranjang</Button>
+                                                    <Button className="w-full bg-[#153e98] hover:bg-[#0f2e73]">Lihat Detail</Button>
                                                 </CardFooter>
                                             </Card>
                                         </Link>
@@ -422,15 +421,15 @@ const ProductsPage = () => {
                                                     <div className="flex gap-4">
                                                         <div className="bg-muted h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
                                                             <img
-                                                                src={product.image}
+                                                                src={`storage/${product.image}`}
                                                                 alt={product.ProductName}
-                                                                className="h-full w-full object-cover"
+                                                                className="h-full w-full object-cover transition-transform duration-200 hover:scale-105"
                                                             />
                                                         </div>
                                                         <div className="flex-1">
                                                             <div className="mb-2 flex items-start justify-between">
                                                                 <h3 className="font-semibold">{product.ProductName}</h3>
-                                                                <span className="text-primary text-xl font-bold">
+                                                                <span className="text-primary text-xl font-bold text-price">
                                                                     {formatPrice(product.ProductPrice)}
                                                                 </span>
                                                             </div>
@@ -444,7 +443,7 @@ const ProductsPage = () => {
                                                                         {product.CurrentStock} {product.ProductUnit}
                                                                     </span>
                                                                 </div>
-                                                                <Button>Tambah ke Keranjang</Button>
+                                                                <Button className="bg-[#153e98] hover:bg-[#0f2e73]">Lihat Detail</Button>
                                                             </div>
                                                         </div>
                                                     </div>

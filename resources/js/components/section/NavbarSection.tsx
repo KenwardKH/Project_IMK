@@ -39,7 +39,7 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
     const [isLoadingUser, setIsLoadingUser] = useState(true);
 
     useEffect(() => {
-        const timeout = setTimeout(() => setIsLoadingUser(false), 1000);
+        const timeout = setTimeout(() => setIsLoadingUser(false), 300);
         return () => clearTimeout(timeout);
     }, []);
 
@@ -85,7 +85,7 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-11 w-11 rounded-full text-gray-700 hover:border hover:bg-green-100 hover:text-green-800"
+                            className={`h-11 w-11 rounded-full text-gray-700 hover:border hover:bg-green-100 hover:text-green-800 ${currentUrl === '/cart' ? 'border bg-green-100 text-green-800' : 'hover:border hover:bg-green-100 hover:text-green-800'}`}
                             aria-label="Keranjang Belanja"
                         >
                             <ShoppingCart className="h-[37px] w-[37px]" />

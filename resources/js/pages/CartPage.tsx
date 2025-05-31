@@ -223,7 +223,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                             <ShoppingBag className="mx-auto mb-4 h-16 w-16 text-gray-400" />
                             <h2 className="mb-2 font-[Poppins] text-2xl font-bold text-[#1c283f]">Keranjang Belanja Kosong</h2>
                             <p className="mb-6 text-gray-600">Anda belum menambahkan produk apapun ke keranjang belanja.</p>
-                            <Link href="/">
+                            <Link href="/products">
                                 <Button className="bg-[#153e98] text-white hover:bg-[#0f2e73]">
                                     <ArrowLeft className="mr-2 h-4 w-4" />
                                     Mulai Belanja

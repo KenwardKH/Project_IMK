@@ -80,7 +80,7 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
 
     //confirm
     Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.confirm');
-    
+
     //Stock Product
     Route::get('/stock', [StockProductController::class, 'index'])->name('order.confirm');
 
@@ -92,7 +92,9 @@ Route::middleware(['auth', 'verified', 'role:customer'])->group(function () {
     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
     Route::get('products', [customerDashboard::class, 'indexProducts'])->name('products.index');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
-
+Route::get('/order', function () {
+    return redirect('/order/belum-bayar'); // Ganti dengan halaman tujuanmu
+});
     // Cart management
     Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [CustomerCartController::class, 'store'])->name('cart.store');

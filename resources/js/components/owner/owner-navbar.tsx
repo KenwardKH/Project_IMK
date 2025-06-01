@@ -107,7 +107,7 @@ const Navbar = () => {
                                                     </div>
                                                     <div>
                                                         <p className="font-medium text-gray-900">Profile</p>
-                                                        <p className="text-xs text-gray-500">Manage your account</p>
+                                                        <p className="text-xs text-gray-500">Kelola akun anda</p>
                                                     </div>
                                                 </Link>
                                             </DropdownMenuItem>
@@ -118,8 +118,8 @@ const Navbar = () => {
                                                         <Lock className="h-4 w-4 text-green-600" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-gray-900">Security</p>
-                                                        <p className="text-xs text-gray-500">Change password</p>
+                                                        <p className="font-medium text-gray-900">Keamanan</p>
+                                                        <p className="text-xs text-gray-500">Ubah password</p>
                                                     </div>
                                                 </Link>
                                             </DropdownMenuItem>
@@ -129,13 +129,13 @@ const Navbar = () => {
 
                                         <div className="p-2">
                                             <DropdownMenuItem className="rounded-lg transition-colors hover:bg-red-50">
-                                                <Link method="post" href="/logout" className="flex w-full items-center space-x-3 px-3 py-2">
+                                                <Link method="post" href="/logout" className="flex w-full items-center space-x-3 px-3 py-2 cursor-pointer">
                                                     <div className="rounded-lg bg-red-100 p-2">
                                                         <LogOut className="h-4 w-4 text-red-600" />
                                                     </div>
                                                     <div>
                                                         <p className="text-left font-medium text-red-600">Logout</p>
-                                                        <p className="text-xs text-gray-500">Sign out of account</p>
+                                                        {/* <p className="text-xs text-gray-500">Sign out of account</p> */}
                                                     </div>
                                                 </Link>
                                             </DropdownMenuItem>

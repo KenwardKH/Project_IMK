@@ -78,7 +78,7 @@ const Navbar = () => {
                                             </Avatar>
                                             <div className="hidden text-left lg:block">
                                                 <p className="text-sm font-semibold">{user.name}</p>
-                                                <p className="text-xs text-black">Owner</p>
+                                                {/* <p className="text-xs text-black">Owner</p> */}
                                             </div>
                                         </button>
                                     </DropdownMenuTrigger>

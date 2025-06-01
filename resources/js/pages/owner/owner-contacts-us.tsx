@@ -277,7 +277,7 @@ export default function CustomerIndex({ customers, stats, filters }: CustomerPag
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <MessageCircle className="h-5 w-5" />
-                            Daftar Pesan Customer
+                            Daftar Keluhan Customer
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -302,7 +302,7 @@ export default function CustomerIndex({ customers, stats, filters }: CustomerPag
                                                         <Mail className="h-4 w-4 text-gray-500" />
                                                         <span className="text-gray-600">{customer.email}</span>
                                                     </div>
-                                                    {getStatusBadge(customer.status)}
+                                                    {/* {getStatusBadge(customer.status)} */}
                                                 </div>
 
                                                 <p className="mb-3 line-clamp-2 text-gray-700">{customer.message}</p>

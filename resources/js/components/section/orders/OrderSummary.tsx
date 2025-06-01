@@ -5,6 +5,7 @@ import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import OrderDetailModal from './OrderDetailModal';
 import PaymentModal from './PaymentModal';
+import Swal from 'sweetalert2';
 
 interface OrderItem {
     product_id: number;
@@ -66,21 +67,35 @@ export default function OrderSummarySection() {
                 {},
                 {
                     onSuccess: () => {
-                        alert('Pesanan berhasil dibatalkan');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Pesanan berhasil dibatalkan',
+                            confirmButtonColor: '#3085d6',
+                        });
                         setShowCancelModal(false);
                         setSelectedOrder(null);
-                        // Refresh the page to show updated data
-                        router.reload();
+                        router.reload(); // Refresh halaman
                     },
                     onError: (errors) => {
                         console.error('Error cancelling order:', errors);
-                        alert('Gagal membatalkan pesanan. Silakan coba lagi.');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Gagal membatalkan pesanan. Silakan coba lagi.',
+                            confirmButtonColor: '#d33',
+                        });
                     },
                 },
             );
         } catch (error) {
             console.error('Error cancelling order:', error);
-            alert('Terjadi kesalahan saat membatalkan pesanan.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Kesalahan',
+                text: 'Terjadi kesalahan saat membatalkan pesanan.',
+                confirmButtonColor: '#d33',
+            });
         } finally {
             setLoading(false);
         }

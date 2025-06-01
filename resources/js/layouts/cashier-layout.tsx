@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import NavbarSectionCashier from '@/components/section/NavbarSectionCashier';
+import NavbarSectionCashier from '@/components/section/SidebarSectionCashier';
 
 // Type yang sama dengan NavbarSectionCashier
 type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'logout';

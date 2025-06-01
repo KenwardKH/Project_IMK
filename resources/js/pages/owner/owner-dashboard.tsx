@@ -59,7 +59,7 @@ const OwnerDashboard = () => {
                     {stats.map((stat, index) => (
                         <div
                             key={index}
-                            className="flex flex-col items-center justify-between rounded-2xl bg-[#FFD9B3] p-4 text-black shadow-md ring-2 transition-all duration-300 hover:scale-[1.02]"
+                            className="flex flex-col items-center justify-between rounded-2xl bg-gray-400 p-4 text-black shadow-md ring-1 transition-all duration-300 hover:scale-[1.02] cursor-pointer"
                         >
                             <p className="text-lg font-semibold sm:text-xl">{stat.title}</p>
                             <div className="mt-2 flex w-full items-center justify-around gap-1 px-2 sm:px-4">

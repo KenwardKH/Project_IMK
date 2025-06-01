@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerCartController;
 use App\Http\Controllers\OrderStatusController;
 use App\Http\Controllers\StockProductController;
 use App\Http\Controllers\CashierController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ownerDashboard;
 use App\Http\Controllers\ownerSupplier;
@@ -47,9 +48,8 @@ Route::get('/about', function (){
       return Inertia::render("footer/AboutUsPage");
 });
 
-Route::get('/contact', function (){
-      return Inertia::render("footer/ContactUsPage");
-});
+Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::get('/faq', function (){
       return Inertia::render("footer/FAQPage");
@@ -163,7 +163,16 @@ Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
     Route::get('owner-profile', function () {
         return Inertia::render('owner/owner-profile');
     })->name('owner-profile');
+
+
+    // Customer complain
+
+
 });
+Route::get('/customers', [ContactController::class, 'indexAdmin'])->name('customers.index');
+Route::delete('/customers/{customer}', [ContactController::class, 'destroyAdmin'])->name('customers.destroy');
+// Route::get('/customers/{customer}', [ContactController::class, 'showAdmin'])->name('customers.show');
+// Route::patch('/customers/{customer}/status', [ContactController::class, 'updateStatusAdmin'])->name('customers.updateStatus');
 
 // Multi-role routes (accessible by multiple roles)
 Route::middleware(['auth', 'verified', 'role:owner,cashier'])->group(function () {

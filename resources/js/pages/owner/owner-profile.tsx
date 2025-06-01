@@ -26,12 +26,10 @@ const OwnerProfile = ({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; s
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        
+
         // Menggunakan window.route() untuk mengakses route helper Laravel
-        const routeUrl = typeof window !== 'undefined' && (window as any).route 
-            ? (window as any).route('owner.profile.update')
-            : '/owner-profile';
-            
+        const routeUrl = typeof window !== 'undefined' && (window as any).route ? (window as any).route('owner.profile.update') : '/owner-profile';
+
         patch(routeUrl, {
             preserveScroll: true,
             onSuccess: () => {
@@ -50,7 +48,7 @@ const OwnerProfile = ({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; s
                     text: 'There was an error updating your profile. Please try again.',
                     confirmButtonColor: '#EF4444', // Tailwind red-500
                 });
-            }
+            },
         });
     };
 
@@ -60,26 +58,25 @@ const OwnerProfile = ({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; s
             <div className="flex justify-center py-8 text-black">
                 <div className="mx-auto w-11/12 rounded-lg bg-white p-6 shadow-md">
                     <div className="mb-6">
-                        <HeadingSmall title="Profile information" description="Update your name and email address" />
-
-                        <form onSubmit={submit} className="my-4 space-y-3">
-                            {/* Name Input */}
+                        <HeadingSmall title="Informasi Profil" description="Silahkan perbarui nama dan alamat email anda!" />
+                        <form onSubmit={submit} className="my-4 space-y-6">
+                            {/* Input Nama */}
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Nama Lengkap</Label>
                                 <Input
                                     id="name"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
                                     required
                                     autoComplete="name"
-                                    placeholder="Full name"
+                                    placeholder="Nama lengkap"
                                 />
                                 <InputError className="mt-2" message={errors.name} />
                             </div>
 
-                            {/* Email Input */}
+                            {/* Input Email */}
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">Alamat Email</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -87,41 +84,42 @@ const OwnerProfile = ({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; s
                                     onChange={(e) => setData('email', e.target.value)}
                                     required
                                     autoComplete="username"
-                                    placeholder="Email address"
+                                    placeholder="Alamat email"
                                 />
                                 <InputError className="mt-2" message={errors.email} />
                             </div>
 
-                            {/* Email Verification Notice */}
+                            {/* Notifikasi Verifikasi Email */}
                             {mustVerifyEmail && auth.user.email_verified_at === null && (
                                 <div className="-mt-4">
                                     <p className="text-muted-foreground text-sm">
-                                        Your email address is unverified.{' '}
+                                        Alamat email Anda belum terverifikasi.{' '}
                                         <Link
-                                            href={typeof window !== 'undefined' && (window as any).route 
-                                                ? (window as any).route('verification.send')
-                                                : '/email/verification-notification'
+                                            href={
+                                                typeof window !== 'undefined' && (window as any).route
+                                                    ? (window as any).route('verification.send')
+                                                    : '/email/verification-notification'
                                             }
                                             method="post"
                                             as="button"
                                             className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
                                         >
-                                            Click here to resend the verification email.
+                                            Klik di sini untuk mengirim ulang email verifikasi.
                                         </Link>
                                     </p>
 
                                     {status === 'verification-link-sent' && (
                                         <p className="mt-2 text-sm font-medium text-green-600">
-                                            A new verification link has been sent to your email address.
+                                            Link verifikasi baru telah dikirim ke alamat email Anda.
                                         </p>
                                     )}
                                 </div>
                             )}
 
-                            {/* Submit Button */}
+                            {/* Tombol Simpan */}
                             <div className="flex items-center gap-4">
                                 <Button disabled={processing} type="submit">
-                                    {processing ? 'Saving...' : 'Save'}
+                                    {processing ? 'Menyimpan...' : 'Simpan'}
                                 </Button>
                                 <Transition
                                     show={recentlySuccessful}
@@ -130,7 +128,7 @@ const OwnerProfile = ({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; s
                                     leave="transition ease-in-out"
                                     leaveTo="opacity-0"
                                 >
-                                    <p className="text-sm text-neutral-600">Saved</p>
+                                    <p className="text-sm text-neutral-600">Tersimpan</p>
                                 </Transition>
                             </div>
                         </form>

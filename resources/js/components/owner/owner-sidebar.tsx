@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import {
     BarChart3,
+    BookCheck,
     Box,
     ChevronDown,
     ChevronRight,
@@ -9,6 +10,8 @@ import {
     LayoutDashboard,
     LogOut,
     Menu,
+    Paperclip,
+    PaperclipIcon,
     Truck,
     User,
     Users,
@@ -217,6 +220,19 @@ const Sidebar: FC = () => {
                     collapsed={collapsed}
                 />
             </SidebarGroup>
+
+              <Link
+                    href="/customers"
+                    className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+                        currentPath === '/customers'
+                            ? 'bg-gradient-to-r from-blue-400 to-blue-300 text-black shadow-lg shadow-blue-500/25'
+                            : 'text-black hover:bg-gray-700/50 hover:text-black'
+                    }`}
+                >
+                    {/* <LayoutDashboard size={20} /> */}
+                    <BookCheck size={20} />
+                    {!collapsed && <span className="truncate">Keluhan</span>}
+                </Link>
         </div>
     );
 

@@ -21,18 +21,18 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
 // // Membuat 1 user dulu
-// $user = User::factory()->create([
-//     'name' => 'Test User',
-//     'email' => 'test@example.com',
-// ]);
+$user = User::factory()->create([
+    'name' => 'Test User',
+    'email' => 'test@example.com',
+]);
 
 //         // Mengisi tabel customer berdasarkan user yang barusan dibuat
-// Customer::create([
-//     'user_id' => $user->id,
-//     'CustomerName' => $user->name,
-//     'CustomerAddress' => 'Jl. Contoh No.123, Jakarta',
-//     'CustomerContact' => '081234567890',
-// ]);
+Customer::create([
+    'user_id' => $user->id,
+    'CustomerName' => $user->name,
+    'CustomerAddress' => 'Jl. Contoh No.123, Jakarta',
+    'CustomerContact' => '081234567890',
+]);
 //                 // Isi 10 data produk langsung
 //                 for ($i = 1; $i <= 6; $i++) {
 //                     Product::create([

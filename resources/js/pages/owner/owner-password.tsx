@@ -63,11 +63,10 @@ const OwnerProfile = () => {
             <div className="flex justify-center py-8 text-black">
                 <div className="mx-auto w-11/12 rounded-lg bg-white p-6 shadow-md">
                     <div className="space-y-6">
-                        <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
-
+                        <HeadingSmall title="Update password" description="Memastikan password anda aman" />
                         <form onSubmit={updatePassword} className="space-y-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="current_password">Current password</Label>
+                                <Label htmlFor="current_password">Kata Sandi Saat Ini</Label>
 
                                 <Input
                                     id="current_password"
@@ -77,14 +76,14 @@ const OwnerProfile = () => {
                                     type="password"
                                     className="mt-1 block w-full"
                                     autoComplete="current-password"
-                                    placeholder="Current password"
+                                    placeholder="Kata sandi saat ini"
                                 />
 
                                 <InputError message={errors.current_password} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
+                                <Label htmlFor="password">Kata Sandi Baru</Label>
 
                                 <Input
                                     id="password"
@@ -94,14 +93,14 @@ const OwnerProfile = () => {
                                     type="password"
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
-                                    placeholder="New password"
+                                    placeholder="Kata sandi baru"
                                 />
 
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">Confirm password</Label>
+                                <Label htmlFor="password_confirmation">Konfirmasi Kata Sandi</Label>
 
                                 <Input
                                     id="password_confirmation"
@@ -110,14 +109,14 @@ const OwnerProfile = () => {
                                     type="password"
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
-                                    placeholder="Confirm password"
+                                    placeholder="Konfirmasi kata sandi"
                                 />
 
                                 <InputError message={errors.password_confirmation} />
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <Button disabled={processing}>Save password</Button>
+                                <Button disabled={processing}>Simpan Kata Sandi</Button>
 
                                 <Transition
                                     show={recentlySuccessful}
@@ -126,7 +125,7 @@ const OwnerProfile = () => {
                                     leave="transition ease-in-out"
                                     leaveTo="opacity-0"
                                 >
-                                    <p className="text-sm text-neutral-600">Saved</p>
+                                    <p className="text-sm text-neutral-600">Tersimpan</p>
                                 </Transition>
                             </div>
                         </form>

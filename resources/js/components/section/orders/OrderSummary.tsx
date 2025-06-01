@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { usePage, router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import OrderDetailModal from './OrderDetailModal';
 import PaymentModal from './PaymentModal';
@@ -61,19 +61,23 @@ export default function OrderSummarySection() {
     const handleCancelOrder = async (orderId: number) => {
         setLoading(true);
         try {
-            await router.post(`/order/${orderId}/cancel`, {}, {
-                onSuccess: () => {
-                    alert('Pesanan berhasil dibatalkan');
-                    setShowCancelModal(false);
-                    setSelectedOrder(null);
-                    // Refresh the page to show updated data
-                    router.reload();
+            await router.post(
+                `/order/${orderId}/cancel`,
+                {},
+                {
+                    onSuccess: () => {
+                        alert('Pesanan berhasil dibatalkan');
+                        setShowCancelModal(false);
+                        setSelectedOrder(null);
+                        // Refresh the page to show updated data
+                        router.reload();
+                    },
+                    onError: (errors) => {
+                        console.error('Error cancelling order:', errors);
+                        alert('Gagal membatalkan pesanan. Silakan coba lagi.');
+                    },
                 },
-                onError: (errors) => {
-                    console.error('Error cancelling order:', errors);
-                    alert('Gagal membatalkan pesanan. Silakan coba lagi.');
-                }
-            });
+            );
         } catch (error) {
             console.error('Error cancelling order:', error);
             alert('Terjadi kesalahan saat membatalkan pesanan.');
@@ -108,25 +112,25 @@ export default function OrderSummarySection() {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
-            minimumFractionDigits: 0
+            minimumFractionDigits: 0,
         }).format(amount);
     };
 
     const getStatusText = (status: string) => {
         const statusMap: { [key: string]: string } = {
             'menunggu pembayaran': 'Belum Bayar',
-            'pending': 'Belum Bayar',
-            'belum_bayar': 'Belum Bayar',
-            'diproses': 'Menunggu Konfirmasi',
-            'sedang_proses': 'Menunggu Konfirmasi',
-            'processing': 'Menunggu Konfirmasi',
-            'confirmed': 'Dikonfirmasi',
+            pending: 'Belum Bayar',
+            belum_bayar: 'Belum Bayar',
+            diproses: 'Menunggu Konfirmasi',
+            sedang_proses: 'Menunggu Konfirmasi',
+            processing: 'Menunggu Konfirmasi',
+            confirmed: 'Dikonfirmasi',
             'menunggu pengambilan': 'Siap Diambil',
-            'diantar': 'Sedang Diantar',
-            'selesai': 'Selesai',
-            'completed': 'Selesai',
-            'dibatalkan': 'Dibatalkan',
-            'cancelled': 'Dibatalkan'
+            diantar: 'Sedang Diantar',
+            selesai: 'Selesai',
+            completed: 'Selesai',
+            dibatalkan: 'Dibatalkan',
+            cancelled: 'Dibatalkan',
         };
         return statusMap[status] || status;
     };
@@ -145,7 +149,18 @@ export default function OrderSummarySection() {
     };
 
     const canCancel = (orderStatus: string) => {
-        const nonCancellableStatuses = ['selesai', 'completed', 'dibatalkan', 'cancelled'];
+        const nonCancellableStatuses = [
+            'selesai',
+            'completed',
+            'dibatalkan',
+            'cancelled',
+            'diproses',
+            'sedang_proses',
+            'processing',
+            'confirmed',
+            'menunggu pengambilan',
+            'diantar',
+        ];
         return !nonCancellableStatuses.includes(orderStatus);
     };
 
@@ -164,8 +179,8 @@ export default function OrderSummarySection() {
         const statusDisplayMap: { [key: string]: string } = {
             'belum-bayar': 'Belum Bayar',
             'sedang-proses': 'Menunggu Konfirmasi',
-            'selesai': 'Selesai',
-            'dibatalkan': 'Dibatalkan'
+            selesai: 'Selesai',
+            dibatalkan: 'Dibatalkan',
         };
         return statusDisplayMap[status] || status;
     };
@@ -175,9 +190,7 @@ export default function OrderSummarySection() {
             <section className="mx-auto w-full max-w-4xl p-2 sm:p-8">
                 <Card className="rounded-xl border border-gray-200 shadow-sm">
                     <CardContent className="p-10 text-center">
-                        <p className="text-gray-500">
-                            Tidak ada pesanan dengan status "{getStatusDisplayText(status)}"
-                        </p>
+                        <p className="text-gray-500">Tidak ada pesanan dengan status "{getStatusDisplayText(status)}"</p>
                     </CardContent>
                 </Card>
             </section>
@@ -186,7 +199,7 @@ export default function OrderSummarySection() {
 
     return (
         <>
-            <section className="mx-auto w-full max-w-4xl p-2 sm:p-8 space-y-6">
+            <section className="mx-auto w-full max-w-4xl space-y-6 p-2 sm:p-8">
                 {orders.map((order) => (
                     <Card key={order.invoice_id} className="rounded-xl border border-gray-200 shadow-sm">
                         <CardContent className="p-4 sm:p-10">
@@ -204,14 +217,11 @@ export default function OrderSummarySection() {
                                         </p>
                                     )}
                                     <p className="text-sm font-semibold text-gray-700">
-                                        Tanggal: <span className="font-normal text-gray-600">
-                                            {new Date(order.invoice_date).toLocaleDateString('id-ID')}
-                                        </span>
+                                        Tanggal:{' '}
+                                        <span className="font-normal text-gray-600">{new Date(order.invoice_date).toLocaleDateString('id-ID')}</span>
                                     </p>
                                     <p className="text-sm font-semibold text-gray-700">
-                                        Status: <span className={`font-normal ${getStatusColor(order.status)}`}>
-                                            {getStatusText(order.status)}
-                                        </span>
+                                        Status: <span className={`font-normal ${getStatusColor(order.status)}`}>{getStatusText(order.status)}</span>
                                     </p>
                                     {order.payment_option && (
                                         <p className="text-sm font-semibold text-gray-700">
@@ -250,14 +260,14 @@ export default function OrderSummarySection() {
                                             <h3 className="text-base font-semibold text-gray-800">{item.product_name}</h3>
                                             <div className="mt-2 flex justify-between sm:mt-6">
                                                 <div>
-                                                    <p className="text-sm text-gray-500">x{item.quantity} {item.unit}</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        x{item.quantity} {item.unit}
+                                                    </p>
                                                     <p className="text-xs text-gray-400">
                                                         {formatCurrency(item.price)} per {item.unit}
                                                     </p>
                                                 </div>
-                                                <p className="text-base font-bold text-price-lighter">
-                                                    {formatCurrency(item.subtotal)}
-                                                </p>
+                                                <p className="text-price-lighter text-base font-bold">{formatCurrency(item.subtotal)}</p>
                                             </div>
                                         </div>
                                     </article>
@@ -267,9 +277,7 @@ export default function OrderSummarySection() {
                             <section className="mt-10 rounded-xl border border-gray-200 bg-gray-50 p-6 font-sans shadow-sm">
                                 <div className="mb-6 text-right">
                                     <p className="text-xl font-semibold text-gray-800 sm:text-2xl">
-                                        Total Pesanan: <span className="font-bold text-price">
-                                            {formatCurrency(order.total_amount)}
-                                        </span>
+                                        Total Pesanan: <span className="text-price font-bold">{formatCurrency(order.total_amount)}</span>
                                     </p>
                                 </div>
 
@@ -326,12 +334,8 @@ export default function OrderSummarySection() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
                     <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
                         <h3 className="text-lg font-semibold text-red-600">Konfirmasi Pembatalan</h3>
-                        <p className="mt-2 text-sm text-gray-600">
-                            Apakah Anda yakin ingin membatalkan pesanan #{selectedOrder.invoice_id}?
-                        </p>
-                        <p className="mt-1 text-xs text-gray-500">
-                            Tindakan ini tidak dapat dibatalkan.
-                        </p>
+                        <p className="mt-2 text-sm text-gray-600">Apakah Anda yakin ingin membatalkan pesanan #{selectedOrder.invoice_id}?</p>
+                        <p className="mt-1 text-xs text-gray-500">Tindakan ini tidak dapat dibatalkan.</p>
                         <div className="mt-6 flex justify-end gap-3">
                             <Button
                                 onClick={() => {

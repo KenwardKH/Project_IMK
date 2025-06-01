@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
+import { router } from '@inertiajs/react';
 import { AlertCircle, CheckCircle, Clock, Headphones, Mail, MapPin, MessageCircle, Phone, Send } from 'lucide-react';
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 
 interface FormData {
     name: string;
@@ -26,7 +28,7 @@ export default function ContactUsPage() {
         email: '',
         message: '',
     });
-    const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [errors, setErrors] = useState<FormErrors>({});
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -66,19 +68,64 @@ export default function ContactUsPage() {
         return newErrors;
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const newErrors = validateForm();
 
-        if (Object.keys(newErrors).length === 0) {
-            // Simulate form submission
-            setIsSubmitted(true);
-            // Reset form after successful submission
-            setTimeout(() => {
-                setFormData({ name: '', email: '', message: '' });
-                setIsSubmitted(false);
-            }, 3000);
-        } else {
+        if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch('/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Pesan Terkirim!',
+                    text: data.message,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#2563eb',
+                });
+
+                // Reset form
+                setFormData({ name: '', email: '', message: '' });
+                setErrors({});
+            } else {
+                if (data.errors) {
+                    setErrors(data.errors);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Mengirim',
+                        text: data.message || 'Terjadi kesalahan saat mengirim pesan.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#dc2626',
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Kesalahan Jaringan',
+                text: 'Terjadi kesalahan koneksi. Silakan coba lagi.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc2626',
+            });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -111,7 +158,7 @@ export default function ContactUsPage() {
 
     return (
         <AppLayout>
-            <div className="min-h-screen ">
+            <div className="min-h-screen">
                 {/* Hero Section */}
                 <section className="">
                     <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
@@ -150,98 +197,98 @@ export default function ContactUsPage() {
                                     </CardHeader>
 
                                     <CardContent>
-                                        {isSubmitted ? (
-                                            <div className="space-y-4 py-12 text-center">
-                                                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                                                    <CheckCircle className="h-10 w-10 text-green-600" />
-                                                </div>
-                                                <h3 className="text-2xl font-semibold text-gray-900">Pesan Terkirim!</h3>
-                                                <p className="mx-auto max-w-md text-gray-600">
-                                                    Terima kasih telah menghubungi kami. Tim customer service akan merespon pesan Anda dalam waktu 24
-                                                    jam.
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-6">
-                                                <div className="grid gap-6 md:grid-cols-2">
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                                                            Nama Lengkap *
-                                                        </Label>
-                                                        <Input
-                                                            id="name"
-                                                            name="name"
-                                                            type="text"
-                                                            value={formData.name}
-                                                            onChange={handleInputChange}
-                                                            placeholder="Masukkan nama lengkap Anda"
-                                                            className={`h-12 ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'}`}
-                                                        />
-                                                        {errors.name && (
-                                                            <div className="flex items-center space-x-1 text-sm text-red-500">
-                                                                <AlertCircle className="h-4 w-4" />
-                                                                <span>{errors.name}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                                                            Email *
-                                                        </Label>
-                                                        <Input
-                                                            id="email"
-                                                            name="email"
-                                                            type="email"
-                                                            value={formData.email}
-                                                            onChange={handleInputChange}
-                                                            placeholder="nama@email.com"
-                                                            className={`h-12 ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'}`}
-                                                        />
-                                                        {errors.email && (
-                                                            <div className="flex items-center space-x-1 text-sm text-red-500">
-                                                                <AlertCircle className="h-4 w-4" />
-                                                                <span>{errors.email}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                        <div className="space-y-6">
+                                            <div className="grid gap-6 md:grid-cols-2">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                                                        Nama Lengkap *
+                                                    </Label>
+                                                    <Input
+                                                        id="name"
+                                                        name="name"
+                                                        type="text"
+                                                        value={formData.name}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Masukkan nama lengkap Anda"
+                                                        className={`h-12 ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'}`}
+                                                        disabled={isSubmitting}
+                                                    />
+                                                    {errors.name && (
+                                                        <div className="flex items-center space-x-1 text-sm text-red-500">
+                                                            <AlertCircle className="h-4 w-4" />
+                                                            <span>{errors.name}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="message" className="text-sm font-medium text-gray-700">
-                                                        Pesan / Laporan Masalah *
+                                                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                                                        Email *
                                                     </Label>
-                                                    <Textarea
-                                                        id="message"
-                                                        name="message"
-                                                        value={formData.message}
+                                                    <Input
+                                                        id="email"
+                                                        name="email"
+                                                        type="email"
+                                                        value={formData.email}
                                                         onChange={handleInputChange}
-                                                        placeholder="Deskripsikan masalah, pertanyaan, atau saran Anda dengan detail..."
-                                                        rows={6}
-                                                        className={`resize-none ${errors.message ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'}`}
+                                                        placeholder="nama@email.com"
+                                                        className={`h-12 ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'}`}
+                                                        disabled={isSubmitting}
                                                     />
-                                                    {errors.message && (
+                                                    {errors.email && (
                                                         <div className="flex items-center space-x-1 text-sm text-red-500">
                                                             <AlertCircle className="h-4 w-4" />
-                                                            <span>{errors.message}</span>
+                                                            <span>{errors.email}</span>
                                                         </div>
                                                     )}
-                                                    <p className="text-xs text-gray-500">Minimal 10 karakter ({formData.message.length}/10)</p>
                                                 </div>
-
-                                                <Button
-                                                    onClick={handleSubmit}
-                                                    className="h-12 w-full rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700"
-                                                >
-                                                    <Send className="mr-2 h-5 w-5" />
-                                                    Kirim Pesan
-                                                </Button>
-
-                                                <p className="text-center text-xs text-gray-500">
-                                                    * Wajib diisi. Kami menghormati privasi Anda dan tidak akan membagikan informasi pribadi.
-                                                </p>
                                             </div>
-                                        )}
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="message" className="text-sm font-medium text-gray-700">
+                                                    Pesan / Laporan Masalah *
+                                                </Label>
+                                                <Textarea
+                                                    id="message"
+                                                    name="message"
+                                                    value={formData.message}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Deskripsikan masalah, pertanyaan, atau saran Anda dengan detail..."
+                                                    rows={6}
+                                                    className={`resize-none ${errors.message ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'}`}
+                                                    disabled={isSubmitting}
+                                                />
+                                                {errors.message && (
+                                                    <div className="flex items-center space-x-1 text-sm text-red-500">
+                                                        <AlertCircle className="h-4 w-4" />
+                                                        <span>{errors.message}</span>
+                                                    </div>
+                                                )}
+                                                <p className="text-xs text-gray-500">Minimal 10 karakter ({formData.message.length}/10)</p>
+                                            </div>
+
+                                            <Button
+                                                onClick={handleSubmit}
+                                                disabled={isSubmitting}
+                                                className="h-12 w-full rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                                            >
+                                                {isSubmitting ? (
+                                                    <>
+                                                        <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                                        Mengirim...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Send className="mr-2 h-5 w-5" />
+                                                        Kirim Pesan
+                                                    </>
+                                                )}
+                                            </Button>
+
+                                            <p className="text-center text-xs text-gray-500">
+                                                * Wajib diisi. Kami menghormati privasi Anda dan tidak akan membagikan informasi pribadi.
+                                            </p>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -277,35 +324,6 @@ export default function ContactUsPage() {
                                         ))}
                                     </CardContent>
                                 </Card>
-
-                                {/* Quick Response Info */}
-                                {/* <Card className="bg-blue-600 text-white shadow-lg">
-                                    <CardContent className="p-6">
-                                        <div className="mb-4 flex items-center space-x-3">
-                                            <div className="bg-opacity-20 flex h-10 w-10 items-center justify-center rounded-lg bg-white">
-                                                <Users className="h-5 w-5 text-white" />
-                                            </div>
-                                            <h3 className="text-lg font-semibold">Tim Customer Service</h3>
-                                        </div>
-                                        <p className="mb-4 text-blue-100">
-                                            Tim profesional kami siap membantu menyelesaikan masalah Anda dengan cepat dan efektif.
-                                        </p>
-                                        <div className="space-y-2 text-sm">
-                                            <div className="flex items-center space-x-2">
-                                                <CheckCircle className="h-4 w-4 text-green-300" />
-                                                <span>Respon dalam 24 jam</span>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <CheckCircle className="h-4 w-4 text-green-300" />
-                                                <span>Support 7 hari seminggu</span>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <CheckCircle className="h-4 w-4 text-green-300" />
-                                                <span>Solusi yang tepat sasaran</span>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card> */}
                             </div>
                         </div>
                     </div>

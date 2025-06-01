@@ -58,7 +58,7 @@ export default function FeaturedProductsSection({ products = [] }: Props) {
             <div className="mx-auto max-w-7xl px-4">
                 {/* Header */}
                 <div className="mb-12 text-center">
-                    <h2 className="font-[Poppins] text-4xl font-bold text-[#153e98]">Produk Unggulan</h2>
+                    <h2 className="font-[Poppins] text-4xl font-bold text-[#153e98]">Produk</h2>
                     <p className="mt-3 font-[Poppins] text-lg text-[#3a3a3a]">Temukan alat tulis terbaik dan paling laris untuk kebutuhanmu</p>
                 </div>
 

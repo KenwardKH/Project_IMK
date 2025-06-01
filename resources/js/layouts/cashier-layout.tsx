@@ -3,7 +3,7 @@ import { router, usePage } from '@inertiajs/react';
 import NavbarSectionCashier from '@/components/section/NavbarSectionCashier';
 
 // Type yang sama dengan NavbarSectionCashier
-type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'logout';
+type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'riwayat-pesanan' | 'logout';
 
 interface CashierLayoutProps {
     children: ReactNode;
@@ -26,6 +26,9 @@ const CashierLayout: React.FC<CashierLayoutProps> = ({ children, title = "Kasir"
         if (url.startsWith('/cashier/stock')) {
             return 'stok-barang';
         }
+        if (url.startsWith('/cashier/history')) {
+            return 'riwayat-pesanan';
+        }
         return 'buat-pesanan';
     };
 
@@ -43,6 +46,9 @@ const CashierLayout: React.FC<CashierLayoutProps> = ({ children, title = "Kasir"
                 break;
             case 'stok-barang':
                 router.visit('/cashier/stock');
+                break;
+            case 'riwayat-pesanan':
+                router.visit('/cashier/history');
                 break;
             default:
                 router.visit('/cashier');

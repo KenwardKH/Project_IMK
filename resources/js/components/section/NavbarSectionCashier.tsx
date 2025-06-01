@@ -3,13 +3,14 @@ import {
     ShoppingCart, 
     CheckCircle, 
     Clock, 
-    Package, 
+    Package,
+    History, 
     LogOut 
 } from 'lucide-react';
 import { router } from '@inertiajs/react';
 
 
-type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'logout';
+type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'riwayat-pesanan' | 'logout';
 
 interface NavbarSectionCashierProps {
     activeSection?: SectionId;  // Hanya menerima string yang valid
@@ -46,6 +47,12 @@ const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
             name: 'Stok Barang',
             icon: Package,
             color: 'text-purple-600 hover:text-purple-700'
+        },
+        {
+            id: 'riwayat-pesanan',
+            name: 'Riwayat Pesanan',
+            icon: History,
+            color: 'text-yellow-400 hover:text-yellow-700'
         },
         {
             id: 'logout',

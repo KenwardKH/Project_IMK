@@ -76,15 +76,17 @@ interface Props {
     orders: PaginatedOrders;
 }
 
-export default function OrderList() {
+export default function OrderHistory() {
     const [searchTerm, setSearchTerm] = useState('');
     const [modalImage, setModalImage] = useState<string | null>(null);
     const { orders } = usePage<Props>().props;
     const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
+    // const itemsPerPage = 100;
+    // const statuses = ['diproses','menunggu pengambilan', 'diantar', 'selesai', 'dibatalkan'];
     const pickupStatuses = ['diproses', 'menunggu pengambilan', 'selesai'];
     const deliveryStatuses = ['diproses', 'diantar', 'selesai'];
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'pickup' | 'delivery'>('pickup');
+    const [activeTab, setActiveTab] = useState<'selesai' | 'dibatalkan'>('selesai');
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [cancelReason, setCancelReason] = useState('');
@@ -204,18 +206,24 @@ export default function OrderList() {
     };
 
     // Step 1: Filter berdasarkan jenis pesanan (pickup/delivery)
-    const typeOrders = orders.data.filter(order => order.type === activeTab);
+    const typeOrders = orders.data.filter(order => order.pickup.some(p => p.status === activeTab) || order.delivery.some(d => d.status === activeTab));
+    // const typeOrders = orders.data.filter(order => order.type === activeTab);
 
     // Step 2: Filter berdasarkan pencarian nama
     const filteredOrders = typeOrders.filter(order =>
         typeof order.name === 'string' &&
         order.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         (
-            (Array.isArray(order.pickup) && order.pickup.some(p => p.status !== 'menunggu pembayaran')) ||
-            (Array.isArray(order.delivery) && order.delivery.some(d => d.status !== 'menunggu pembayaran'))
+            (Array.isArray(order.pickup) && order.pickup.some(p => p.status === 'selesai' || p.status === 'dibatalkan')) ||
+            (Array.isArray(order.delivery) && order.delivery.some(d => d.status === 'selesai' || d.status === 'dibatalkan'))
         )
     );
 
+    // Step 3: Pagination
+    // const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+    // const startIndex = (currentPage - 1) * itemsPerPage;
+    // const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+    // Step 3: Ambil hanya pesanan yang belum dikonfirmasi
     const sortedOrder = filteredOrders.sort((a, b) => {
         if (sortOrder === 'asc') {
             return a.name.localeCompare(b.name);
@@ -247,33 +255,41 @@ export default function OrderList() {
     const activeOrders = sortedByDate;
 
 
+    // Step 4: Fungsi navigasi halaman
+    // const goToPage = (page: number) => {
+    //     if (page >= 1 && page <= totalPages) {
+    //         setCurrentPage(page);
+    //     }
+    // };
+
     return (
         <AppLayout>
-            <Head title="Status Pesanan" />
-            <section id="status-pesanan" className="mb-12">
+            <Head title="Riwayat Pesanan" />
+            <section id="riwayat-pesanan" className="mb-12">
                 <div className="flex w-full flex-col px-6 ">
-                    <h1 className="text-3xl font-bold text-center mb-10 mt-5">Status Pesanan</h1>
+                    <h1 className="text-4xl font-bold text-center mb-10 mt-5">Riwayat Pesanan</h1>
+                    {/* Main Controls Container */}
                     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
                         {/* Top Row - Status Tabs */}
                         <div className="flex flex-wrap gap-3 mb-6">
                             <div className="flex bg-gray-50 rounded-lg p-1 border">
                                 <button
-                                    onClick={() => setActiveTab('pickup')}
-                                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${activeTab === 'pickup'
+                                    onClick={() => setActiveTab('selesai')}
+                                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${activeTab === 'selesai'
                                         ? 'bg-blue-600 text-white shadow-md transform scale-105'
                                         : 'text-gray-600 hover:text-blue-600 hover:bg-white'
                                         }`}
                                 >
-                                    Ambil di Toko
+                                    ✅ Selesai
                                 </button>
                                 <button
-                                    onClick={() => setActiveTab('delivery')}
-                                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${activeTab === 'delivery'
-                                        ? 'bg-blue-600 text-white shadow-md transform scale-105'
+                                    onClick={() => setActiveTab('dibatalkan')}
+                                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${activeTab === 'dibatalkan'
+                                        ? 'bg-red-600 text-white shadow-md transform scale-105'
                                         : 'text-gray-600 hover:text-red-600 hover:bg-white'
                                         }`}
                                 >
-                                    Ambil sendiri
+                                    ❌ Dibatalkan
                                 </button>
                             </div>
                         </div>
@@ -397,10 +413,11 @@ export default function OrderList() {
                                     <th className="border border-gray-300 px-4 py-3 text-center">Total Harga</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Alamat</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pembayaran</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Tipe Pesanan</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Cetak Invoice</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Hapus</th>
+                                    {/* <th className="border border-gray-300 px-4 py-3 text-center">Hapus</th> */}
                                     <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
                                 </tr>
                             </thead>
@@ -434,6 +451,7 @@ export default function OrderList() {
                                                 )}
                                             </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
                                                     onClick={() => handleOpenDetailModal(item)}
@@ -444,7 +462,7 @@ export default function OrderList() {
                                             </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">Belum ada Invoice</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
+                                            {/* <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
                                                     onClick={() => handleOpenCancelModal(item)}
                                                     className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
@@ -452,9 +470,13 @@ export default function OrderList() {
                                                 >
                                                     <X className="h-4 w-4" />
                                                 </Button>
-                                            </td>
+                                            </td> */}
                                             <td className="border border-gray-200 px-4 py-3 text-center">
-                                                <select
+                                                {item.type === 'pickup'
+                                                    ? item.pickup?.[0]?.status
+                                                    : item.delivery?.[0]?.status
+                                                }
+                                                {/* <select
                                                     value={item.type === 'pickup'
                                                         ? item.pickup?.[0]?.status
                                                         : item.delivery?.[0]?.status
@@ -467,7 +489,7 @@ export default function OrderList() {
                                                             {status}
                                                         </option>
                                                     ))}
-                                                </select>
+                                                </select> */}
                                             </td>
                                         </tr>
                                     ))
@@ -480,23 +502,7 @@ export default function OrderList() {
                                 )}
                             </tbody>
                         </table>
-                        {/* <div className="mt-4 flex justify-center gap-2">
-                            <button
-                                onClick={() => goToPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-                            >
-                                Prev
-                            </button>
-                            <span>Halaman {currentPage} dari {totalPages}</span>
-                            <button
-                                onClick={() => goToPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-                            >
-                                Next
-                            </button>
-                        </div> */}
+
                     </div>
                     {/* Pagination */}
                     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
@@ -532,8 +538,8 @@ export default function OrderList() {
                                     onClick={() => setCurrentPage(1)}
                                     disabled={currentPage === 1}
                                     className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${currentPage === 1
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                                         }`}
                                     title="Halaman Pertama"
                                 >
@@ -547,8 +553,8 @@ export default function OrderList() {
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
                                     className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${currentPage === 1
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                                         }`}
                                     title="Halaman Sebelumnya"
                                 >
@@ -600,8 +606,8 @@ export default function OrderList() {
                                                     key={i}
                                                     onClick={() => setCurrentPage(i)}
                                                     className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${currentPage === i
-                                                        ? 'bg-blue-600 text-white shadow-md transform scale-105'
-                                                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                                            ? 'bg-blue-600 text-white shadow-md transform scale-105'
+                                                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                                                         }`}
                                                 >
                                                     {i}
@@ -638,8 +644,8 @@ export default function OrderList() {
                                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(totalItems / itemsPerPage)))}
                                     disabled={currentPage === Math.ceil(totalItems / itemsPerPage)}
                                     className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${currentPage === Math.ceil(totalItems / itemsPerPage)
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                                         }`}
                                     title="Halaman Selanjutnya"
                                 >
@@ -653,8 +659,8 @@ export default function OrderList() {
                                     onClick={() => setCurrentPage(Math.ceil(totalItems / itemsPerPage))}
                                     disabled={currentPage === Math.ceil(totalItems / itemsPerPage)}
                                     className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${currentPage === Math.ceil(totalItems / itemsPerPage)
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                                         }`}
                                     title="Halaman Terakhir"
                                 >

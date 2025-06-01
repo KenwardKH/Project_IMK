@@ -7,6 +7,7 @@ import {
     LogOut
 } from 'lucide-react';
 import { router } from '@inertiajs/react';
+import Swal from 'sweetalert2';
 
 
 type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'logout';
@@ -55,15 +56,26 @@ const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
         }
     ];
 
-    const handleItemClick = (itemId: string) => {
+  const handleItemClick = (itemId: string) => {
     if (itemId === 'logout') {
-        if (confirm('Apakah Anda yakin ingin logout?')) {
-            router.post('/logout');
-        }
+        Swal.fire({
+            title: 'Apakah Anda yakin ingin logout?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, logout',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.post('/logout');
+            }
+        });
     } else {
         onSectionChange?.(itemId as SectionId);
     }
 };
+
 
     return (
         <div className="fixed left-0 top-0 h-full w-16 bg-white shadow-lg border-r border-gray-200 flex flex-col items-center py-6 z-50">

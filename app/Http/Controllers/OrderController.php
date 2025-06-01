@@ -21,7 +21,7 @@ class OrderController extends Controller
      */
     public function index($status)
 {
-    $allowedStatuses = ['belum-bayar', 'sedang-proses', 'selesai', 'dibatalkan'];
+    $allowedStatuses = ['belum-bayar', 'sedang-proses', 'proses','selesai', 'dibatalkan'];
 
     if (!in_array($status, $allowedStatuses)) {
         abort(404);
@@ -30,12 +30,14 @@ class OrderController extends Controller
     $user = Auth::user();
 
     // Map frontend status to database values
-    $statusMap = [
-        'belum-bayar' => ['menunggu pembayaran', 'pending', 'belum_bayar'],
-        'sedang-proses' => ['diproses', 'menunggu pengambilan', 'diantar', 'processing', 'sedang_proses', 'confirmed'],
-        'selesai' => ['selesai', 'completed'],
-        'dibatalkan' => ['dibatalkan', 'cancelled']
-    ];
+  $statusMap = [
+    'belum-bayar' => ['menunggu pembayaran', 'pending', 'belum_bayar'],
+    'sedang-proses' => ['diproses', 'processing', 'sedang_proses', 'confirmed'], // hanya status awal
+    'proses' => ['menunggu pengambilan', 'diantar'], // status proses pengambilan/pengiriman
+    'selesai' => ['selesai', 'completed'],
+    'dibatalkan' => ['dibatalkan', 'cancelled']
+];
+
 
     $dbStatuses = $statusMap[$status] ?? [$status];
 

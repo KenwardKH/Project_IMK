@@ -164,13 +164,11 @@ Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
         return Inertia::render('owner/owner-profile');
     })->name('owner-profile');
 
-
     // Customer complain
-
+    Route::get('/customers', [ContactController::class, 'indexAdmin'])->name('customers.index');
+    Route::delete('/customers/{customer}', [ContactController::class, 'destroyAdmin'])->name('customers.destroy');
 
 });
-Route::get('/customers', [ContactController::class, 'indexAdmin'])->name('customers.index');
-Route::delete('/customers/{customer}', [ContactController::class, 'destroyAdmin'])->name('customers.destroy');
 // Route::get('/customers/{customer}', [ContactController::class, 'showAdmin'])->name('customers.show');
 // Route::patch('/customers/{customer}/status', [ContactController::class, 'updateStatusAdmin'])->name('customers.updateStatus');
 

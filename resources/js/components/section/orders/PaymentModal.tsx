@@ -1,6 +1,7 @@
-import { useState, ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { router } from '@inertiajs/react';
+import { ChangeEvent, useState } from 'react';
+import Swal from 'sweetalert2';
 
 interface Order {
     invoice_id: number;
@@ -31,7 +32,7 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
-            minimumFractionDigits: 0
+            minimumFractionDigits: 0,
         }).format(amount);
     };
 
@@ -43,13 +44,13 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
                 setError('File harus berupa gambar');
                 return;
             }
-            
+
             // Validate file size (max 2MB)
             if (file.size > 2 * 1024 * 1024) {
                 setError('Ukuran file maksimal 2MB');
                 return;
             }
-            
+
             setError(null);
             setSelectedFile(file);
             setImagePreview(URL.createObjectURL(file));
@@ -69,55 +70,58 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
         formData.append('payment_proof', selectedFile);
 
         try {
-            await router.post(
-                `/order/${order.invoice_id}/upload-payment`,
-                formData,
-                {
-                    forceFormData: true,
-                    preserveScroll: true,
-                    onSuccess: (page) => {
-                        const message = page.props?.flash?.success || 'Bukti pembayaran berhasil diupload';
-                        alert(message); // tampilkan pesan sukses
+            await router.post(`/order/${order.invoice_id}/upload-payment`, formData, {
+                forceFormData: true,
+                preserveScroll: true,
+                onSuccess: (page) => {
+                    const message = page.props?.flash?.success || 'Bukti pembayaran berhasil diupload';
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: message,
+                        confirmButtonColor: '#3085d6',
+                    }).then(() => {
                         onClose();
-                        router.reload(); // jika memang perlu refresh data
-                    },
-                    onError: (errors) => {
-                        console.error('Upload error:', errors);
-                        setError('Gagal mengupload bukti pembayaran. Silakan coba lagi.');
-                    },
-                }
-            );
+                        router.reload(); // refresh data
+                    });
+                },
+                onError: (errors) => {
+                    console.error('Upload error:', errors);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Gagal mengupload bukti pembayaran. Silakan coba lagi.',
+                        confirmButtonColor: '#d33',
+                    });
+                },
+            });
         } catch (err) {
             console.error('Unexpected error:', err);
-            setError('Terjadi kesalahan saat mengupload. Silakan coba lagi.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Kesalahan',
+                text: 'Terjadi kesalahan saat mengupload. Silakan coba lagi.',
+                confirmButtonColor: '#d33',
+            });
         } finally {
             setIsUploading(false);
         }
     };
 
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
             <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h2 className="mb-4 text-xl font-semibold text-gray-800">Upload Bukti Pembayaran</h2>
-                
+
                 {/* Order Info */}
                 <div className="mb-4 rounded-lg bg-gray-50 p-3">
-                    <p className="text-sm font-medium text-gray-700">
-                        Pesanan #{order.invoice_id}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                        Total: {formatCurrency(order.total_amount)}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                        Metode: {order.payment_option}
-                    </p>
+                    <p className="text-sm font-medium text-gray-700">Pesanan #{order.invoice_id}</p>
+                    <p className="text-sm text-gray-600">Total: {formatCurrency(order.total_amount)}</p>
+                    <p className="text-sm text-gray-600">Metode: {order.payment_option}</p>
                 </div>
 
                 <div className="mb-4">
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                        Pilih Bukti Pembayaran (JPG, PNG - Max 2MB)
-                    </label>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Pilih Bukti Pembayaran (JPG, PNG - Max 2MB)</label>
                     <input
                         type="file"
                         accept="image/jpeg,image/png,image/jpg"
@@ -135,21 +139,12 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
 
                 {imagePreview && (
                     <div className="mb-4 overflow-hidden rounded-lg border border-gray-200">
-                        <img
-                            src={imagePreview}
-                            alt="Preview bukti pembayaran"
-                            className="w-full object-cover max-h-64"
-                        />
+                        <img src={imagePreview} alt="Preview bukti pembayaran" className="max-h-64 w-full object-cover" />
                     </div>
                 )}
 
                 <div className="mt-6 flex justify-end gap-3">
-                    <Button
-                        type="button"
-                        className="bg-gray-400 px-4 text-sm text-white hover:bg-gray-500"
-                        onClick={onClose}
-                        disabled={isUploading}
-                    >
+                    <Button type="button" className="bg-gray-400 px-4 text-sm text-white hover:bg-gray-500" onClick={onClose} disabled={isUploading}>
                         Batal
                     </Button>
                     <Button

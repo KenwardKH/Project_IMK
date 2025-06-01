@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Invoice;
 use App\Models\Invoicedetail;
 use App\Models\PickupOrderStatus;
@@ -381,22 +381,23 @@ class OrderController extends Controller
 
         // Return invoice data for PDF generation
         $invoiceData = [
-            'invoice_id' => $invoice->InvoiceID,
-            'customer_name' => $invoice->customerName,
-            'customer_contact' => $invoice->customerContact,
-            'invoice_date' => $invoice->InvoiceDate,
+            'InvoiceID' => $invoice->InvoiceID,
+            'customerName' => $invoice->customerName,
+            'customerContact' => $invoice->customerContact,
+            'InvoiceDate' => $invoice->InvoiceDate,
             'type' => $invoice->type ?? ($isPickup ? 'pickup' : 'delivery'),
             'payment_option' => $invoice->payment_option,
-            'cashier_name' => $invoice->CashierName,
+            'CashierName' => $invoice->CashierName,
             'status' => $latestStatus->status,
             'delivery_address' => $isDelivery && $latestStatus ? $latestStatus->alamat ?? null : null,
             'items' => $invoice->invoicedetails,
-            'total_amount' => $invoice->invoicedetails->sum(function($detail) {
+            'totalAmount' => $invoice->invoicedetails->sum(function($detail) {
                 return (float)$detail->price * $detail->Quantity;
             })
         ];
 
-        return response()->json($invoiceData);
+        $pdf = Pdf::loadView('print', ['invoice' => $invoiceData]);
+       return $pdf->stream('invoice-'.$invoiceData['InvoiceID'].'.pdf');
     }
 
     /**

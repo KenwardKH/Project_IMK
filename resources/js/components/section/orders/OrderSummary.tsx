@@ -91,21 +91,9 @@ export default function OrderSummarySection() {
         setShowPaymentModal(true);
     };
 
-    const handlePrintInvoice = async (orderId: number) => {
-        try {
-            const response = await fetch(`/order/${orderId}/invoice`);
-            if (response.ok) {
-                const invoiceData = await response.json();
-                console.log('Invoice data:', invoiceData);
-                alert('Data invoice berhasil diambil. Fitur cetak akan segera tersedia.');
-            } else {
-                const errorData = await response.json();
-                alert(errorData.error || 'Gagal mengambil data invoice');
-            }
-        } catch (error) {
-            console.error('Error generating invoice:', error);
-            alert('Terjadi kesalahan saat mengambil data invoice');
-        }
+    const handlePrintInvoice = (orderId: number) => {
+        const invoiceUrl = `/order/${orderId}/invoice`;
+        window.open(invoiceUrl, '_blank');
     };
 
     const formatCurrency = (amount: number) => {

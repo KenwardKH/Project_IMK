@@ -9,7 +9,7 @@ interface ProductData {
     name: string;
     description: string;
     unit: string;
-    stock: string;
+    stock: number;
     price: number;
     image: string;
     // details: DetailData[];
@@ -56,6 +56,8 @@ export default function OrderList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [stockThreshold, setStockThreshold] = useState('');
+    const [filterType, setFilterType] = useState('>');
 
     const openModal = (imageUrl: string) => {
         setModalImage(imageUrl);
@@ -75,20 +77,19 @@ export default function OrderList() {
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const activeOrders = filteredOrders.filter((order) => {
+        const stock = order.stock; // misalnya order.stock = 12
 
-    // Step 3: Pagination
-    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const activeOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
-    // Step 3: Ambil hanya pesanan yang belum dikonfirmasi
-    // const activeOrders = paginatedOrders.filter(order => order.cid == null);
-
-    // Step 4: Fungsi navigasi halaman
-    const goToPage = (page: number) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
+        if (stockThreshold) {
+            if (filterType === '>') {
+                return stock > parseInt(stockThreshold, 10);
+            } else if (filterType === '<') {
+                return stock < parseInt(stockThreshold, 10);
+            }
         }
-    };
+
+        return true; // kalau threshold kosong, tampilkan semua
+    });
 
     return (
         <AppLayout>
@@ -97,35 +98,55 @@ export default function OrderList() {
                 <div className="flex w-full flex-col px-6 ">
                     <h1 className="text-3xl font-bold text-center">Daftar Produk</h1>
                     <div className="flex justify-between items-center flex-wrap gap-4 mb-4 py-4">
-                        {/* Button Type Option */}
-                        {/* <div className=" flex gap-4">
-                            <button
-                                onClick={() => setActiveTab('pickup')}
-                                className={`px-4 py-2 rounded ${activeTab === 'pickup' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-                            >
-                                Pickup
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('delivery')}
-                                className={`px-4 py-2 rounded ${activeTab === 'delivery' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-                            >
-                                Delivery
-                            </button>
-                        </div> */}
-                        {/* Search */}
-                        <div className="relative w-full max-w-sm">
-                            <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Cari Nama Produk"
-                                className="h-12 w-full rounded-md border border-gray-500 pr-4 pl-10 text-black focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    setSearchTerm(e.target.value);
-                                    //setCurrentPage(1); // Reset halaman saat pencarian berubah
-                                }}
-                            />
-                        </div>
+                        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
+                            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <select
+                                            value={filterType}
+                                            onChange={(e) => setFilterType(e.target.value)}
+                                            className="w-full h-12 pl-4 pr-4 border border-gray-500 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        >
+                                            <option value=">">lebih dari</option>
+                                            <option value="<">kurang dari</option>
+                                        </select>
+                                        <input
+                                            type="number"
+                                            placeholder="Masukkan angka stok"
+                                            value={stockThreshold}
+                                            onChange={(e) => setStockThreshold(e.target.value)}
+                                            className="w-full h-12 pl-12 pr-4 text-gray-700 border border-gray-500 rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                                {/* Search */}
+                                <div className="relative w-full max-w-sm">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <Search className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Cari nama produk"
+                                        className="w-full h-12 pl-12 pr-4 text-gray-700 bg-gray-50 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200 placeholder-gray-400"
+                                        value={searchTerm}
+                                        onChange={(e) => {
+                                            setSearchTerm(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
+                                    />
+                                    {searchTerm && (
+                                        <button
+                                            onClick={() => setSearchTerm('')}
+                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                                        >
+                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>  
                     </div>
                     {/* Table */}
                     <div className="overflow-auto rounded-lg shadow-md">
@@ -147,12 +168,12 @@ export default function OrderList() {
                                         <tr key={item.id} className="hover:bg-gray-100 transition duration-200">
                                             <td className="border border-gray-200 px-4 py-3 text-center">{index + 1}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
-                                                    <img
-                                                        src={`/storage/${item.image}`}
-                                                        alt={item.image}
-                                                        className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
-                                                        onClick={() => openModal(`/storage/${item.image}`)}
-                                                    />
+                                                <img
+                                                    src={`/storage/${item.image}`}
+                                                    alt={item.image}
+                                                    className="mx-auto h-16 w-16 cursor-pointer rounded-md object-cover shadow-sm transition hover:scale-105"
+                                                    onClick={() => openModal(`/storage/${item.image}`)}
+                                                />
                                             </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.price}</td>

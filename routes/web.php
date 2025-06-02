@@ -6,6 +6,7 @@ use App\Http\Controllers\customerDashboard;
 use App\Http\Controllers\ConfirmOrderController;
 use App\Http\Controllers\CustomerCartController;
 use App\Http\Controllers\OrderStatusController;
+use App\Http\Controllers\OrderHistoryController;
 use App\Http\Controllers\StockProductController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\ContactController;
@@ -77,12 +78,17 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
     Route::get('/orders', [ConfirmOrderController::class, 'index'])->name('order.confirm');
     Route::delete('/orders/{id}', [ConfirmOrderController::class, 'destroy'])->name('order.destroy');
     Route::post('/confirm/{id}', [ConfirmOrderController::class, 'confirmOrder'])->name('order.confirm');
+    Route::post('/cancel', [ConfirmOrderController::class, 'storeCancelReason'])->name('order.cancel');
 
-    //confirm
-    Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.confirm');
+    //Order Status
+    Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.index');
+    Route::post('/update-status/{id}', [OrderStatusController::class, 'updateStatus'])->name('order.update');
 
     //Stock Product
     Route::get('/stock', [StockProductController::class, 'index'])->name('order.confirm');
+
+    //Order History
+    Route::get('/history', [OrderHistoryController::class, 'index'])->name('order.history');
 
 });
 

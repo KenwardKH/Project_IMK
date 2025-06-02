@@ -3,6 +3,7 @@ import {
     ShoppingCart,
     CheckCircle,
     Clock,
+    History,
     Package,
     LogOut
 } from 'lucide-react';
@@ -10,10 +11,10 @@ import { router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 
-type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'logout';
+type SectionId = 'buat-pesanan' | 'konfirmasi-pesanan' | 'status-pesanan' | 'stok-barang' | 'riwayat-pesanan' | 'logout';
 
 interface NavbarSectionCashierProps {
-    activeSection?: SectionId;  // Hanya menerima string yang valid
+    activeSection?: SectionId; // Hanya menerima string yang valid
     onSectionChange?: (sectionId: SectionId) => void;
 }
 
@@ -28,32 +29,38 @@ const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
             id: 'buat-pesanan',
             name: 'Buat Pesanan',
             icon: ShoppingCart,
-            color: 'text-blue-600 hover:text-blue-700'
+            color: 'text-blue-600 hover:text-blue-700',
         },
         {
             id: 'konfirmasi-pesanan',
             name: 'Konfirmasi Pesanan',
             icon: CheckCircle,
-            color: 'text-green-600 hover:text-green-700'
+            color: 'text-green-600 hover:text-green-700',
         },
         {
             id: 'status-pesanan',
             name: 'Status Pesanan',
             icon: Clock,
-            color: 'text-yellow-600 hover:text-yellow-700'
+            color: 'text-yellow-600 hover:text-yellow-700',
         },
         {
             id: 'stok-barang',
             name: 'Stok Barang',
             icon: Package,
-            color: 'text-purple-600 hover:text-purple-700'
+            color: 'text-purple-600 hover:text-purple-700',
+        },
+        {
+            id: 'riwayat-pesanan',
+            name: 'Riwayat Pesanan',
+            icon: History,
+            color: 'text-yellow-400 hover:text-yellow-700',
         },
         {
             id: 'logout',
             name: 'Logout',
             icon: LogOut,
-            color: 'text-red-600 hover:text-red-700'
-        }
+            color: 'text-red-600 hover:text-red-700',
+        },
     ];
 
   const handleItemClick = (itemId: string) => {
@@ -78,16 +85,16 @@ const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
 
 
     return (
-        <div className="fixed left-0 top-0 h-full w-16 bg-white shadow-lg border-r border-gray-200 flex flex-col items-center py-6 z-50">
+        <div className="fixed top-0 left-0 z-50 flex h-full w-16 flex-col items-center border-r border-gray-200 bg-white py-6 shadow-lg">
             {/* Logo/Brand */}
             <div className="mb-8">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">K</span>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
+                    <span className="text-lg font-bold text-white">K</span>
                 </div>
             </div>
 
             {/* Menu Items */}
-            <div className="flex flex-col space-y-4 flex-1">
+            <div className="flex flex-1 flex-col space-y-4">
                 {menuItems.map((item) => {
                     const IconComponent = item.icon;
                     const isActive = activeSection === item.id;
@@ -95,7 +102,7 @@ const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
                     return (
                         <div
                             key={item.id}
-                            className="relative group"
+                            className="group relative"
                             onMouseEnter={() => setHoveredItem(item.id)}
                             onMouseLeave={() => setHoveredItem(null)}
                         >
@@ -118,10 +125,10 @@ const NavbarSectionCashier: React.FC<NavbarSectionCashierProps> = ({
 
                             {/* Tooltip */}
                             {hoveredItem === item.id && (
-                                <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 z-50">
-                                    <div className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg">
+                                <div className="absolute top-1/2 left-full z-50 ml-3 -translate-y-1/2 transform">
+                                    <div className="rounded-lg bg-gray-800 px-3 py-2 text-sm whitespace-nowrap text-white shadow-lg">
                                         {item.name}
-                                        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-800"></div>
+                                        <div className="absolute top-1/2 left-0 h-0 w-0 -translate-x-1 -translate-y-1/2 transform border-t-4 border-r-4 border-b-4 border-transparent border-r-gray-800"></div>
                                     </div>
                                 </div>
                             )}

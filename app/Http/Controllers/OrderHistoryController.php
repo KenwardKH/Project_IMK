@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
-class OrderStatusController extends Controller
+class OrderHistoryController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -23,7 +23,7 @@ class OrderStatusController extends Controller
     {
         $orders = Invoice::select(
         'InvoiceID as id',
-        'InvoiceID as invoice_id',
+          'InvoiceID as invoice_id',
         'CustomerID as custid',
         'customerName as name',
         'customerContact as contact',
@@ -104,7 +104,7 @@ class OrderStatusController extends Controller
             $order->delivery = $deliveryStatus;
         }
 
-        return Inertia::render('cashier/OrderStatus', [
+        return Inertia::render('cashier/OrderHistory', [
                 'orders' => $orders,
             ]);
     }
@@ -144,30 +144,9 @@ class OrderStatusController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function updateStatus(Request $request, $id)
+    public function update(Request $request, string $id)
     {
-        $request->validate([
-            'status' => 'required|in:diproses,diantar,selesai,dibatalkan',
-            'type' => 'required|in:pickup,delivery',
-        ]);
-
-        if ($request->type === 'pickup') {
-            $pickup = PickupOrderStatus::where('invoice_id', $id)->first();
-            if ($pickup) {
-                $pickup->status = $request->input('status');
-                $pickup->updated_by = auth()->id();
-                $pickup->save();
-            }
-        } elseif ($request->type === 'delivery') {
-            $delivery = DeliveryOrderStatus::where('invoice_id', $id)->first();
-            if ($delivery) {
-                $delivery->status = $request->input('status');
-                $delivery->updated_by = auth()->id();
-                $delivery->save();
-            }
-        }
-
-        return back();
+        //
     }
 
     /**

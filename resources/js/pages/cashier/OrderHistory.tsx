@@ -76,15 +76,17 @@ interface Props {
     orders: PaginatedOrders;
 }
 
-export default function OrderList() {
+export default function OrderHistory() {
     const [searchTerm, setSearchTerm] = useState('');
     const [modalImage, setModalImage] = useState<string | null>(null);
     const { orders } = usePage<Props>().props;
     const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
-    const pickupStatuses = ['menunggu pengambilan', 'selesai'];
+    // const itemsPerPage = 100;
+    // const statuses = ['diproses','menunggu pengambilan', 'diantar', 'selesai', 'dibatalkan'];
+    const pickupStatuses = ['diproses', 'menunggu pengambilan', 'selesai'];
     const deliveryStatuses = ['diproses', 'diantar', 'selesai'];
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'pickup' | 'delivery'>('pickup');
+    const [activeTab, setActiveTab] = useState<'selesai' | 'dibatalkan'>('selesai');
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [cancelReason, setCancelReason] = useState('');
@@ -98,11 +100,6 @@ export default function OrderList() {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-    const handlePrintInvoice = (orderId: number) => {
-        const invoiceUrl = `/order/${orderId}/invoice-other`;
-        window.open(invoiceUrl, '_blank');
-    };
-
     const toggleSortOrder = () => {
         setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
     };
@@ -114,6 +111,12 @@ export default function OrderList() {
             return order.delivery?.[0]?.status ?? '';
         }
         return '';
+    };
+
+
+    const handlePrintInvoice = (orderId: number) => {
+        const invoiceUrl = `/order/${orderId}/invoice-other`;
+        window.open(invoiceUrl, '_blank');
     };
 
     const handleOpenCancelModal = (order: OrderData) => {
@@ -211,17 +214,25 @@ export default function OrderList() {
     };
 
     // Step 1: Filter berdasarkan jenis pesanan (pickup/delivery)
-    const typeOrders = orders.data.filter((order) => order.type === activeTab);
+    const typeOrders = orders.data.filter(
+        (order) => order.pickup.some((p) => p.status === activeTab) || order.delivery.some((d) => d.status === activeTab),
+    );
+    // const typeOrders = orders.data.filter(order => order.type === activeTab);
 
     // Step 2: Filter berdasarkan pencarian nama
     const filteredOrders = typeOrders.filter(
         (order) =>
             typeof order.name === 'string' &&
             order.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            ((Array.isArray(order.pickup) && order.pickup.some((p) => p.status !== 'menunggu pembayaran')) ||
-                (Array.isArray(order.delivery) && order.delivery.some((d) => d.status !== 'menunggu pembayaran'))),
+            ((Array.isArray(order.pickup) && order.pickup.some((p) => p.status === 'selesai' || p.status === 'dibatalkan')) ||
+                (Array.isArray(order.delivery) && order.delivery.some((d) => d.status === 'selesai' || d.status === 'dibatalkan'))),
     );
 
+    // Step 3: Pagination
+    // const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+    // const startIndex = (currentPage - 1) * itemsPerPage;
+    // const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+    // Step 3: Ambil hanya pesanan yang belum dikonfirmasi
     const sortedOrder = filteredOrders.sort((a, b) => {
         if (sortOrder === 'asc') {
             return a.name.localeCompare(b.name);
@@ -252,35 +263,43 @@ export default function OrderList() {
     });
     const activeOrders = sortedByDate;
 
+    // Step 4: Fungsi navigasi halaman
+    // const goToPage = (page: number) => {
+    //     if (page >= 1 && page <= totalPages) {
+    //         setCurrentPage(page);
+    //     }
+    // };
+
     return (
         <AppLayout>
-            <Head title="Status Pesanan" />
-            <section id="status-pesanan" className="mb-12">
+            <Head title="Riwayat Pesanan" />
+            <section id="riwayat-pesanan" className="mb-12">
                 <div className="flex w-full flex-col px-6">
-                    <h1 className="mt-5 mb-10 text-center text-3xl font-bold">Status Pesanan</h1>
+                    <h1 className="mt-5 mb-10 text-center text-4xl font-bold">Riwayat Pesanan</h1>
+                    {/* Main Controls Container */}
                     <div className="mb-6 rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
                         {/* Top Row - Status Tabs */}
                         <div className="mb-6 flex flex-wrap gap-3">
                             <div className="flex rounded-lg border bg-gray-50 p-1">
                                 <button
-                                    onClick={() => setActiveTab('pickup')}
+                                    onClick={() => setActiveTab('selesai')}
                                     className={`rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
-                                        activeTab === 'pickup'
+                                        activeTab === 'selesai'
                                             ? 'scale-105 transform bg-blue-600 text-white shadow-md'
                                             : 'text-gray-600 hover:bg-white hover:text-blue-600'
                                     }`}
                                 >
-                                    Ambil di Toko
+                                    ✅ Selesai
                                 </button>
                                 <button
-                                    onClick={() => setActiveTab('delivery')}
+                                    onClick={() => setActiveTab('dibatalkan')}
                                     className={`rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
-                                        activeTab === 'delivery'
-                                            ? 'scale-105 transform bg-blue-600 text-white shadow-md'
+                                        activeTab === 'dibatalkan'
+                                            ? 'scale-105 transform bg-red-600 text-white shadow-md'
                                             : 'text-gray-600 hover:bg-white hover:text-red-600'
                                     }`}
                                 >
-                                    Ambil sendiri
+                                    ❌ Dibatalkan
                                 </button>
                             </div>
                         </div>
@@ -405,10 +424,11 @@ export default function OrderList() {
                                     <th className="border border-gray-300 px-4 py-3 text-center">Total Harga</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Alamat</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pembayaran</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Tipe Pesanan</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Cetak Invoice</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Hapus</th>
+                                    {/* <th className="border border-gray-300 px-4 py-3 text-center">Hapus</th> */}
                                     <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
                                 </tr>
                             </thead>
@@ -444,6 +464,7 @@ export default function OrderList() {
                                                 )}
                                             </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
                                                     onClick={() => handleOpenDetailModal(item)}
@@ -452,7 +473,7 @@ export default function OrderList() {
                                                     Detail
                                                 </Button>
                                             </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
+                                              <td className="border border-gray-200 px-4 py-3 text-center">
                                                 {item.delivery?.some((d) => d.status === 'selesai') ||
                                                 item.pickup?.some((p) => p.status === 'selesai') ? (
                                                     item.invoice_id ? (
@@ -469,9 +490,8 @@ export default function OrderList() {
                                                     'Tidak tersedia!'
                                                 )}
                                             </td>
-
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
+                                            {/* <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
                                                     onClick={() => handleOpenCancelModal(item)}
                                                     className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
@@ -479,20 +499,23 @@ export default function OrderList() {
                                                 >
                                                     <X className="h-4 w-4" />
                                                 </Button>
-                                            </td>
+                                            </td> */}
                                             <td className="border border-gray-200 px-4 py-3 text-center">
-                                                <select
-                                                    value={item.type === 'pickup' ? item.pickup?.[0]?.status : item.delivery?.[0]?.status}
-                                                    onChange={(e) => handleStatusChange(item.id, e.target.value, item.type as 'pickup' | 'delivery')}
-                                                    className="rounded border px-2 py-1"
+                                                {item.type === 'pickup' ? item.pickup?.[0]?.status : item.delivery?.[0]?.status}
+                                                {/* <select
+                                                    value={item.type === 'pickup'
+                                                        ? item.pickup?.[0]?.status
+                                                        : item.delivery?.[0]?.status
+                                                    }
+                                                    onChange={e => handleStatusChange(item.id, e.target.value, item.type as 'pickup' | 'delivery')}
+                                                    className="border rounded px-2 py-1"
                                                 >
-                                                    {item.delivery?.[0]?.status !== 'dibatalkan' &&
-                                                        (item.type === 'pickup' ? pickupStatuses : deliveryStatuses).map((status) => (
-                                                            <option key={status} value={status}>
-                                                                {status}
-                                                            </option>
-                                                        ))}
-                                                </select>
+                                                    {(item.type === 'pickup' ? pickupStatuses : deliveryStatuses).map(status => (
+                                                        <option key={status} value={status}>
+                                                            {status}
+                                                        </option>
+                                                    ))}
+                                                </select> */}
                                             </td>
                                         </tr>
                                     ))
@@ -505,23 +528,6 @@ export default function OrderList() {
                                 )}
                             </tbody>
                         </table>
-                        {/* <div className="mt-4 flex justify-center gap-2">
-                            <button
-                                onClick={() => goToPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-                            >
-                                Prev
-                            </button>
-                            <span>Halaman {currentPage} dari {totalPages}</span>
-                            <button
-                                onClick={() => goToPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-                            >
-                                Next
-                            </button>
-                        </div> */}
                     </div>
                     {/* Pagination */}
                     <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg">

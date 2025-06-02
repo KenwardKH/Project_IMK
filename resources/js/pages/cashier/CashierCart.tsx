@@ -37,27 +37,27 @@ interface Props {
 }
 
 export default function CashierCart({ products, cartItems, total, subtotal }: Props) {
-// const CashierCart: React.FC<Props> = ({ products, cartItems, total, subtotal }) => {
+  // const CashierCart: React.FC<Props> = ({ products, cartItems, total, subtotal }) => {
   const [loading, setLoading] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-    const [showCheckout, setShowCheckout] = useState(false);
-    const [shippingOption, setShippingOption] = useState('pickup');
-    const [alamat, setAlamat] = useState('');
-    const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
-    const [customerName, setCustomerName] = useState('');
-    const [customerContact, setCustomerContact] = useState('');
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [shippingOption, setShippingOption] = useState('pickup');
+  const [alamat, setAlamat] = useState('');
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [customerContact, setCustomerContact] = useState('');
 
 
   // Filter products berdasarkan search term
   const filteredProducts = products.filter(product =>
-  typeof product.name === 'string' &&
-  product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    typeof product.name === 'string' &&
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Function untuk update quantity di cart
   const updateCartQuantity = async (productId: number, action: 'increment' | 'decrement') => {
     setLoading(productId);
-    
+
     try {
       await router.post('/cashier/cart/update', {
         product_id: productId,
@@ -76,7 +76,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
   // Function untuk hapus item dari cart
   const removeFromCart = async (productId: number) => {
     setLoading(productId);
-    
+
     try {
       await router.delete(`/cashier/cart/remove/${productId}`, {
         preserveState: true,
@@ -89,9 +89,20 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
     }
   };
 
-    const formatPrice = (price: number) => {
-        return price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
-    };
+  const formatPrice = (price: number) => {
+    return price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+  };
+
+  // const handleQuantityChange = (e, productId) => {
+  //   const newQuantity = parseInt(e.target.value, 10);
+
+  //   // Validasi supaya angka >= 0
+  //   if (!isNaN(newQuantity) && newQuantity >= 0 && newQuantity <= product.stock) {
+  //     // Panggil fungsi updateCartQuantity
+  //     updateCartQuantity(productId, 'set', newQuantity);
+  //   }
+  // };
+
 
   // Function untuk checkout
   // const handleCheckout = async () => {
@@ -101,7 +112,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
   //   }
 
   //   setLoading(-1); // Loading state untuk checkout
-    
+
   //   try {
   //     await router.post('/cashier/checkout', {}, {
   //       onSuccess: () => {
@@ -119,63 +130,63 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
   //   }
   // };
 
-    const handleCheckout = () => {
-        setShowCheckout(true);
-    };
+  const handleCheckout = () => {
+    setShowCheckout(true);
+  };
 
-    const processCheckout = async () => {
+  const processCheckout = async () => {
     if (shippingOption === 'diantar' && !alamat.trim()) {
-        alert('Mohon masukkan alamat pengiriman');
-        return;
+      alert('Mohon masukkan alamat pengiriman');
+      return;
     }
 
     // Validasi jika customerName atau contact diperlukan
     if (!customerName.trim() || !customerContact.trim()) {
-        const confirmLanjut = confirm('Data pelanggan belum lengkap. Lanjutkan mengisi!');
-        if (!confirmLanjut) return;
+      const confirmLanjut = confirm('Data pelanggan belum lengkap. Lanjutkan mengisi!');
+      if (!confirmLanjut) return;
     }
 
     setIsProcessingCheckout(true);
 
     try {
-        const response = await fetch('/cashier/checkout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                shipping_option: shippingOption,
-                payment_option: 'transfer',
-                alamat: shippingOption === 'diantar' ? alamat : null,
-                customer_name: customerName || null,
-                customer_contact: customerContact || null,
-            })
-        });
+      const response = await fetch('/cashier/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          shipping_option: shippingOption,
+          payment_option: 'transfer',
+          alamat: shippingOption === 'diantar' ? alamat : null,
+          customer_name: customerName || null,
+          customer_contact: customerContact || null,
+        })
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (response.ok) {
-            alert('Checkout berhasil! Silakan lakukan pembayaran.');
-            router.visit('/cashier/'); // Redirect ke halaman dashboard atau order
-        } else {
-            console.error('Response error:', data);
-            alert(data.error || 'Gagal melakukan checkout');
-        }
+      if (response.ok) {
+        alert('Checkout berhasil! Silakan lakukan pembayaran.');
+        router.visit('/cashier/'); // Redirect ke halaman dashboard atau order
+      } else {
+        console.error('Response error:', data);
+        alert(data.error || 'Gagal melakukan checkout');
+      }
     } catch (error) {
-        console.error('Error during checkout:', error);
-        alert('Terjadi kesalahan saat checkout');
+      console.error('Error during checkout:', error);
+      alert('Terjadi kesalahan saat checkout');
     } finally {
-        setIsProcessingCheckout(false);
+      setIsProcessingCheckout(false);
     }
-};
+  };
 
 
   // Function untuk clear cart
   const clearCart = async () => {
     if (cartItems.length === 0) return;
-    
+
     if (confirm('Apakah Anda yakin ingin mengosongkan keranjang?')) {
       try {
         await router.delete('/cashier/cart/clear', {
@@ -195,161 +206,159 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
   };
 
   if (showCheckout) {
-          return (
-              <AppLayout > 
-                {/* breadcrumbs={breadcrumbs}> */}
-                <section id="buat-pesanan" className="mb-12">
-                  <Head title="Checkout | Sinar Pelangi" />
-                  
-                  <div className="container mx-auto py-8 px-4" id="CashierCart">
-                      <div className="max-w-2xl mx-auto">
-                          <Card className="bg-white rounded-2xl shadow-lg">
-                              <CardContent className="p-6">
-                                  <h1 className="font-[Poppins] text-2xl font-bold text-[#1c283f] mb-6">
-                                      Checkout
-                                  </h1>
-                                  {/* Customer Info Section (optional / manual) */}
-                                    <div className="mb-6">
-                                      <h3 className="font-semibold text-[#1c283f] mb-3">Data Pelanggan</h3>
-                                      
-                                      <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700">
-                                        Nama Pelanggan
-                                      </Label>
-                                      <Input
-                                        id="customerName"
-                                        type="text"
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        placeholder="Masukkan nama pelanggan (opsional)"
-                                        className="w-full mt-1 mb-4"
-                                        required
-                                      />
+    return (
+      <AppLayout >
+        {/* breadcrumbs={breadcrumbs}> */}
+        <section id="buat-pesanan" className="mb-12">
+          <Head title="Checkout | Sinar Pelangi" />
 
-                                      <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700">
-                                        Kontak Pelanggan
-                                      </Label>
-                                      <Input
-                                        id="customerContact"
-                                        type="text"
-                                        value={customerContact}
-                                        onChange={(e) => setCustomerContact(e.target.value)}
-                                        placeholder="Masukkan nomor telepon atau email"
-                                        className="w-full mt-1"
-                                        required
-                                      />
-                                    </div>
+          <div className="container mx-auto py-8 px-4" id="CashierCart">
+            <div className="max-w-2xl mx-auto">
+              <Card className="bg-white rounded-2xl shadow-lg">
+                <CardContent className="p-6">
+                  <h1 className="font-[Poppins] text-2xl font-bold text-[#1c283f] mb-6">
+                    Checkout
+                  </h1>
+                  {/* Customer Info Section (optional / manual) */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-[#1c283f] mb-3">Data Pelanggan (Opsional)</h3>
 
-                                  {/* Order Summary */}
-                                  <div className="mb-6">
-                                      <h3 className="font-semibold text-[#1c283f] mb-3">Ringkasan Pesanan</h3>
-                                      <div className="bg-gray-50 p-4 rounded-lg">
-                                          <div className="flex justify-between mb-2">
-                                              <span>Subtotal ({cartItems.length} item)</span>
-                                              <span>{formatPrice(subtotal)}</span>
-                                          </div>
-                                          <div className="flex justify-between mb-2">
-                                              <span>Ongkos Kirim</span>
-                                              <span>Gratis</span>
-                                          </div>
-                                          <hr className="my-2" />
-                                          <div className="flex justify-between font-bold text-lg">
-                                              <span>Total</span>
-                                              <span className="text-[#56b280]">{formatPrice(subtotal)}</span>
-                                          </div>
-                                      </div>
-                                  </div>
-  
-                                  {/* Payment Method */}
-                                  <div className="mb-6">
-                                      <h3 className="font-semibold text-[#1c283f] mb-3">Metode Pembayaran</h3>
-                                      <div className="bg-gray-50 p-4 rounded-lg">
-                                          <div className="flex items-center space-x-2">
-                                              <div className="w-3 h-3 bg-[#56b280] rounded-full"></div>
-                                              <span>Transfer Bank</span>
-                                          </div>
-                                          <p className="text-sm text-gray-600 mt-2">
-                                              Pembayaran melalui transfer bank. Detail rekening akan diberikan setelah checkout.
-                                          </p>
-                                      </div>
-                                  </div>
-  
-                                  {/* Shipping Options */}
-                                  <div className="mb-6">
-                                      <Label className="font-semibold text-[#1c283f] mb-3 block">Pilih Cara Pengiriman</Label>
-                                      <RadioGroup value={shippingOption} onValueChange={setShippingOption}>
-                                          <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                                              <RadioGroupItem value="pickup" id="pickup" />
-                                              <Package className="h-5 w-5 text-[#153e98]" />
-                                              <div className="flex-1">
-                                                  <Label htmlFor="pickup" className="font-medium cursor-pointer">
-                                                      Pickup di Toko
-                                                  </Label>
-                                                  <p className="text-sm text-gray-600">
-                                                      Ambil pesanan langsung di toko kami
-                                                  </p>
-                                              </div>
-                                              <span className="font-semibold text-[#56b280]">Gratis</span>
-                                          </div>
-                                          <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                                              <RadioGroupItem value="diantar" id="delivery" />
-                                              <Truck className="h-5 w-5 text-[#153e98]" />
-                                              <div className="flex-1">
-                                                  <Label htmlFor="delivery" className="font-medium cursor-pointer">
-                                                      Diantar ke Alamat
-                                                  </Label>
-                                                  <p className="text-sm text-gray-600">
-                                                      Pesanan akan diantar ke alamat Anda
-                                                  </p>
-                                              </div>
-                                              <span className="font-semibold text-[#56b280]">Gratis</span>
-                                          </div>
-                                      </RadioGroup>
-                                  </div>
-  
-                                  {/* Delivery Address */}
-                                  {shippingOption === 'diantar' && (
-                                      <div className="mb-6">
-                                          <Label htmlFor="alamat" className="font-semibold text-[#1c283f] mb-2 block">
-                                              Alamat Pengiriman *
-                                          </Label>
-                                          <Textarea
-                                              id="alamat"
-                                              value={alamat}
-                                              onChange={(e) => setAlamat(e.target.value)}
-                                              placeholder="Masukkan alamat lengkap untuk pengiriman..."
-                                              className="w-full"
-                                              rows={3}
-                                          />
-                                      </div>
-                                  )}
-  
-                                  {/* Action Buttons */}
-                                  <div className="flex space-x-3">
-                                      <Button 
-                                          onClick={() => setShowCheckout(false)}
-                                          variant="outline" 
-                                          className="flex-1 border-[#153e98] text-[#153e98] hover:bg-[#153e98] hover:text-white"
-                                          disabled={isProcessingCheckout}
-                                      >
-                                          <ArrowLeft className="mr-2 h-4 w-4" />
-                                          Kembali
-                                      </Button>
-                                      <Button 
-                                          onClick={processCheckout}
-                                          className="flex-1 bg-[#153e98] hover:bg-[#0f2e73] text-white"
-                                          disabled={isProcessingCheckout}
-                                      >
-                                          {isProcessingCheckout ? 'Memproses...' : 'Konfirmasi Pesanan'}
-                                      </Button>
-                                  </div>
-                              </CardContent>
-                          </Card>
-                      </div>
+                    <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700">
+                      Nama Pelanggan
+                    </Label>
+                    <Input
+                      id="customerName"
+                      type="text"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="Masukkan nama pelanggan (opsional)"
+                      className="w-full mt-1 mb-4"
+                    />
+
+                    <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700">
+                      Kontak Pelanggan
+                    </Label>
+                    <Input
+                      id="customerContact"
+                      type="text"
+                      value={customerContact}
+                      onChange={(e) => setCustomerContact(e.target.value)}
+                      placeholder="Masukkan nomor telepon atau email"
+                      className="w-full mt-1"
+                    />
                   </div>
-                </section>
-              </AppLayout>
-          );
-      }
+
+                  {/* Order Summary */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-[#1c283f] mb-3">Ringkasan Pesanan</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex justify-between mb-2">
+                        <span>Subtotal ({cartItems.length} item)</span>
+                        <span>{formatPrice(subtotal)}</span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span>Ongkos Kirim</span>
+                        <span>Gratis</span>
+                      </div>
+                      <hr className="my-2" />
+                      <div className="flex justify-between font-bold text-lg">
+                        <span>Total</span>
+                        <span className="text-[#56b280]">{formatPrice(subtotal)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Method */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-[#1c283f] mb-3">Metode Pembayaran</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-[#56b280] rounded-full"></div>
+                        <span>Transfer Bank</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">
+                        Pembayaran melalui transfer bank. Detail rekening akan diberikan setelah checkout.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Shipping Options */}
+                  <div className="mb-6">
+                    <Label className="font-semibold text-[#1c283f] mb-3 block">Pilih Cara Pengiriman</Label>
+                    <RadioGroup value={shippingOption} onValueChange={setShippingOption}>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="pickup" id="pickup" />
+                        <Package className="h-5 w-5 text-[#153e98]" />
+                        <div className="flex-1">
+                          <Label htmlFor="pickup" className="font-medium cursor-pointer">
+                            Pickup di Toko
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Ambil pesanan langsung di toko kami
+                          </p>
+                        </div>
+                        <span className="font-semibold text-[#56b280]">Gratis</span>
+                      </div>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="diantar" id="delivery" />
+                        <Truck className="h-5 w-5 text-[#153e98]" />
+                        <div className="flex-1">
+                          <Label htmlFor="delivery" className="font-medium cursor-pointer">
+                            Diantar ke Alamat
+                          </Label>
+                          <p className="text-sm text-gray-600">
+                            Pesanan akan diantar ke alamat Anda
+                          </p>
+                        </div>
+                        <span className="font-semibold text-[#56b280]">Gratis</span>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Delivery Address */}
+                  {shippingOption === 'diantar' && (
+                    <div className="mb-6">
+                      <Label htmlFor="alamat" className="font-semibold text-[#1c283f] mb-2 block">
+                        Alamat Pengiriman *
+                      </Label>
+                      <Textarea
+                        id="alamat"
+                        value={alamat}
+                        onChange={(e) => setAlamat(e.target.value)}
+                        placeholder="Masukkan alamat lengkap untuk pengiriman..."
+                        className="w-full"
+                        rows={3}
+                      />
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-3">
+                    <Button
+                      onClick={() => setShowCheckout(false)}
+                      variant="outline"
+                      className="flex-1 border-[#153e98] text-[#153e98] hover:bg-[#153e98] hover:text-white"
+                      disabled={isProcessingCheckout}
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Kembali
+                    </Button>
+                    <Button
+                      onClick={processCheckout}
+                      className="flex-1 bg-[#153e98] hover:bg-[#0f2e73] text-white"
+                      disabled={isProcessingCheckout}
+                    >
+                      {isProcessingCheckout ? 'Memproses...' : 'Konfirmasi Pesanan'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -366,7 +375,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
           {/* Main Content */}
           <div className="max-w-full mx-auto px-6 py-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
-              
+
               {/* Left Panel - Products */}
               <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6 overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center mb-6">
@@ -437,7 +446,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                 +
                               </button>
                             </div>
-                            
+
                             {quantityInCart > 0 && (
                               <button
                                 onClick={() => removeFromCart(product.id)}
@@ -491,19 +500,19 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900 text-sm">
                               {item.product?.name ?? 'Nama produk tidak tersedia'}
-                              
+
                             </h4>
                             <p className="text-sm text-gray-500">
                               {item.product?.price !== undefined
-                                    ? `Rp ${item.product.price.toLocaleString('id-ID')} x ${item.quantity}`
-                                    : 'Harga tidak tersedia'}
+                                ? `Rp ${item.product.price.toLocaleString('id-ID')} x ${item.quantity}`
+                                : 'Harga tidak tersedia'}
                             </p>
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-gray-900">
                               {item.product?.price !== undefined
-                                  ? `Rp ${(item.product.price * item.quantity).toLocaleString('id-ID')}`
-                                  : 'Total tidak tersedia'}
+                                ? `Rp ${(item.product.price * item.quantity).toLocaleString('id-ID')}`
+                                : 'Total tidak tersedia'}
                             </p>
                           </div>
                         </div>
@@ -520,7 +529,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                       Rp {subtotal.toLocaleString('id-ID')}
                     </span>
                   </div>
-                  
+
                   <div className="flex justify-between items-center text-lg font-semibold">
                     <span>Total:</span>
                     <span className="text-blue-600">

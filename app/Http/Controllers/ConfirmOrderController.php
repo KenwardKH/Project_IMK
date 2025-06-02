@@ -9,6 +9,8 @@ use App\Models\Payment;
 use App\Models\Invoicedetail;
 use App\Models\DeliveryOrderStatus;
 use App\Models\PickupOrderStatus;
+use App\Models\CancellationTime;
+use App\Models\CancelledTransaction;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -103,8 +105,18 @@ class ConfirmOrderController extends Controller
             $order->delivery = $deliveryStatus;
         }
 
+        $cancellations = CancellationTime::select(
+            'id',
+            'paymentTime',
+            'created_at',
+            'updated_at'
+        )
+        ->first();
+        // dd($cancellations->paymentTime);
+
         return Inertia::render('cashier/ConfirmOrder', [
                 'orders' => $orders,
+                'cancellations' => $cancellations,
             ]);
     }
 
@@ -166,10 +178,69 @@ class ConfirmOrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function storeCancelReason(Request $request)
     {
-        //
+        $id = $request->input('id');
+        $invoice = Invoice::with(['pickup_order_statuses', 'delivery_order_statuses'])
+                    ->where('InvoiceID', $id)
+                    ->firstOrFail();
+
+        if (!$invoice->CustomerID) {
+            return response()->json(['error' => 'Invoice tidak memiliki CustomerID.'], 422);
+        }
+
+        $isPickup = $invoice->type === 'pickup' || $invoice->pickup_order_statuses->count() > 0;
+        $isDelivery = $invoice->type === 'delivery' || $invoice->delivery_order_statuses->count() > 0;
+
+        $user = Auth::user(); // Pastikan user ada, atau bisa gunakan user default
+        $cashier = $user->kasirs;
+
+        $cancelled = CancelledTransaction::where('InvoiceId', $invoice->InvoiceID)->first();
+
+        if ($cancelled) {
+            // Update alasan pembatalan
+            $cancelled->update([
+                'cancellation_reason' => $request->input('cancellation_reason'),
+                'cancelled_by' => $cashier->id_kasir,
+                'cancellation_date' => now(),
+            ]);
+        } else {
+            CancelledTransaction::create([
+                'InvoiceId' => $invoice->InvoiceID,
+                'cancellation_reason' => $request->input('cancellation_reason'),
+                'cancelled_by' => $cashier->id_kasir,
+                'cancellation_date' => now(),
+            ]);
+        }
+
+        if ($isPickup) {
+            $pickupStatus = PickupOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
+            if ($pickupStatus) {
+                $pickupStatus->update([
+                    'status' => 'dibatalkan',
+                    'updated_by' => $cashier?->id_kasir ?? null,
+                ]);
+            }
+        } elseif ($isDelivery) {
+            $currentAddress = '';
+            if ($invoice->delivery_order_statuses->count() > 0) {
+                $latestDeliveryStatus = $invoice->delivery_order_statuses->sortByDesc('created_at')->first();
+                $currentAddress = $latestDeliveryStatus->alamat ?? '';
+            }
+
+            $deliveryStatus = DeliveryOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
+            if ($deliveryStatus) {
+                $deliveryStatus->update([
+                    'status' => 'dibatalkan',
+                    'alamat' => $currentAddress,
+                    'updated_by' => $cashier?->id_kasir ?? null,
+                ]);
+            }
+        }
+
+        return response()->json(['success' => 'Pesanan berhasil dibatalkan.']);
     }
+
 
     /**
      * Display the specified resource.

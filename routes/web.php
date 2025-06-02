@@ -92,7 +92,7 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
     Route::get('/stock', [StockProductController::class, 'index'])->name('order.confirm');
 
     //Order History
-    // Route::get('/history', [OrderHistoryController::class, 'index'])->name('order.history');
+    Route::get('/history', [OrderHistoryController::class, 'index'])->name('order.history');
 
 });
 

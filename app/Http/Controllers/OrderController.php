@@ -402,6 +402,53 @@ class OrderController extends Controller
        return $pdf->stream('invoice-'.$invoiceData['InvoiceID'].'.pdf');
     }
 
+    public function generateInvoiceOther($id)
+{
+    $invoice = Invoice::with([
+        'invoicedetails',
+        'pickup_order_statuses',
+        'delivery_order_statuses',
+        'payments'
+    ])->where('InvoiceID', $id)->firstOrFail();
+
+    // Determine order type and get latest status
+    $isPickup = $invoice->type === 'pickup' || $invoice->pickup_order_statuses->count() > 0;
+    $isDelivery = $invoice->type === 'delivery' || $invoice->delivery_order_statuses->count() > 0;
+
+    $latestStatus = null;
+    if ($isPickup && $invoice->pickup_order_statuses->count() > 0) {
+        $latestStatus = $invoice->pickup_order_statuses->sortByDesc('created_at')->first();
+    } elseif ($isDelivery && $invoice->delivery_order_statuses->count() > 0) {
+        $latestStatus = $invoice->delivery_order_statuses->sortByDesc('created_at')->first();
+    }
+
+    // Check if order is completed or cancelled
+    if (!$latestStatus || !in_array($latestStatus->status, ['selesai', 'dibatalkan'])) {
+        return response()->json(['error' => 'Invoice hanya dapat dicetak untuk pesanan yang selesai atau dibatalkan'], 400);
+    }
+
+    // Return invoice data for PDF generation
+    $invoiceData = [
+        'InvoiceID' => $invoice->InvoiceID,
+        'customerName' => $invoice->customerName,
+        'customerContact' => $invoice->customerContact,
+        'InvoiceDate' => $invoice->InvoiceDate,
+        'type' => $invoice->type ?? ($isPickup ? 'pickup' : 'delivery'),
+        'payment_option' => $invoice->payment_option,
+        'CashierName' => $invoice->CashierName,
+        'status' => $latestStatus->status,
+        'delivery_address' => $isDelivery && $latestStatus ? $latestStatus->alamat ?? null : null,
+        'items' => $invoice->invoicedetails,
+        'totalAmount' => $invoice->invoicedetails->sum(function ($detail) {
+            return (float) $detail->price * $detail->Quantity;
+        })
+    ];
+
+    $pdf = Pdf::loadView('print', ['invoice' => $invoiceData]);
+    return $pdf->stream('invoice-' . $invoiceData['InvoiceID'] . '.pdf');
+}
+
+
     /**
      * Debug method to check what data exists
      */

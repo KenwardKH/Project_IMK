@@ -23,6 +23,7 @@ class OrderStatusController extends Controller
     {
         $orders = Invoice::select(
         'InvoiceID as id',
+        'InvoiceID as invoice_id',
         'CustomerID as custid',
         'customerName as name',
         'customerContact as contact',

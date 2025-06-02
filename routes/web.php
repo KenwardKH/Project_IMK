@@ -56,6 +56,10 @@ Route::get('/faq', function (){
       return Inertia::render("footer/FAQPage");
 });
 
+Route::get('/order/{id}/invoice', [OrderController::class, 'generateInvoice'])->name('orders.invoice');
+Route::get('/order/{id}/invoice-other', [OrderController::class, 'generateInvoiceOther']);
+
+
 // Cashier-only routes
 Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name('cashier.')->group(function () {
     // Main cashier page
@@ -88,7 +92,7 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
     Route::get('/stock', [StockProductController::class, 'index'])->name('order.confirm');
 
     //Order History
-    Route::get('/history', [OrderHistoryController::class, 'index'])->name('order.history');
+    // Route::get('/history', [OrderHistoryController::class, 'index'])->name('order.history');
 
 });
 
@@ -114,7 +118,6 @@ Route::get('/order', function () {
     Route::get('/order/{id}/detail', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     Route::post('/order/{id}/upload-payment', [OrderController::class, 'uploadPaymentProof'])->name('orders.upload-payment');
-    Route::get('/order/{id}/invoice', [OrderController::class, 'generateInvoice'])->name('orders.invoice');
 });
 
 // Owner-only routes

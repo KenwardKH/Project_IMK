@@ -5,6 +5,9 @@ import AppLayout from '@/layouts/cashier-layout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
 import { useState } from 'react';
+import Swal from 'sweetalert2';
+
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 interface OrderData {
     id: number;
@@ -148,7 +151,7 @@ export default function OrderList() {
             router.delete(`/cashier/orders/${id}`);
         }
     };
-
+    
     const handleStatusChange = (orderId: number, newStatus: string, type: 'pickup' | 'delivery') => {
         router.post(
             `/cashier/update-status/${orderId}`,
@@ -159,21 +162,39 @@ export default function OrderList() {
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    console.log('Status berhasil diupdate');
-                    router.reload({ only: ['orders'] }); // opsional agar data terupdate
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Status Diperbarui',
+                        text: `Status berhasil diubah menjadi "${capitalize(newStatus)}"`,
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                    router.reload({ only: ['orders'] }); // refresh data jika diperlukan
                 },
                 onError: () => {
-                    alert('Gagal mengubah status');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Gagal mengubah status. Silakan coba lagi.',
+                    });
                 },
             },
         );
     };
 
     const processCancel = async () => {
-        // Validasi jika customerName atau contact diperlukan
+        // Validasi alasan pembatalan
         if (!cancelReason.trim()) {
-            const confirmLanjut = confirm('Data pelanggan belum lengkap. Lanjutkan mengisi!');
-            if (!confirmLanjut) return;
+            const result = await Swal.fire({
+                icon: 'warning',
+                title: 'Alasan pembatalan belum diisi',
+                text: 'Apakah kamu ingin melanjutkan mengisi alasan pembatalan?',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, isi dulu',
+                cancelButtonText: 'Batal',
+            });
+
+            if (!result.isConfirmed) return;
         }
 
         setIsProcessingCheckout(true);
@@ -187,7 +208,7 @@ export default function OrderList() {
                     Accept: 'application/json',
                 },
                 body: JSON.stringify({
-                    id: selectedOrder?.id, // Kirim ID pesanan
+                    id: selectedOrder?.id,
                     cancellation_reason: cancelReason || null,
                     // cancelled_by: selectedOrder?.cid,
                 }),
@@ -196,15 +217,27 @@ export default function OrderList() {
             const data = await response.json();
 
             if (response.ok) {
-                alert('Pembatalan berhasil, silahkan lakukan transaksi lainnya!');
-                router.visit('/cashier/orders/status'); // Redirect ke halaman dashboard atau order
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Pembatalan Berhasil',
+                    text: 'Silakan lakukan transaksi lainnya!',
+                });
+                router.visit('/cashier/orders/status');
             } else {
                 console.error('Response error:', data);
-                alert(data.error || 'Gagal melakukan pembatalan');
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Pembatalan Gagal',
+                    text: data.error || 'Gagal melakukan pembatalan.',
+                });
             }
         } catch (error) {
             console.error('Error during cancel:', error);
-            alert('Terjadi kesalahan saat pembatalan');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Terjadi Kesalahan',
+                text: 'Terjadi kesalahan saat pembatalan.',
+            });
         } finally {
             setIsProcessingCheckout(false);
         }
@@ -264,7 +297,7 @@ export default function OrderList() {
                             <div className="flex rounded-lg border bg-gray-50 p-1">
                                 <button
                                     onClick={() => setActiveTab('pickup')}
-                                    className={`rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
+                                    className={`cursor-pointer rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
                                         activeTab === 'pickup'
                                             ? 'scale-105 transform bg-blue-600 text-white shadow-md'
                                             : 'text-gray-600 hover:bg-white hover:text-blue-600'
@@ -274,13 +307,13 @@ export default function OrderList() {
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('delivery')}
-                                    className={`rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
+                                    className={`cursor-pointer rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
                                         activeTab === 'delivery'
                                             ? 'scale-105 transform bg-blue-600 text-white shadow-md'
                                             : 'text-gray-600 hover:bg-white hover:text-red-600'
                                     }`}
                                 >
-                                    Ambil sendiri
+                                    Diantar
                                 </button>
                             </div>
                         </div>
@@ -292,7 +325,7 @@ export default function OrderList() {
                                 {/* Sort Button */}
                                 <button
                                     onClick={toggleSortOrder}
-                                    className="flex transform items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 font-medium text-white shadow-md transition-all duration-200 hover:scale-105 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg"
+                                    className="flex transform cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 font-medium text-white shadow-md transition-all duration-200 hover:scale-105 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg"
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path
@@ -408,94 +441,107 @@ export default function OrderList() {
                                     <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Cetak Invoice</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Hapus</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Batalkan</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white text-gray-700">
                                 {activeOrders.length > 0 ? (
-                                    activeOrders.map((item, index) => (
-                                        <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{index + 1}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.id}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.contact}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.details.reduce((sum, detail) => sum + detail.quantity, 0)}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.payments.length > 0 ? (
-                                                    item.payments.map((detail, idx) => <span key={idx}>{detail.amount}</span>)
-                                                ) : (
-                                                    <span>
-                                                        {' '}
-                                                        Rp
-                                                        {item.details
-                                                            .reduce((total, detail) => total + detail.price * detail.quantity, 0)
-                                                            .toLocaleString('id-ID')}
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.delivery.length > 0 ? (
-                                                    item.delivery.map((detail, idx) => <span key={idx}>{detail.alamat}</span>)
-                                                ) : (
-                                                    <span>Diambil di Toko</span>
-                                                )}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                <Button
-                                                    onClick={() => handleOpenDetailModal(item)}
-                                                    className="rounded bg-green-500 px-3 py-1 text-white hover:bg-blue-600"
-                                                >
-                                                    Detail
-                                                </Button>
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.delivery?.some((d) => d.status === 'selesai') ||
-                                                item.pickup?.some((p) => p.status === 'selesai') ? (
-                                                    item.invoice_id ? (
-                                                        <Button
-                                                            className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600"
-                                                            onClick={() => handlePrintInvoice(item.invoice_id)}
-                                                        >
-                                                            Cetak Invoice
-                                                        </Button>
+                                    activeOrders
+                                        .filter(
+                                            (item) =>
+                                                !(
+                                                    item.delivery?.some((d) => d.status === 'selesai' || d.status === 'dibatalkan') ||
+                                                    item.pickup?.some((p) => p.status === 'selesai' || p.status === 'dibatalkan')
+                                                ),
+                                        )
+                                        .map((item, index) => (
+                                            <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{index + 1}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.id}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.contact}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {item.details.reduce((sum, detail) => sum + detail.quantity, 0)}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {item.payments.length > 0 ? (
+                                                        item.payments.map((detail, idx) => <span key={idx}>{detail.amount}</span>)
+                                                    ) : (
+                                                        <span>
+                                                            {' '}
+                                                            Rp
+                                                            {item.details
+                                                                .reduce((total, detail) => total + detail.price * detail.quantity, 0)
+                                                                .toLocaleString('id-ID')}
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {item.delivery.length > 0 ? (
+                                                        item.delivery.map((detail, idx) => <span key={idx}>{detail.alamat}</span>)
+                                                    ) : (
+                                                        <span>Diambil di Toko</span>
+                                                    )}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    <Button
+                                                        onClick={() => handleOpenDetailModal(item)}
+                                                        className="rounded bg-green-500 px-3 py-1 text-white hover:bg-blue-600"
+                                                    >
+                                                        Detail
+                                                    </Button>
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {item.delivery?.some((d) => d.status === 'selesai') ||
+                                                    item.pickup?.some((p) => p.status === 'selesai') ? (
+                                                        item.invoice_id ? (
+                                                            <Button
+                                                                className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600"
+                                                                onClick={() => handlePrintInvoice(item.invoice_id)}
+                                                            >
+                                                                Cetak Invoice
+                                                            </Button>
+                                                        ) : (
+                                                            'Tidak tersedia!'
+                                                        )
                                                     ) : (
                                                         'Tidak tersedia!'
-                                                    )
-                                                ) : (
-                                                    'Tidak tersedia!'
-                                                )}
-                                            </td>
+                                                    )}
+                                                </td>
 
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                <Button
-                                                    onClick={() => handleOpenCancelModal(item)}
-                                                    className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
-                                                    size="icon"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </Button>
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                <select
-                                                    value={item.type === 'pickup' ? item.pickup?.[0]?.status : item.delivery?.[0]?.status}
-                                                    onChange={(e) => handleStatusChange(item.id, e.target.value, item.type as 'pickup' | 'delivery')}
-                                                    className="rounded border px-2 py-1"
-                                                >
-                                                    {item.delivery?.[0]?.status !== 'dibatalkan' &&
-                                                        (item.type === 'pickup' ? pickupStatuses : deliveryStatuses).map((status) => (
-                                                            <option key={status} value={status}>
-                                                                {status}
-                                                            </option>
-                                                        ))}
-                                                </select>
-                                            </td>
-                                        </tr>
-                                    ))
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    <Button
+                                                        onClick={() => handleOpenCancelModal(item)}
+                                                        className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
+                                                        size="icon"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {item.delivery?.[0]?.status === 'dibatalkan' ? (
+                                                        <span className="text-gray-400 italic">Telah dibatalkan</span>
+                                                    ) : (
+                                                        <select
+                                                            value={item.type === 'pickup' ? item.pickup?.[0]?.status : item.delivery?.[0]?.status}
+                                                            onChange={(e) =>
+                                                                handleStatusChange(item.id, e.target.value, item.type as 'pickup' | 'delivery')
+                                                            }
+                                                            className="rounded border bg-white px-3 py-1 text-sm shadow-sm transition focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                                        >
+                                                            {(item.type === 'pickup' ? pickupStatuses : deliveryStatuses).map((status) => (
+                                                                <option key={status} value={status}>
+                                                                    {capitalize(status)}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
                                 ) : (
                                     <tr>
                                         <td colSpan={13} className="border border-gray-200 px-4 py-6 text-center text-gray-500">
@@ -769,7 +815,7 @@ export default function OrderList() {
                                     placeholder="Masukkan alasan pembatalan"
                                     className="mt-1 mb-4 w-full"
                                 />
-                                <button onClick={processCancel} className="text-gray-500 hover:text-red-500">
+                                <button onClick={processCancel} className="cursor-pointer text-gray-500 hover:text-red-700">
                                     Batalkan
                                 </button>
                             </div>

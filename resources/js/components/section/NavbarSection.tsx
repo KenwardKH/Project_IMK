@@ -36,7 +36,7 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
     const { props } = usePage<PageProps>();
     const user = props.auth?.user;
     const currentUrl = usePage().url;
-
+    
     const navLinks = [
         { title: 'Beranda', href: '/', icon: Home },
         { title: 'Produk', href: '/products', icon: Package },
@@ -73,44 +73,53 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
             return breadcrumbs;
         }
 
-        // Define route mappings with icons
-        const routeMap: Record<string, { label: string; icon: React.ReactNode }> = {
-            'products': { label: 'Produk', icon: <Package className="h-4 w-4" /> },
-            'contact': { label: 'Kontak', icon: <Phone className="h-4 w-4" /> },
-            'cart': { label: 'Keranjang', icon: <ShoppingCart className="h-4 w-4" /> },
-            'settings': { label: 'Pengaturan', icon: <Settings className="h-4 w-4" /> },
-            'profile': { label: 'Profil', icon: <User className="h-4 w-4" /> },
-            'password': { label: 'Password', icon: <CgPassword className="h-4 w-4" /> },
-            'order': { label: 'Pesanan', icon: <ShoppingBag className="h-4 w-4" /> },
-            'belum-bayar': { label: 'Belum Bayar', icon: <FileText className="h-4 w-4" /> },
-            'sedang-proses': { label: 'Sedang Proses', icon: <Clock className="h-4 w-4" /> },
-            'selesai': { label: 'Selesai', icon: <CheckCircle className="h-4 w-4" /> },
-            'dibatalkan': { label: 'Dibatalkan', icon: <XCircle className="h-4 w-4" /> },
-            'login': { label: 'Masuk', icon: <User className="h-4 w-4" /> },
-            'register': { label: 'Daftar', icon: <User className="h-4 w-4" /> },
-        };
+const routeMap: Record<string, { label: string; icon: React.ReactNode; href?: string }> = {
+    'products': { label: 'Produk', icon: <Package className="h-4 w-4" /> },
+    'product': { label: 'Produk', icon: <Package className="h-4 w-4" />, href: '/products' }, // special case
+    'contact': { label: 'Kontak', icon: <Phone className="h-4 w-4" /> },
+    'cart': { label: 'Keranjang', icon: <ShoppingCart className="h-4 w-4" /> },
+    'settings': { label: 'Pengaturan', icon: <Settings className="h-4 w-4" /> },
+    'profile': { label: 'Profil', icon: <User className="h-4 w-4" /> },
+    'password': { label: 'Password', icon: <CgPassword className="h-4 w-4" /> },
+    'order': { label: 'Pesanan', icon: <ShoppingBag className="h-4 w-4" /> },
+    'belum-bayar': { label: 'Belum Bayar', icon: <FileText className="h-4 w-4" /> },
+    'sedang-proses': { label: 'Sedang Proses', icon: <Clock className="h-4 w-4" /> },
+    'selesai': { label: 'Selesai', icon: <CheckCircle className="h-4 w-4" /> },
+    'dibatalkan': { label: 'Dibatalkan', icon: <XCircle className="h-4 w-4" /> },
+    'login': { label: 'Masuk', icon: <User className="h-4 w-4" /> },
+    'register': { label: 'Daftar', icon: <User className="h-4 w-4" /> },
+};
 
-        let currentPath = '';
-        pathSegments.forEach((segment, index) => {
-            currentPath += `/${segment}`;
-            const routeInfo = routeMap[segment];
-
-            if (routeInfo) {
-                breadcrumbs.push({
-                    label: routeInfo.label,
-                    href: index === pathSegments.length - 1 ? undefined : currentPath,
-                    icon: routeInfo.icon,
-                    isActive: index === pathSegments.length - 1
-                });
-            } else {
-                // Fallback for unknown routes
-                breadcrumbs.push({
-                    label: segment.charAt(0).toUpperCase() + segment.slice(1),
-                    href: index === pathSegments.length - 1 ? undefined : currentPath,
-                    isActive: index === pathSegments.length - 1
-                });
-            }
+let currentPath = '';
+pathSegments.forEach((segment, index) => {
+    // Jika segment angka (misalnya ID), jangan tampilkan atau tampilkan sebagai "Detail"
+    if (!isNaN(Number(segment))) {
+        breadcrumbs.push({
+            label: 'Detail Produk', // bisa juga disesuaikan jadi 'Detail Pesanan', dll
+            isActive: true
         });
+        return;
+    }
+
+    currentPath += `/${segment}`;
+    const routeInfo = routeMap[segment];
+
+    if (routeInfo) {
+        breadcrumbs.push({
+            label: routeInfo.label,
+            href: index === pathSegments.length - 1 ? undefined : (routeInfo.href ?? currentPath),
+            icon: routeInfo.icon,
+            isActive: index === pathSegments.length - 1
+        });
+    } else {
+        breadcrumbs.push({
+            label: segment.charAt(0).toUpperCase() + segment.slice(1),
+            href: index === pathSegments.length - 1 ? undefined : currentPath,
+            isActive: index === pathSegments.length - 1
+        });
+    }
+});
+
 
         return breadcrumbs;
     };

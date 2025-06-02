@@ -1,10 +1,11 @@
-import AppLayout from '@/layouts/cashier-layout';
 import { Button } from '@/components/ui/button';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/cashier-layout';
+import { Head, router, usePage } from '@inertiajs/react';
+import { Search, X } from 'lucide-react';
+import { useState } from 'react';
+import Swal from 'sweetalert2';
 
 interface OrderData {
     id: number;
@@ -14,7 +15,7 @@ interface OrderData {
     date: string;
     type: string;
     payment: string;
-    cid: number
+    cid: number;
     cname: string;
     details: DetailData[];
     payments: PaymentData[];
@@ -116,13 +117,13 @@ export default function OrderList() {
 
     const handleOpenCancelModal = (order: OrderData) => {
         setSelectedOrder(order);
-        setModalType('cancel');  // modal cancel
+        setModalType('cancel'); // modal cancel
         setIsModalOpen(true);
     };
 
     const handleOpenDetailModal = (order: OrderData) => {
         setSelectedOrder(order);
-        setModalType('detail');  // modal detail
+        setModalType('detail'); // modal detail
         setIsModalOpen(true);
     };
 
@@ -144,12 +145,18 @@ export default function OrderList() {
     // console.log(cancellations?.paymentTime);
 
     const processCancel = async () => {
-
-
-        // Validasi jika customerName atau contact diperlukan
+        // Validasi alasan pembatalan
         if (!cancelReason.trim()) {
-            const confirmLanjut = confirm('Data pelanggan belum lengkap. Lanjutkan mengisi!');
-            if (!confirmLanjut) return;
+            const result = await Swal.fire({
+                icon: 'warning',
+                title: 'Alasan pembatalan belum diisi',
+                text: 'Apakah kamu ingin melanjutkan mengisi alasan pembatalan?',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, isi dulu',
+                cancelButtonText: 'Batal',
+            });
+
+            if (!result.isConfirmed) return;
         }
 
         setIsProcessingCheckout(true);
@@ -160,27 +167,39 @@ export default function OrderList() {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
                 body: JSON.stringify({
-                    id: selectedOrder?.id,   // Kirim ID pesanan
+                    id: selectedOrder?.id,
                     cancellation_reason: cancelReason || null,
                     // cancelled_by: selectedOrder?.cid,
-                })
+                }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                alert('Pembatalan berhasil, silahkan lakukan transaksi lainnya!');
-                router.visit('/cashier/orders'); // Redirect ke halaman dashboard atau order
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Pembatalan Berhasil',
+                    text: 'Silakan lakukan transaksi lainnya!',
+                });
+                router.visit('/cashier/orders/status');
             } else {
                 console.error('Response error:', data);
-                alert(data.error || 'Gagal melakukan pembatalan');
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Pembatalan Gagal',
+                    text: data.error || 'Gagal melakukan pembatalan.',
+                });
             }
         } catch (error) {
             console.error('Error during cancel:', error);
-            alert('Terjadi kesalahan saat pembatalan');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Terjadi Kesalahan',
+                text: 'Terjadi kesalahan saat pembatalan.',
+            });
         } finally {
             setIsProcessingCheckout(false);
         }
@@ -194,34 +213,49 @@ export default function OrderList() {
 
     const handleConfirm = async (orderId: number) => {
         try {
-            await router.post(`/cashier/confirm/${orderId}`, {}, {
-                onSuccess: () => {
-                    alert('Pesanan berhasil dikonfirmasi!');
-                    // Optional: reload atau refresh data
-                    router.reload({ only: ['orders'] });
+            await router.post(
+                `/cashier/confirm/${orderId}`,
+                {},
+                {
+                    onSuccess: async () => {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Pesanan berhasil dikonfirmasi!',
+                        });
+                        // Optional: reload atau refresh data
+                        router.reload({ only: ['orders'] });
+                    },
+                    onError: async (errors) => {
+                        console.error('Gagal mengonfirmasi pesanan:', errors);
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Terjadi kesalahan saat mengonfirmasi pesanan.',
+                        });
+                    },
                 },
-                onError: (errors) => {
-                    console.error('Gagal mengonfirmasi pesanan:', errors);
-                    alert('Terjadi kesalahan saat mengonfirmasi pesanan.');
-                }
-            });
+            );
         } catch (err) {
             console.error('Unexpected error:', err);
-            alert('Terjadi kesalahan tak terduga saat mengonfirmasi pesanan.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Kesalahan Tak Terduga',
+                text: 'Terjadi kesalahan tak terduga saat mengonfirmasi pesanan.',
+            });
         }
     };
 
     // Step 1: Filter berdasarkan jenis pesanan (pickup/delivery)
-    const typeOrders = orders.data.filter(order => order.type === activeTab);
+    const typeOrders = orders.data.filter((order) => order.type === activeTab);
 
     // Step 2: Filter berdasarkan pencarian nama
-    const filteredOrders = typeOrders.filter(order =>
-        typeof order.name === 'string' &&
-        order.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (
-            (Array.isArray(order.pickup) && order.pickup.some(p => p.status === 'diproses')) ||
-            (Array.isArray(order.delivery) && order.delivery.some(d => d.status === 'diproses'))
-        )
+    const filteredOrders = typeOrders.filter(
+        (order) =>
+            typeof order.name === 'string' &&
+            order.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            ((Array.isArray(order.pickup) && order.pickup.some((p) => p.status === 'diproses')) ||
+                (Array.isArray(order.delivery) && order.delivery.some((d) => d.status === 'diproses'))),
     );
 
     const sortedOrder = filteredOrders.sort((a, b) => {
@@ -251,17 +285,16 @@ export default function OrderList() {
         }
 
         return true; // kalau dua-duanya kosong
-    })
-    const activeOrders = sortedByDate.filter(order => order.cid == null);
+    });
+    const activeOrders = sortedByDate.filter((order) => order.cid == null);
 
-    const deadlineDates = activeOrders.map(item => {
+    const deadlineDates = activeOrders.map((item) => {
         const itemDate = new Date(item.date).getTime();
         const paymentTimeInMs = (cancellations?.paymentTime ?? 0) * 60 * 60 * 1000;
 
         const deadlineDate = new Date(itemDate + paymentTimeInMs);
 
         return deadlineDate.toLocaleString('id-ID');
-        
     });
     console.log('cancellations:', cancellations);
 
@@ -269,80 +302,92 @@ export default function OrderList() {
         <AppLayout>
             <Head title="Konfirmasi Pesanan" />
             <section id="konfirmasi-pesanan" className="mb-12">
-                <div className="flex w-full flex-col px-6 ">
-                    <h1 className="text-3xl font-bold text-center mb-10 mt-5">Daftar Pesanan Online</h1>
-                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
+                <div className="flex w-full flex-col px-6">
+                    <h1 className="mt-5 mb-10 text-center text-3xl font-bold">Daftar Pesanan Online</h1>
+                    <div className="mb-6 rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
                         {/* Top Row - Status Tabs */}
-                        <div className="flex flex-wrap gap-3 mb-6">
-                            <div className="flex bg-gray-50 rounded-lg p-1 border">
+                        <div className="mb-6 flex flex-wrap gap-3">
+                            <div className="flex rounded-lg border bg-gray-50 p-1">
                                 <button
                                     onClick={() => setActiveTab('pickup')}
-                                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${activeTab === 'pickup'
-                                        ? 'bg-blue-600 text-white shadow-md transform scale-105'
-                                        : 'text-gray-600 hover:text-blue-600 hover:bg-white'
-                                        }`}
+                                    className={`cursor-pointer rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
+                                        activeTab === 'pickup'
+                                            ? 'scale-105 transform bg-blue-600 text-white shadow-md'
+                                            : 'text-gray-600 hover:bg-white hover:text-blue-600'
+                                    }`}
                                 >
                                     Ambil di Toko
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('delivery')}
-                                    className={`px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${activeTab === 'delivery'
-                                        ? 'bg-blue-600 text-white shadow-md transform scale-105'
-                                        : 'text-gray-600 hover:text-red-600 hover:bg-white'
-                                        }`}
+                                    className={`cursor-pointer rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
+                                        activeTab === 'delivery'
+                                            ? 'scale-105 transform bg-blue-600 text-white shadow-md'
+                                            : 'text-gray-600 hover:bg-white hover:text-red-600'
+                                    }`}
                                 >
-                                    Ambil sendiri
+                                    Diantar
                                 </button>
                             </div>
                         </div>
 
                         {/* Bottom Row - Search and Filters */}
-                        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                        <div className="flex flex-col items-center justify-between gap-4 lg:flex-row">
                             {/* Left Side - Filters */}
                             <div className="flex flex-wrap items-center gap-3">
                                 {/* Sort Button */}
                                 <button
                                     onClick={toggleSortOrder}
-                                    className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg px-4 py-2.5 font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                                    className="flex transform cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 font-medium text-white shadow-md transition-all duration-200 hover:scale-105 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg"
                                 >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                                        />
                                     </svg>
                                     Urutkan ({sortOrder.toUpperCase()})
                                 </button>
 
                                 {/* Date Range Picker */}
-                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2 border">
+                                <div className="flex items-center gap-2 rounded-lg border bg-gray-50 p-2">
                                     <div className="flex items-center gap-2">
-                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                            />
                                         </svg>
                                         <input
                                             type="date"
                                             value={startDate}
                                             onChange={(e) => setStartDate(e.target.value)}
-                                            className="border-0 bg-transparent focus:ring-0 focus:outline-none text-sm text-gray-700"
+                                            className="border-0 bg-transparent text-sm text-gray-700 focus:ring-0 focus:outline-none"
                                         />
                                     </div>
-                                    <span className="text-gray-400 px-1">—</span>
+                                    <span className="px-1 text-gray-400">—</span>
                                     <input
                                         type="date"
                                         value={endDate}
                                         onChange={(e) => setEndDate(e.target.value)}
-                                        className="border-0 bg-transparent focus:ring-0 focus:outline-none text-sm text-gray-700"
+                                        className="border-0 bg-transparent text-sm text-gray-700 focus:ring-0 focus:outline-none"
                                     />
                                 </div>
                             </div>
 
                             {/* Right Side - Search */}
                             <div className="relative w-full max-w-sm">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                                     <Search className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
                                     type="text"
                                     placeholder="Cari nama customer..."
-                                    className="w-full h-12 pl-12 pr-4 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200 placeholder-gray-400"
+                                    className="h-12 w-full rounded-lg border border-gray-200 bg-gray-50 pr-4 pl-12 text-gray-700 placeholder-gray-400 transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
@@ -352,7 +397,7 @@ export default function OrderList() {
                                 {searchTerm && (
                                     <button
                                         onClick={() => setSearchTerm('')}
-                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                                        className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600"
                                     >
                                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -364,37 +409,28 @@ export default function OrderList() {
 
                         {/* Active Filters Display */}
                         {(searchTerm || startDate || endDate) && (
-                            <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
-                                <span className="text-sm text-gray-500 font-medium">Filter aktif:</span>
+                            <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
+                                <span className="text-sm font-medium text-gray-500">Filter aktif:</span>
                                 {searchTerm && (
-                                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
                                         Customer: {searchTerm}
-                                        <button
-                                            onClick={() => setSearchTerm('')}
-                                            className="ml-1 hover:text-blue-600"
-                                        >
+                                        <button onClick={() => setSearchTerm('')} className="ml-1 hover:text-blue-600">
                                             ×
                                         </button>
                                     </span>
                                 )}
                                 {startDate && (
-                                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
                                         Dari: {startDate}
-                                        <button
-                                            onClick={() => setStartDate('')}
-                                            className="ml-1 hover:text-green-600"
-                                        >
+                                        <button onClick={() => setStartDate('')} className="ml-1 hover:text-green-600">
                                             ×
                                         </button>
                                     </span>
                                 )}
                                 {endDate && (
-                                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
                                         Sampai: {endDate}
-                                        <button
-                                            onClick={() => setEndDate('')}
-                                            className="ml-1 hover:text-green-600"
-                                        >
+                                        <button onClick={() => setEndDate('')} className="ml-1 hover:text-green-600">
                                             ×
                                         </button>
                                     </span>
@@ -423,7 +459,7 @@ export default function OrderList() {
                             <tbody className="bg-white text-gray-700">
                                 {activeOrders.length > 0 ? (
                                     activeOrders.map((item, index) => (
-                                        <tr key={item.id} className="hover:bg-gray-100 transition duration-200">
+                                        <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
                                             <td className="border border-gray-200 px-4 py-3 text-center">{index + 1}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.id}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
@@ -434,14 +470,20 @@ export default function OrderList() {
                                                     Detail
                                                 </Button>
                                             </td>
-                                            <td className="border border-gray-200 px-4 py-3 ">
-                                                <span> Rp{item.details.reduce((total, detail) => total + detail.price * detail.quantity, 0).toLocaleString('id-ID')}</span>
+                                            <td className="border border-gray-200 px-4 py-3">
+                                                <span>
+                                                    {' '}
+                                                    Rp
+                                                    {item.details
+                                                        .reduce((total, detail) => total + detail.price * detail.quantity, 0)
+                                                        .toLocaleString('id-ID')}
+                                                </span>
                                             </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 {item.payments.length > 0 ? (
-                                                    <ul className="list-disc list-inside text-left">
+                                                    <ul className="list-inside list-disc text-left">
                                                         {item.payments.map((detail, idx) => (
-                                                            <li key={idx} className='list-none'>
+                                                            <li key={idx} className="list-none">
                                                                 <img
                                                                     src={`/storage/${detail.gambar}`}
                                                                     alt={detail.gambar}
@@ -458,13 +500,11 @@ export default function OrderList() {
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {deadlineDates[index]}
-                                            </td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">{deadlineDates[index]}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <button
                                                     onClick={() => handleConfirm(item.id)}
-                                                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                                                    className="cursor-pointer rounded bg-green-500 px-3 py-1 text-white hover:bg-green-600"
                                                 >
                                                     Konfirmasi
                                                 </button>
@@ -524,13 +564,13 @@ export default function OrderList() {
                 {isModalOpen && selectedOrder && modalType === 'cancel' && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={handleCloseModal}>
                         <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex justify-between items-center mb-4">
+                            <div className="mb-4 flex items-center justify-between">
                                 <h2 className="text-lg font-bold">Batalkan Pesanan</h2>
                                 <button onClick={handleCloseModal} className="text-gray-500 hover:text-red-500">
-                                    <X className="w-5 h-5" />
+                                    <X className="h-5 w-5" />
                                 </button>
                             </div>
-                            <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                            <div className="max-h-[400px] space-y-4 overflow-y-auto">
                                 <Label className="block text-sm font-medium text-gray-700">Alasan Pembatalan</Label>
                                 <Input
                                     id="cancelReason"
@@ -538,9 +578,9 @@ export default function OrderList() {
                                     value={cancelReason}
                                     onChange={(e) => setCancelReason(e.target.value)} // Penting! supaya alasan tersimpan
                                     placeholder="Masukkan alasan pembatalan"
-                                    className="w-full mt-1 mb-4"
+                                    className="mt-1 mb-4 w-full"
                                 />
-                                <button onClick={processCancel} className="text-gray-500 hover:text-red-500">
+                                <button onClick={processCancel} className="cursor-pointer text-gray-500 hover:text-red-700">
                                     Batalkan
                                 </button>
                             </div>
@@ -551,20 +591,30 @@ export default function OrderList() {
                 {isModalOpen && selectedOrder && modalType === 'detail' && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={handleCloseModal}>
                         <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex justify-between items-center mb-4">
+                            <div className="mb-4 flex items-center justify-between">
                                 <h2 className="text-lg font-bold">Detail Pesanan</h2>
                                 <button onClick={handleCloseModal} className="text-gray-500 hover:text-red-500">
-                                    <X className="w-5 h-5" />
+                                    <X className="h-5 w-5" />
                                 </button>
                             </div>
-                            <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                            <div className="max-h-[400px] space-y-4 overflow-y-auto">
                                 {selectedOrder.details?.map((detailItem, index) => (
-                                    <div key={index} className="border p-4 rounded-lg">
-                                        <p><strong>Nama Produk:</strong> {detailItem.name}</p>
-                                        <p><strong>Jumlah:</strong> {detailItem.quantity} {detailItem.unit}</p>
-                                        <p><strong>Harga:</strong> Rp{detailItem.price}</p>
+                                    <div key={index} className="rounded-lg border p-4">
+                                        <p>
+                                            <strong>Nama Produk:</strong> {detailItem.name}
+                                        </p>
+                                        <p>
+                                            <strong>Jumlah:</strong> {detailItem.quantity} {detailItem.unit}
+                                        </p>
+                                        <p>
+                                            <strong>Harga:</strong> Rp{detailItem.price}
+                                        </p>
                                         {detailItem.gambar && (
-                                            <img src={`/storage/${detailItem.gambar}`} alt={detailItem.name} className="w-24 h-24 object-cover mt-2 rounded" />
+                                            <img
+                                                src={`/storage/${detailItem.gambar}`}
+                                                alt={detailItem.name}
+                                                className="mt-2 h-24 w-24 rounded object-cover"
+                                            />
                                         )}
                                     </div>
                                 ))}
@@ -576,6 +626,6 @@ export default function OrderList() {
                     </div>
                 )}
             </section>
-        </AppLayout >
+        </AppLayout>
     );
 }

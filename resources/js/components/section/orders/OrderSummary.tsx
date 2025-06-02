@@ -173,7 +173,7 @@ export default function OrderSummarySection() {
     };
 
     const canPrintInvoice = (orderStatus: string) => {
-        const printableStatuses = ['selesai', 'completed', 'dibatalkan', 'cancelled'];
+        const printableStatuses = ['selesai', 'completed', 'sedang_proses', 'processing', 'confirmed', 'menunggu pengambilan', 'diantar'];
         return printableStatuses.includes(orderStatus);
     };
 

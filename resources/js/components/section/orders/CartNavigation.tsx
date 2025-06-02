@@ -32,7 +32,7 @@ export default function CartNavigationSection() {
                             key={item.id}
                             href={item.href}
                             aria-current={isActive ? 'page' : undefined}
-                            className={`flex flex-1 items-center justify-center rounded-lg px-2 py-2 text-xs sm:text-sm font-medium transition-all duration-200
+                            className={`flex flex-1 items-center justify-center text-center rounded-lg px-2 py-2 text-xs sm:text-sm font-medium transition-all duration-200
                                 ${
                                     isActive
                                         ? 'bg-white text-green-700 shadow-sm italic'

@@ -379,7 +379,7 @@ const ProductsPage = () => {
                                                     <CardTitle className="line-clamp-1">{product.ProductName}</CardTitle>
                                                     <CardDescription className="line-clamp-2">
                                                         {' '}
-                                                        {product.Description.length > 40
+                                                        {product.Description?.length > 40
                                                             ? `${product.Description.slice(0, 42)}...`
                                                             : product.Description}
                                                     </CardDescription>

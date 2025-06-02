@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
@@ -375,15 +375,13 @@ const ProductsPage = () => {
                                                         className="h-full w-full object-cover transition-transform duration-200 hover:scale-105"
                                                     />
                                                 </div>
-                                                <CardHeader className="pb-2">
-                                                    <CardTitle className="line-clamp-1">{product.ProductName}</CardTitle>
-                                                    <CardDescription className="line-clamp-2">
-                                                        {' '}
-                                                        {product.Description?.length > 40
+                                                <CardDescription className="line-clamp-2 px-6">
+                                                    {product.Description
+                                                        ? product.Description.length > 40
                                                             ? `${product.Description.slice(0, 42)}...`
-                                                            : product.Description}
-                                                    </CardDescription>
-                                                </CardHeader>
+                                                            : product.Description
+                                                        : 'Tidak ada deskripsi'}
+                                                </CardDescription>
                                                 <CardContent className="space-y-2">
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-muted-foreground text-sm">Stok:</span>
@@ -429,7 +427,7 @@ const ProductsPage = () => {
                                                         <div className="flex-1">
                                                             <div className="mb-2 flex items-start justify-between">
                                                                 <h3 className="font-semibold">{product.ProductName}</h3>
-                                                                <span className="text-primary text-xl font-bold text-price">
+                                                                <span className="text-primary text-price text-xl font-bold">
                                                                     {formatPrice(product.ProductPrice)}
                                                                 </span>
                                                             </div>

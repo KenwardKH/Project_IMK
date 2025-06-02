@@ -17,7 +17,7 @@ class CashierController extends Controller
      * Display the cashier interface
      */
     public function index()
-    { 
+    {
         try {
             // Get all products with stock > 0
             $products = Product::where('CurrentStock', '>', 0)
@@ -36,10 +36,10 @@ class CashierController extends Controller
 
 
             $user = Auth::user();
-            $cashier = $user->kasirs()->first(); 
+            $cashier = $user->kasirs()->first();
 
             // // Get current cart items with product details
-            
+
             $cartItems = CashierCart::with('product')
                 ->where('CashierID', $cashier->id_kasir) // ⬅️ Hanya data milik kasir login
                 ->get()
@@ -60,7 +60,7 @@ class CashierController extends Controller
                 });
                 // dd($cartItems);
                 // dd($cartItems->toArray());
-                
+
             // Calculate totals
             $subtotal = $cartItems->sum('subtotal');
 
@@ -88,7 +88,7 @@ class CashierController extends Controller
             'action' => 'required|in:increment,decrement',
         ]);
         $user = Auth::user();
-        $cashier = $user->kasirs()->first(); 
+        $cashier = $user->kasirs()->first();
         try {
             DB::beginTransaction();
 
@@ -98,7 +98,7 @@ class CashierController extends Controller
             if ($request->action === 'increment') {
                 // Check stock availability
                 $currentQuantityInCart = $cartItem ? $cartItem->Quantity : 0;
-                
+
                 if ($currentQuantityInCart >= $product->CurrentStock) {
                     return redirect()->back()->with('error', 'Stok tidak mencukupi!');
                 }
@@ -309,15 +309,15 @@ public function checkout(Request $request)
         } catch (\Exception $e) {
             // Check if it's a stock error or other database error
             $errorMessage = $e->getMessage();
-            
+
             if (strpos($errorMessage, 'Cart not found or is empty') !== false) {
                 return response()->json(['error' => 'Keranjang kosong atau tidak ditemukan'], 400);
             }
-            
+
             if (strpos($errorMessage, 'stock') !== false || strpos($errorMessage, 'Stock') !== false) {
                 return response()->json(['error' => 'Stok produk tidak mencukupi'], 400);
             }
-            
+
             \Log::error('Checkout error: ' . $errorMessage);
             return response()->json(['error' => 'Terjadi kesalahan saat checkout. Silakan coba lagi.'], 500);
         }
@@ -358,7 +358,7 @@ public function checkout(Request $request)
     {
         try {
             $query = $request->get('q', '');
-            
+
             $products = Product::where('CurrentStock', '>', 0)
                 ->where(function ($q) use ($query) {
                     $q->where('name', 'like', "%{$query}%")

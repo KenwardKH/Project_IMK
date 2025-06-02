@@ -138,7 +138,6 @@ class OrderController extends Controller
 
         return [
             'invoice_id' => $invoice->InvoiceID,
-            'customer_id' => $user->customer->CustomerID,
             'customer_name' => $invoice->customerName,
             'customer_contact' => $invoice->customerContact,
             'invoice_date' => $invoice->InvoiceDate,
@@ -207,7 +206,6 @@ class OrderController extends Controller
 
         $orderDetail = [
             'invoice_id' => $invoice->InvoiceID,
-                        'customer_id' => $user->customer->CustomerID,
             'customer_name' => $invoice->customerName,
             'customer_contact' => $invoice->customerContact,
             'invoice_date' => $invoice->InvoiceDate,

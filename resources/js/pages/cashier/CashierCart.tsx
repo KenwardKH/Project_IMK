@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/cashier-layout';
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeft, Package } from 'lucide-react';
+import { ArrowLeft, Package, Truck } from 'lucide-react';
 import { useState } from 'react';
 import Swal from 'sweetalert2';
 
@@ -143,9 +143,11 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
             });
             return;
         }
+        const name = customerName.trim() === '' ? 'Pelanggan Umum' : customerName;
+        const contact = customerContact.trim() === '' ? 'Tidak ada kontak' : customerContact;
 
         // Validasi jika customerName atau contact diperlukan
-        if (!customerName.trim() || !customerContact.trim()) {
+        if (!name.trim() || !contact.trim()) {
             const result = await Swal.fire({
                 icon: 'warning',
                 title: 'Data pelanggan belum lengkap',
@@ -172,8 +174,8 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                     shipping_option: shippingOption,
                     payment_option: 'transfer',
                     alamat: shippingOption === 'diantar' ? alamat : null,
-                    customer_name: customerName || null,
-                    customer_contact: customerContact || null,
+                    customer_name: name || null,
+                    customer_contact: contact || null,
                 }),
             });
 
@@ -318,7 +320,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                 </div>
                                                 <span className="font-semibold text-[#56b280]">Gratis</span>
                                             </div>
-                                            {/* <div className="flex items-center space-x-2 rounded-lg border p-3">
+                                            <div className="flex items-center space-x-2 rounded-lg border p-3">
                                                 <RadioGroupItem value="diantar" id="delivery" />
                                                 <Truck className="h-5 w-5 text-[#153e98]" />
                                                 <div className="flex-1">
@@ -328,7 +330,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                     <p className="text-sm text-gray-600">Pesanan akan diantar ke alamat Anda</p>
                                                 </div>
                                                 <span className="font-semibold text-[#56b280]">Gratis</span>
-                                            </div> */}
+                                            </div>
                                         </RadioGroup>
                                     </div>
 
@@ -545,7 +547,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                     <button
                                         onClick={handleCheckout}
                                         disabled={cartItems.length === 0 || loading === -1}
-                                        className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 cursor-pointer"
+                                        className="w-full cursor-pointer rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                                     >
                                         {loading === -1 ? 'Processing...' : 'Checkout'}
                                     </button>

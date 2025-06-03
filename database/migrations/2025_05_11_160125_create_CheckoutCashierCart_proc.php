@@ -22,20 +22,20 @@ BEGIN
     DECLARE v_customer_name VARCHAR(255);
     DECLARE v_customer_contact VARCHAR(50);
     DECLARE v_cashier_name VARCHAR(255);
-    DECLARE cart_cursor CURSOR FOR 
+    DECLARE cart_cursor CURSOR FOR
         SELECT ProductID, Quantity FROM cashier_cart WHERE CashierID = p_cashier_id;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
     -- Step 0: Check if the cart is empty
-    SELECT COUNT(*) INTO cart_item_count 
-    FROM cashier_cart 
+    SELECT COUNT(*) INTO cart_item_count
+    FROM cashier_cart
     WHERE CashierID = p_cashier_id;
 
     IF cart_item_count = 0 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Error: Cart not found or is empty for the given cashier.';
     END IF;
-    
+
     IF p_customer_id = '' OR p_customer_id IS NULL THEN
         SET p_customer_id = NULL;
     END IF;
@@ -43,9 +43,9 @@ BEGIN
     -- Step 1: Determine customer details
     IF p_customer_id IS NOT NULL THEN
         -- Fetch customer details from the customers table
-        SELECT CustomerName, CustomerContact 
+        SELECT CustomerName, CustomerContact
         INTO v_customer_name, v_customer_contact
-        FROM customers 
+        FROM customers
         WHERE CustomerID = p_customer_id;
 
         IF v_customer_name IS NULL THEN
@@ -61,7 +61,7 @@ BEGIN
     -- Step 2: Fetch cashier name (optional, as this is an offline transaction)
     IF p_cashier_id IS NOT NULL THEN
         SELECT nama_kasir INTO v_cashier_name
-        FROM kasir 
+        FROM kasir
         WHERE id_kasir = p_cashier_id;
 
         IF v_cashier_name IS NULL THEN
@@ -81,9 +81,9 @@ BEGIN
     )
     VALUES (
         p_customer_id, -- Nullable customer ID
-        v_customer_name, 
-        v_customer_contact, 
-        NOW(), 
+        v_customer_name,
+        v_customer_contact,
+        NOW(),
         IF(p_shipping_option = 'diantar', 'delivery', 'pickup'),
         p_payment_option,
         p_cashier_id, -- Nullable cashier ID
@@ -116,7 +116,7 @@ BEGIN
         CALL AddInvoiceDetail(p_invoice_id, c_product_id, c_quantity);
 
         -- Step 7: Update the stock after adding to invoicedetails
-        UPDATE products 
+        UPDATE products
         SET CurrentStock = CurrentStock - c_quantity
         WHERE ProductID = c_product_id;
     END LOOP;
@@ -127,10 +127,10 @@ BEGIN
     -- Step 9: Insert into the appropriate status table
     IF p_shipping_option = 'diantar' THEN
         INSERT INTO delivery_order_status (invoice_id, status, alamat, created_at, updated_at,updated_by)
-      	VALUES (p_invoice_id, 'diproses', p_alamat, NOW(), NOW(),p_cashier_id);  
+      	VALUES (p_invoice_id, 'diproses', p_alamat, NOW(), NOW(),p_cashier_id);
     ELSE
        	INSERT INTO pickup_order_status (invoice_id, status, created_at, updated_at,updated_by)
-        VALUES (p_invoice_id, 'diproses', NOW(), NOW(),p_cashier_id);
+        VALUES (p_invoice_id, 'selesai', NOW(), NOW(),p_cashier_id);
     END IF;
 
     -- Commit the transaction

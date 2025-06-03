@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/cashier-layout';
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeft, Package, Truck } from 'lucide-react';
+import { ArrowLeft, Package, Truck, ShoppingCart, User, Receipt, CreditCard, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import Swal from 'sweetalert2';
 
@@ -36,11 +36,11 @@ interface Props {
 }
 
 export default function CashierCart({ products, cartItems, total, subtotal }: Props) {
-    // const CashierCart: React.FC<Props> = ({ products, cartItems, total, subtotal }) => {
     const [loading, setLoading] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [showCheckout, setShowCheckout] = useState(false);
     const [shippingOption, setShippingOption] = useState('pickup');
+    const [paymentOption, setPaymentOption] = useState('tunai');
     const [alamat, setAlamat] = useState('');
     const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
     const [customerName, setCustomerName] = useState('');
@@ -94,42 +94,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
         return price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
     };
 
-    // const handleQuantityChange = (e, productId) => {
-    //   const newQuantity = parseInt(e.target.value, 10);
-
-    //   // Validasi supaya angka >= 0
-    //   if (!isNaN(newQuantity) && newQuantity >= 0 && newQuantity <= product.stock) {
-    //     // Panggil fungsi updateCartQuantity
-    //     updateCartQuantity(productId, 'set', newQuantity);
-    //   }
-    // };
-
     // Function untuk checkout
-    // const handleCheckout = async () => {
-    //   if (cartItems.length === 0) {
-    //     alert('Keranjang belanja kosong!');
-    //     return;
-    //   }
-
-    //   setLoading(-1); // Loading state untuk checkout
-
-    //   try {
-    //     await router.post('/cashier/checkout', {}, {
-    //       onSuccess: () => {
-    //         alert('Checkout berhasil!');
-    //       },
-    //       onError: (errors) => {
-    //         console.error('Checkout error:', errors);
-    //         alert('Checkout gagal!');
-    //       },
-    //       onFinish: () => setLoading(null),
-    //     });
-    //   } catch (error) {
-    //     console.error('Error during checkout:', error);
-    //     setLoading(null);
-    //   }
-    // };
-
     const handleCheckout = () => {
         setShowCheckout(true);
     };
@@ -172,7 +137,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                 },
                 body: JSON.stringify({
                     shipping_option: shippingOption,
-                    payment_option: 'transfer',
+                    payment_option: paymentOption,
                     alamat: shippingOption === 'diantar' ? alamat : null,
                     customer_name: name || null,
                     customer_contact: contact || null,
@@ -233,145 +198,260 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
     if (showCheckout) {
         return (
             <AppLayout>
-                {/* breadcrumbs={breadcrumbs}> */}
-                <section id="buat-pesanan" className="mb-12">
+                <section id="buat-pesanan" className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
                     <Head title="Checkout | Sinar Pelangi" />
 
                     <div className="container mx-auto px-4 py-8" id="CashierCart">
-                        <div className="mx-auto max-w-2xl">
-                            <Card className="rounded-2xl bg-white shadow-lg">
-                                <CardContent className="p-6">
-                                    <h1 className="mb-6 font-[Poppins] text-2xl font-bold text-[#1c283f]">Checkout</h1>
-                                    {/* Customer Info Section (optional / manual) */}
-                                    <div className="mb-6">
-                                        <h3 className="mb-3 font-semibold text-[#1c283f]">Data Pelanggan (Opsional)</h3>
-
-                                        <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700">
-                                            Nama Pelanggan
-                                        </Label>
-                                        <Input
-                                            id="customerName"
-                                            type="text"
-                                            value={customerName}
-                                            onChange={(e) => setCustomerName(e.target.value)}
-                                            placeholder="Masukkan nama pelanggan (opsional)"
-                                            className="mt-1 mb-4 w-full"
-                                        />
-
-                                        <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700">
-                                            Kontak Pelanggan
-                                        </Label>
-                                        <Input
-                                            id="customerContact"
-                                            type="text"
-                                            value={customerContact}
-                                            onChange={(e) => setCustomerContact(e.target.value)}
-                                            placeholder="Masukkan nomor telepon atau email"
-                                            className="mt-1 w-full"
-                                        />
+                        <div className="mx-auto max-w-4xl">
+                            {/* Header with Progress Indicator */}
+                            <div className="mb-8 text-center">
+                                <h1 className="mb-4 font-[Poppins] text-3xl font-bold text-[#1c283f]">
+                                    Checkout Pesanan
+                                </h1>
+                                <div className="flex items-center justify-center space-x-4">
+                                    <div className="flex items-center">
+                                        <CheckCircle className="h-6 w-6 text-green-500" />
+                                        <span className="ml-2 text-sm font-medium text-green-600">Keranjang</span>
                                     </div>
-
-                                    {/* Order Summary */}
-                                    <div className="mb-6">
-                                        <h3 className="mb-3 font-semibold text-[#1c283f]">Ringkasan Pesanan</h3>
-                                        <div className="rounded-lg bg-gray-50 p-4">
-                                            <div className="mb-2 flex justify-between">
-                                                <span>Subtotal ({cartItems.length} item)</span>
-                                                <span>{formatPrice(subtotal)}</span>
-                                            </div>
-                                            <div className="mb-2 flex justify-between">
-                                                <span>Ongkos Kirim</span>
-                                                <span>Gratis</span>
-                                            </div>
-                                            <hr className="my-2" />
-                                            <div className="flex justify-between text-lg font-bold">
-                                                <span>Total</span>
-                                                <span className="text-[#56b280]">{formatPrice(subtotal)}</span>
-                                            </div>
+                                    <div className="h-1 w-12 bg-green-500"></div>
+                                    <div className="flex items-center">
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-white">
+                                            <span className="text-xs font-bold">2</span>
                                         </div>
+                                        <span className="ml-2 text-sm font-medium text-blue-600">Checkout</span>
                                     </div>
-
-                                    {/* Payment Method */}
-                                    <div className="mb-6">
-                                        <h3 className="mb-3 font-semibold text-[#1c283f]">Metode Pembayaran</h3>
-                                        <div className="rounded-lg bg-gray-50 p-4">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="h-3 w-3 rounded-full bg-[#56b280]"></div>
-                                                <span>Transfer Bank</span>
-                                            </div>
-                                            <p className="mt-2 text-sm text-gray-600">
-                                                Pembayaran melalui transfer bank. Detail rekening akan diberikan setelah checkout.
-                                            </p>
+                                    <div className="h-1 w-12 bg-gray-300"></div>
+                                    <div className="flex items-center">
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-gray-600">
+                                            <span className="text-xs font-bold">3</span>
                                         </div>
+                                        <span className="ml-2 text-sm font-medium text-gray-500">Selesai</span>
                                     </div>
+                                </div>
+                            </div>
 
-                                    {/* Shipping Options */}
-                                    <div className="mb-6">
-                                        <Label className="mb-3 block font-semibold text-[#1c283f]">Pilih Cara Pengiriman</Label>
-                                        <RadioGroup value={shippingOption} onValueChange={setShippingOption}>
-                                            <div className="flex items-center space-x-2 rounded-lg border p-3">
-                                                <RadioGroupItem value="pickup" id="pickup" />
-                                                <Package className="h-5 w-5 text-[#153e98]" />
-                                                <div className="flex-1">
-                                                    <Label htmlFor="pickup" className="cursor-pointer font-medium">
-                                                        Pickup di Toko
-                                                    </Label>
-                                                    <p className="text-sm text-gray-600">Ambil pesanan langsung di toko kami</p>
+                            <div className="grid gap-8 lg:grid-cols-3">
+                                {/* Main Checkout Form */}
+                                <div className="lg:col-span-2">
+                                    <Card className="rounded-xl bg-white shadow-lg">
+                                        <CardContent className="p-8">
+                                            {/* Customer Info Section */}
+                                            <div className="mb-8">
+                                                <div className="mb-4 flex items-center">
+                                                    <User className="mr-3 h-6 w-6 text-[#153e98]" />
+                                                    <h3 className="text-xl font-semibold text-[#1c283f]">
+                                                        Data Pelanggan
+                                                    </h3>
                                                 </div>
-                                                <span className="font-semibold text-[#56b280]">Gratis</span>
-                                            </div>
-                                            <div className="flex items-center space-x-2 rounded-lg border p-3">
-                                                <RadioGroupItem value="diantar" id="delivery" />
-                                                <Truck className="h-5 w-5 text-[#153e98]" />
-                                                <div className="flex-1">
-                                                    <Label htmlFor="delivery" className="cursor-pointer font-medium">
-                                                        Diantar ke Alamat
-                                                    </Label>
-                                                    <p className="text-sm text-gray-600">Pesanan akan diantar ke alamat Anda</p>
+                                                <div className="rounded-lg bg-slate-50 p-6">
+                                                    <div className="grid gap-4 md:grid-cols-2">
+                                                        <div>
+                                                            <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Nama Pelanggan
+                                                            </Label>
+                                                            <Input
+                                                                id="customerName"
+                                                                type="text"
+                                                                value={customerName}
+                                                                onChange={(e) => setCustomerName(e.target.value)}
+                                                                placeholder="Masukkan nama pelanggan"
+                                                                className="w-full"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Kontak Pelanggan
+                                                            </Label>
+                                                            <Input
+                                                                id="customerContact"
+                                                                type="text"
+                                                                value={customerContact}
+                                                                onChange={(e) => setCustomerContact(e.target.value)}
+                                                                placeholder="Nomor telepon atau email"
+                                                                className="w-full"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <p className="mt-3 text-sm text-gray-600">
+                                                        * Jika tidak diisi, akan menggunakan "Pelanggan Umum"
+                                                    </p>
                                                 </div>
-                                                <span className="font-semibold text-[#56b280]">Gratis</span>
                                             </div>
-                                        </RadioGroup>
-                                    </div>
 
-                                    {/* Delivery Address */}
-                                    {shippingOption === 'diantar' && (
-                                        <div className="mb-6">
-                                            <Label htmlFor="alamat" className="mb-2 block font-semibold text-[#1c283f]">
-                                                Alamat Pengiriman *
-                                            </Label>
-                                            <Textarea
-                                                id="alamat"
-                                                value={alamat}
-                                                onChange={(e) => setAlamat(e.target.value)}
-                                                placeholder="Masukkan alamat lengkap untuk pengiriman..."
-                                                className="w-full"
-                                                rows={3}
-                                            />
-                                        </div>
-                                    )}
+                                            {/* Payment Method */}
+                                            <div className="mb-8">
+                                                <div className="mb-4 flex items-center">
+                                                    <CreditCard className="mr-3 h-6 w-6 text-[#153e98]" />
+                                                    <h3 className="text-xl font-semibold text-[#1c283f]">
+                                                        Metode Pembayaran
+                                                    </h3>
+                                                </div>
+                                                <RadioGroup value={paymentOption} onValueChange={setPaymentOption}>
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-4 transition-colors hover:border-[#153e98] hover:bg-blue-50">
+                                                            <RadioGroupItem value="tunai" id="tunai" />
+                                                            <div className="flex items-center space-x-3 cursor-pointer">
+                                                                <div className="rounded-full bg-green-100 p-2">
+                                                                    <Package className="h-5 w-5 text-green-600" />
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <Label htmlFor="tunai" className="cursor-pointer text-lg font-medium">
+                                                                        Pembayaran Tunai
+                                                                    </Label>
+                                                                    <p className="text-sm text-gray-600">Bayar langsung saat transaksi</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-4 transition-colors hover:border-[#153e98] hover:bg-blue-50">
+                                                            <RadioGroupItem value="transfer" id="transfer" />
+                                                            <div className="flex items-center space-x-3 cursor-pointer">
+                                                                <div className="rounded-full bg-blue-100 p-2">
+                                                                    <Truck className="h-5 w-5 text-blue-600" />
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <Label htmlFor="transfer" className="cursor-pointer text-lg font-medium">
+                                                                        Transfer Bank
+                                                                    </Label>
+                                                                    <p className="text-sm text-gray-600">
+                                                                        Transfer ke rekening toko, konfirmasi manual
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </RadioGroup>
+                                            </div>
 
-                                    {/* Action Buttons */}
-                                    <div className="flex space-x-3">
-                                        <Button
-                                            onClick={() => setShowCheckout(false)}
-                                            variant="outline"
-                                            className="flex-1 border-[#153e98] text-[#153e98] hover:bg-[#153e98] hover:text-white"
-                                            disabled={isProcessingCheckout}
-                                        >
-                                            <ArrowLeft className="mr-2 h-4 w-4" />
-                                            Kembali
-                                        </Button>
-                                        <Button
-                                            onClick={processCheckout}
-                                            className="flex-1 bg-[#153e98] text-white hover:bg-[#0f2e73]"
-                                            disabled={isProcessingCheckout}
-                                        >
-                                            {isProcessingCheckout ? 'Memproses...' : 'Konfirmasi Pesanan'}
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                            {/* Delivery Address */}
+                                            {shippingOption === 'diantar' && (
+                                                <div className="mb-8">
+                                                    <Label htmlFor="alamat" className="mb-2 block text-lg font-semibold text-[#1c283f]">
+                                                        Alamat Pengiriman *
+                                                    </Label>
+                                                    <Textarea
+                                                        id="alamat"
+                                                        value={alamat}
+                                                        onChange={(e) => setAlamat(e.target.value)}
+                                                        placeholder="Masukkan alamat lengkap untuk pengiriman..."
+                                                        className="w-full"
+                                                        rows={4}
+                                                    />
+                                                </div>
+                                            )}
+
+                                            {/* Transaction Type */}
+                                            <div className="mb-8">
+                                                <h3 className="mb-4 text-xl font-semibold text-[#1c283f]">Jenis Transaksi</h3>
+                                                <div className="rounded-lg bg-gradient-to-r from-green-50 to-green-100 p-6">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="rounded-full bg-green-500 p-2">
+                                                            <ShoppingCart className="h-6 w-6 text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-lg font-bold text-green-800">Pembelian Offline</span>
+                                                            <p className="text-sm text-green-700">Transaksi langsung di toko</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Order Summary Sidebar */}
+                                <div className="lg:col-span-1">
+                                    <Card className="sticky top-4 rounded-xl bg-white shadow-lg">
+                                        <CardContent className="p-6">
+                                            <div className="mb-6 flex items-center">
+                                                <Receipt className="mr-3 h-6 w-6 text-[#153e98]" />
+                                                <h3 className="text-xl font-semibold text-[#1c283f]">Ringkasan Pesanan</h3>
+                                            </div>
+
+                                            {/* Cart Items List */}
+                                            <div className="mb-6 max-h-64 overflow-y-auto">
+                                                <div className="space-y-3">
+                                                    {cartItems.map((item) => (
+                                                        <div key={item.id} className="flex items-start space-x-3 rounded-lg bg-gray-50 p-3">
+                                                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white">
+                                                                {item.product?.image ? (
+                                                                    <img
+                                                                        src={`/storage/${item.product.image}`}
+                                                                        alt={item.product.name}
+                                                                        className="h-full w-full rounded-lg object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <Package className="h-6 w-6 text-gray-400" />
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className="text-sm font-medium text-gray-900 truncate">
+                                                                    {item.product?.name ?? 'Produk tidak tersedia'}
+                                                                </h4>
+                                                                <div className="flex items-center justify-between mt-1">
+                                                                    <span className="text-xs text-gray-500">
+                                                                        {formatPrice(item.product?.price || 0)} × {item.quantity}
+                                                                    </span>
+                                                                    <span className="text-sm font-semibold text-[#56b280]">
+                                                                        {formatPrice((item.product?.price || 0) * item.quantity)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Price Summary */}
+                                            <div className="space-y-3 border-t pt-4">
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-gray-600">
+                                                        Subtotal ({cartItems.length} item{cartItems.length > 1 ? 's' : ''})
+                                                    </span>
+                                                    <span className="font-medium">{formatPrice(subtotal)}</span>
+                                                </div>
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-gray-600">Pajak & Biaya Admin</span>
+                                                    <span className="font-medium text-green-600">Gratis</span>
+                                                </div>
+                                                <div className="flex justify-between border-t pt-3 text-lg font-bold">
+                                                    <span className="text-gray-900">Total Pembayaran</span>
+                                                    <span className="text-[#56b280]">{formatPrice(subtotal)}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="mt-6 space-y-3">
+                                                <Button
+                                                    onClick={() => setShowCheckout(false)}
+                                                    variant="outline"
+                                                    className="w-full border-[#153e98] text-[#153e98] hover:bg-[#153e98] hover:text-white"
+                                                    disabled={isProcessingCheckout}
+                                                >
+                                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                                    Kembali ke Keranjang
+                                                </Button>
+                                                <Button
+                                                    onClick={processCheckout}
+                                                    className="w-full bg-gradient-to-r from-[#153e98] to-[#1a4cb8] text-white hover:from-[#0f2e73] hover:to-[#153e98] font-semibold py-3"
+                                                    disabled={isProcessingCheckout}
+                                                >
+                                                    {isProcessingCheckout ? (
+                                                        <div className="flex items-center">
+                                                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                                            Memproses...
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <CheckCircle className="mr-2 h-4 w-4" />
+                                                            Konfirmasi Pesanan
+                                                        </>
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -384,13 +464,6 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
             <Head title="Kasir - Toko ATK" />
             <section id="buat-pesanan" className="mb-12">
                 <div className="min-h-screen bg-gray-100">
-                    {/* Header */}
-                    {/* <div className="bg-white shadow-sm border-b">
-            <div className="max-w-full mx-auto px-6 py-4">
-              <h1 className="text-2xl font-bold text-gray-900">Kasir Toko ATK</h1>
-            </div>
-          </div> */}
-
                     {/* Main Content */}
                     <div className="mx-auto max-w-full px-6 py-6">
                         <div className="grid h-[calc(100vh-140px)] grid-cols-1 gap-6 lg:grid-cols-3">
@@ -560,5 +633,3 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
         </AppLayout>
     );
 }
-
-// export default CashierCart;

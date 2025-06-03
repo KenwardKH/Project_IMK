@@ -314,10 +314,10 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                 )}
 
                 {/* Related Products (placeholder for future implementation) */}
-                <div className="mt-10">
+                {/* <div className="mt-10">
                     <h2 className="mb-4 font-[Poppins] text-2xl font-bold text-[#1c283f]">Produk Terkait</h2>
                     <p className="text-gray-500">Produk terkait akan ditampilkan di sini.</p>
-                </div>
+                </div> */}
             </div>
         </AppLayout>
     );

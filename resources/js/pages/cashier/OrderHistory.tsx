@@ -422,9 +422,9 @@ export default function OrderHistory() {
                                     <th className="border border-gray-300 px-4 py-3 text-center">No. Telepon</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Jumlah Produk</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Total Harga</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Alamat</th>
+                                    {/* <th className="border border-gray-300 px-4 py-3 text-center">Alamat</th> */}
                                     <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pembayaran</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Tipe Pesanan</th>
+                                    {/* <th className="border border-gray-300 px-4 py-3 text-center">Tipe Pesanan</th> */}
                                     <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Cetak Invoice</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
@@ -456,15 +456,15 @@ export default function OrderHistory() {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
+                                            {/* <td className="border border-gray-200 px-4 py-3 text-center">
                                                 {item.delivery.length > 0 ? (
                                                     item.delivery.map((detail, idx) => <span key={idx}>{detail.alamat}</span>)
                                                 ) : (
                                                     <span>Diambil di Toko</span>
                                                 )}
-                                            </td>
+                                            </td> */}
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td>
+                                            {/* <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td> */}
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
                                                     onClick={() => handleOpenDetailModal(item)}

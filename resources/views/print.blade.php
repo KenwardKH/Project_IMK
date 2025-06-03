@@ -87,11 +87,11 @@
                 <td><strong>No. Telepon:</strong> {{ $invoice['customerContact'] ?? 'N/A' }}</td>
                 <td><strong>Metode Pembayaran:</strong> {{ $invoice['payment_option'] ?? 'Tidak diketahui' }}</td>
             </tr>
-            @if($invoice['delivery_address'])
+            {{-- @if($invoice['delivery_address'])
             <tr>
                 <td colspan="2"><strong>Alamat Pengiriman:</strong> {{ $invoice['delivery_address'] }}</td>
             </tr>
-            @endif
+            @endif --}}
         </table>
 
         <table class="items-table">

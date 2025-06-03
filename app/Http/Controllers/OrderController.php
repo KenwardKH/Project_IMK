@@ -263,7 +263,7 @@ class OrderController extends Controller
             $latestStatus = $invoice->delivery_order_statuses->sortByDesc('created_at')->first();
         }
 
-        // Check if order can be cancelled
+    // Check if order can be cancelled
         if ($latestStatus && in_array($latestStatus->status, ['selesai', 'dibatalkan'])) {
             return response()->json(['error' => 'Pesanan tidak dapat dibatalkan'], 400);
         }

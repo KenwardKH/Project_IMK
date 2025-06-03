@@ -306,7 +306,7 @@ export default function OrderList() {
                     <h1 className="mt-5 mb-10 text-center text-3xl font-bold">Daftar Pesanan Online</h1>
                     <div className="mb-6 rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
                         {/* Top Row - Status Tabs */}
-                        <div className="mb-6 flex flex-wrap gap-3">
+                        {/* <div className="mb-6 flex flex-wrap gap-3">
                             <div className="flex rounded-lg border bg-gray-50 p-1">
                                 <button
                                     onClick={() => setActiveTab('pickup')}
@@ -329,7 +329,7 @@ export default function OrderList() {
                                     Diantar
                                 </button>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Bottom Row - Search and Filters */}
                         <div className="flex flex-col items-center justify-between gap-4 lg:flex-row">
@@ -449,7 +449,7 @@ export default function OrderList() {
                                     <th className="border border-gray-300 px-4 py-3 text-center">Total Harga</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Bukti Pembayaran</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Nama Customer</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pesanan</th>
+                                    {/* <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pesanan</th> */}
                                     <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Tenggat Pembayaran</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
@@ -498,7 +498,7 @@ export default function OrderList() {
                                                 )}
                                             </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td>
+                                            {/* <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td> */}
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">{deadlineDates[index]}</td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">

@@ -150,7 +150,7 @@ const OwnerRiwayatKasir = () => {
                                 <thead className="bg-gray-700 text-sm text-gray-100">
                                     <tr>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Invoice ID</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Opsi Pengiriman</th>
+                                        {/* <th className="border border-gray-300 p-4 text-center font-semibold">Opsi Pengiriman</th> */}
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Status Sebelum</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Status Sesudah</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Nama Kasir</th>
@@ -163,7 +163,7 @@ const OwnerRiwayatKasir = () => {
                                         filteredKasirs.map((item) => (
                                             <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
                                                 <td className="border border-gray-200 p-4 text-center">{item.invoice_id}</td>
-                                                <td className="border border-gray-200 p-4 text-center">{item.order_type}</td>
+                                                {/* <td className="border border-gray-200 p-4 text-center">{item.order_type}</td> */}
                                                 <td className="border border-gray-200 p-4 text-center">{item.previous_status}</td>
                                                 <td className="border border-gray-200 p-4 text-center">{item.new_status}</td>
                                                 <td className="border border-gray-200 p-4 text-center">{item.cashier_name}</td>

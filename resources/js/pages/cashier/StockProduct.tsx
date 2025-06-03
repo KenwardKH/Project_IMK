@@ -117,7 +117,7 @@ export default function OrderList() {
                     </div>
 
                     {/* Filter & Search Section */}
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8 backdrop-blur-sm bg-white/90">
+                    <div className="rounded-2xl shadow-xl border border-gray-100 p-6 mb-8 backdrop-blur-sm bg-white/90">
                         <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
                             {/* Stock Filter */}
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">

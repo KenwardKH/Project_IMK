@@ -151,7 +151,7 @@ export default function OrderList() {
             router.delete(`/cashier/orders/${id}`);
         }
     };
-    
+
     const handleStatusChange = (orderId: number, newStatus: string, type: 'pickup' | 'delivery') => {
         router.post(
             `/cashier/update-status/${orderId}`,
@@ -293,7 +293,7 @@ export default function OrderList() {
                     <h1 className="mt-5 mb-10 text-center text-3xl font-bold">Status Pesanan</h1>
                     <div className="mb-6 rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
                         {/* Top Row - Status Tabs */}
-                        <div className="mb-6 flex flex-wrap gap-3">
+                        {/* <div className="mb-6 flex flex-wrap gap-3">
                             <div className="flex rounded-lg border bg-gray-50 p-1">
                                 <button
                                     onClick={() => setActiveTab('pickup')}
@@ -316,7 +316,7 @@ export default function OrderList() {
                                     Diantar
                                 </button>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Bottom Row - Search and Filters */}
                         <div className="flex flex-col items-center justify-between gap-4 lg:flex-row">
@@ -436,7 +436,7 @@ export default function OrderList() {
                                     <th className="border border-gray-300 px-4 py-3 text-center">No. Telepon</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Jumlah Produk</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Total Harga</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Alamat</th>
+                                    {/* <th className="border border-gray-300 px-4 py-3 text-center">Alamat</th> */}
                                     <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pembayaran</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Cetak Invoice</th>
@@ -477,13 +477,13 @@ export default function OrderList() {
                                                         </span>
                                                     )}
                                                 </td>
-                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                {/* <td className="border border-gray-200 px-4 py-3 text-center">
                                                     {item.delivery.length > 0 ? (
                                                         item.delivery.map((detail, idx) => <span key={idx}>{detail.alamat}</span>)
                                                     ) : (
                                                         <span>Diambil di Toko</span>
                                                     )}
-                                                </td>
+                                                </td> */}
                                                 <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
                                                 <td className="border border-gray-200 px-4 py-3 text-center">
                                                     <Button

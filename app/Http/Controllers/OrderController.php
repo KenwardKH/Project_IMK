@@ -377,9 +377,9 @@ class OrderController extends Controller
         }
 
         // Check if order is completed or cancelled
-        if (!$latestStatus || !in_array($latestStatus->status, ['selesai', 'dibatalkan'])) {
-            return response()->json(['error' => 'Invoice hanya dapat dicetak untuk pesanan yang selesai atau dibatalkan'], 400);
-        }
+        // if (!$latestStatus || !in_array($latestStatus->status, ['selesai', 'dibatalkan'])) {
+        //     return response()->json(['error' => 'Invoice hanya dapat dicetak untuk pesanan yang selesai atau dibatalkan'], 400);
+        // }
 
         // Return invoice data for PDF generation
         $invoiceData = [

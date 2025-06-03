@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/cashier-layout';
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeft, Package, Truck, ShoppingCart, User, Receipt, CreditCard, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Package, Truck, ShoppingCart, User, Receipt, CreditCard, CheckCircle, Banknote, DollarSign } from 'lucide-react';
 import { useState } from 'react';
 import Swal from 'sweetalert2';
 
@@ -292,7 +292,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                             <RadioGroupItem value="tunai" id="tunai" />
                                                             <div className="flex items-center space-x-3 cursor-pointer">
                                                                 <div className="rounded-full bg-green-100 p-2">
-                                                                    <Package className="h-5 w-5 text-green-600" />
+                                                                    <Banknote className="h-5 w-5 text-green-600" />
                                                                 </div>
                                                                 <div className="flex-1">
                                                                     <Label htmlFor="tunai" className="cursor-pointer text-lg font-medium">
@@ -306,7 +306,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                             <RadioGroupItem value="transfer" id="transfer" />
                                                             <div className="flex items-center space-x-3 cursor-pointer">
                                                                 <div className="rounded-full bg-blue-100 p-2">
-                                                                    <Truck className="h-5 w-5 text-blue-600" />
+                                                                    <DollarSign className="h-5 w-5 text-blue-600" />
                                                                 </div>
                                                                 <div className="flex-1">
                                                                     <Label htmlFor="transfer" className="cursor-pointer text-lg font-medium">

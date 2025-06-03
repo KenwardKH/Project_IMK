@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle, CreditCard, Minus, Package, Plus, Receipt, ShoppingBag, ShoppingCart, Trash2, Truck } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, DollarSign, Minus, Package, Plus, Receipt, ShoppingBag, ShoppingCart, Trash2, Truck } from 'lucide-react';
 import { useState } from 'react';
 import Swal from 'sweetalert2';
 
@@ -345,7 +345,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                                             <RadioGroupItem value="transfer" id="transfer" />
                                                             <div className="flex cursor-pointer items-center space-x-3">
                                                                 <div className="rounded-full bg-blue-100 p-2">
-                                                                    <Truck className="h-5 w-5 text-blue-600" />
+                                                                    <DollarSign className="h-5 w-5 text-blue-600" />
                                                                 </div>
                                                                 <div className="flex-1">
                                                                     <Label htmlFor="transfer" className="cursor-pointer text-lg font-medium">

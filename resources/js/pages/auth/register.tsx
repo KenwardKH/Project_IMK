@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, useForm } from '@inertiajs/react';
-import { ArrowLeft, LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Eye, EyeOff } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 export default function Register() {
@@ -20,6 +20,8 @@ export default function Register() {
     const [passwordStrength, setPasswordStrength] = useState('');
     const [showPasswordTip, setShowPasswordTip] = useState(false);
     const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
     const validateName = (name: string) => /^[A-Za-z\s]+$/.test(name);
     const validatePhone = (phone: string) => /^\d+$/.test(phone);
@@ -65,13 +67,6 @@ export default function Register() {
         <>
             <Head title="Daftar" />
             <div className="flex min-h-screen items-center justify-center bg-[#f1f5f9] px-4 sm:px-6 lg:px-8">
-                <button
-                    onClick={() => window.history.back()}
-                    className="absolute top-4 left-4 flex items-center text-sm font-medium text-[#2563eb] hover:text-[#1e40af]"
-                >
-                    <ArrowLeft className="mr-1 h-4 w-4" />
-                    Kembali
-                </button>
                 <div className="w-full max-w-md space-y-6 rounded-3xl border border-[#e2e8f0] bg-white p-10 shadow-xl">
                     <div className="space-y-2 text-center">
                         <h1 className="text-3xl font-bold text-[#1e293b]">Buat Akun ✨</h1>
@@ -140,47 +135,85 @@ export default function Register() {
                         {/* Password */}
                         <div>
                             <Label htmlFor="password">Kata Sandi</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={data.password}
-                                onChange={(e) => {
-                                    const pwd = e.target.value;
-                                    setData('password', pwd);
-                                    setShowPasswordTip(!!pwd);
-                                    setPasswordStrength(checkPasswordStrength(pwd));
-                                }}
-                                placeholder="Buat kata sandi"
-                            />
-                            {showPasswordTip && (
-                                <p
-                                    className={`mt-1 text-sm font-medium ${
-                                        passwordStrength === 'Lemah'
-                                            ? 'text-red-500'
-                                            : passwordStrength === 'Sedang'
-                                              ? 'text-yellow-500'
-                                              : 'text-green-600'
-                                    }`}
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={data.password}
+                                    onChange={(e) => {
+                                        const pwd = e.target.value;
+                                        setData('password', pwd);
+                                        setShowPasswordTip(!!pwd);
+                                        setPasswordStrength(checkPasswordStrength(pwd));
+                                    }}
+                                    placeholder="Buat kata sandi"
+                                    className="pr-12"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors duration-200"
+                                    aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
                                 >
-                                    Kekuatan: {passwordStrength}
-                                </p>
+                                    {showPassword ? (
+                                        <EyeOff className="h-5 w-5" />
+                                    ) : (
+                                        <Eye className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
+                            {showPasswordTip && (
+                                <>
+                                    <p
+                                        className={`mt-1 text-sm font-medium ${
+                                            passwordStrength === 'Lemah'
+                                                ? 'text-red-500'
+                                                : passwordStrength === 'Sedang'
+                                                  ? 'text-yellow-500'
+                                                  : 'text-green-600'
+                                        }`}
+                                    >
+                                        Kekuatan: {passwordStrength}
+                                    </p>
+                                    <ul className="mt-1 list-disc pl-5 text-sm text-gray-600">
+                                        <li>Minimal 8 karakter</li>
+                                        <li>Mengandung huruf besar (A-Z)</li>
+                                        <li>Mengandung angka (0-9)</li>
+                                        <li>Mengandung simbol atau karakter khusus (mis. @#$%^&*)</li>
+                                    </ul>
+                                </>
                             )}
                         </div>
 
                         {/* Konfirmasi Password */}
                         <div>
                             <Label htmlFor="password_confirmation">Konfirmasi Kata Sandi</Label>
-                            <Input
-                                id="password_confirmation"
-                                type="password"
-                                value={data.password_confirmation}
-                                onChange={(e) => {
-                                    const confirmPwd = e.target.value;
-                                    setData('password_confirmation', confirmPwd);
-                                    setShowPasswordConfirmation(!!confirmPwd);
-                                }}
-                                placeholder="Ketik ulang kata sandi"
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="password_confirmation"
+                                    type={showPasswordConfirm ? 'text' : 'password'}
+                                    value={data.password_confirmation}
+                                    onChange={(e) => {
+                                        const confirmPwd = e.target.value;
+                                        setData('password_confirmation', confirmPwd);
+                                        setShowPasswordConfirmation(!!confirmPwd);
+                                    }}
+                                    placeholder="Ketik ulang kata sandi"
+                                    className="pr-12"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors duration-200"
+                                    aria-label={showPasswordConfirm ? "Sembunyikan konfirmasi kata sandi" : "Tampilkan konfirmasi kata sandi"}
+                                >
+                                    {showPasswordConfirm ? (
+                                        <EyeOff className="h-5 w-5" />
+                                    ) : (
+                                        <Eye className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
                             {showPasswordConfirmation && data.password !== data.password_confirmation && (
                                 <InputError message="Kata sandi tidak cocok" />
                             )}

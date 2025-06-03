@@ -84,7 +84,7 @@ export default function OrderList() {
     const [modalImage, setModalImage] = useState<string | null>(null);
     const { orders } = usePage<Props>().props;
     const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
-    const pickupStatuses = ['menunggu pengambilan', 'selesai'];
+    const pickupStatuses = ['diproses', 'menunggu pengambilan', 'selesai'];
     const deliveryStatuses = ['diproses', 'diantar', 'selesai'];
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'pickup' | 'delivery'>('pickup');
@@ -251,8 +251,8 @@ export default function OrderList() {
         (order) =>
             typeof order.name === 'string' &&
             order.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            ((Array.isArray(order.pickup) && order.pickup.some((p) => p.status !== 'menunggu pembayaran')) ||
-                (Array.isArray(order.delivery) && order.delivery.some((d) => d.status !== 'menunggu pembayaran'))),
+            ((Array.isArray(order.pickup) && order.pickup.some((p) => p.status !== 'menunggu pembayaran' && p.status !== 'diproses')) ||
+                (Array.isArray(order.delivery) && order.delivery.some((d) => d.status !== 'menunggu pembayaran' && d.status !== 'diproses'))),
     );
 
     const sortedOrder = filteredOrders.sort((a, b) => {

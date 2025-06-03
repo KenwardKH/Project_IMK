@@ -253,7 +253,7 @@ const TutorialTour = ({ isDropdownOpen, setIsDropdownOpen }: TutorialTourProps) 
                                 <p className="mb-1 text-xs font-medium text-blue-700">Yang bisa Anda atur:</p>
                                 <ul className="space-y-1 text-xs text-blue-600">
                                     <li>📝 Nama lengkap dan info kontak</li>
-                                    <li>📍 Alamat pengiriman default</li>
+                                    {/* <li>📍 Alamat pengiriman default</li> */}
                                     <li>🔒 Password dan keamanan akun</li>
                                 </ul>
                             </div>
@@ -296,23 +296,24 @@ const TutorialTour = ({ isDropdownOpen, setIsDropdownOpen }: TutorialTourProps) 
                             <div className="rounded-md border border-orange-200 bg-orange-50 p-2">
                                 <div className="mb-1 flex items-center gap-1">
                                     <div className="h-2 w-2 rounded-full bg-orange-400"></div>
-                                    <span className="font-medium text-orange-700 text-left">Diproses</span>
+                                    <span className="font-medium text-orange-700 text-left">Konfirmasi dan Proses</span>
                                 </div>
-                                <p className="text-orange-600">Sedang dikemas</p>
+                                <p className="text-orange-600">Konfirmasi pembayaran lalu pesanan akan diproses</p>
                             </div>
-                            <div className="rounded-md border border-blue-200 bg-blue-50 p-2">
-                                <div className="mb-1 flex items-center gap-1">
-                                    <div className="h-2 w-2 rounded-full bg-blue-400"></div>
-                                    <span className="font-medium text-blue-700 text-left">Dikirim</span>
-                                </div>
-                                <p className="text-blue-600">Dalam perjalanan</p>
-                            </div>
+
                             <div className="rounded-md border border-green-200 bg-green-50 p-2">
                                 <div className="mb-1 flex items-center gap-1">
                                     <div className="h-2 w-2 rounded-full bg-green-400"></div>
                                     <span className="font-medium text-green-700 text-left">Selesai</span>
                                 </div>
                                 <p className="text-green-600">Sudah diterima</p>
+                            </div>
+                              <div className="rounded-md border border-red-200 bg-red-100 p-2">
+                                <div className="mb-1 flex items-center gap-1">
+                                    <div className="h-2 w-2 rounded-full bg-red-400"></div>
+                                    <span className="font-medium text-red-700 text-left">Batalkan</span>
+                                </div>
+                                <p className="text-red-600">Batalkan pesanan</p>
                             </div>
                         </div>
                     </div>

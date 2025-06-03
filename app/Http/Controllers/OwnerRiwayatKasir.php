@@ -14,6 +14,7 @@ class OwnerRiwayatKasir extends Controller
     {
         // Optional: Filtering berdasarkan nama pelanggan, kasir, atau tanggal
         $query = OrderStatusLog::query();
+        $query->whereNotNull('cashier_name');   
 
         if ($request->has('search') && !empty($request->input('search'))) {
             $search = $request->input('search');
@@ -69,7 +70,10 @@ class OwnerRiwayatKasir extends Controller
                 'pesananData' => $pesananData->toArray(),
             ]],
         ];
-    })->filter();
+    })->filter(function ($item) {
+        // Hanya ambil data dengan nama kasir yang valid
+        return !empty($item['cashier_name']);
+    });
 
 
         return Inertia::render('owner/owner-riwayat-kasir', [

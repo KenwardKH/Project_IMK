@@ -181,8 +181,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                                             'Opsi Pembayaran',
                                             'Total',
                                             'Tanggal Pembayaran',
-                                            'Nama Kasir',
-                                            // 'Jenis Pesanan',
+                                            'Jenis Pesanan',
                                             'Detail',
                                             'Status',
                                             'Tanggal Invoice',
@@ -200,10 +199,9 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                                                 <td className="border p-4 text-center">{item.InvoiceID}</td>
                                                 <td className="border p-4 text-center">{item.CustomerName}</td>
                                                 <td className="border p-4 text-center">{item.CustomerContact}</td>
-                                                {/* <td className="border p-4 text-center">{item.PaymentOption}</td> */}
+                                                <td className="border p-4 text-center">{item.PaymentOption}</td>
                                                 <td className="border p-4 text-center">{formatCurrency(item.TotalAmount)}</td>
                                                 <td className="border p-4 text-center">{formatDate(item.PaymentDate)}</td>
-                                                <td className="border p-4 text-center">{item.CashierName ?? 'N/A'}</td>
                                                 <td className="border p-4 text-center">{item.CashierName != null ? 'Offline' : 'Online'}</td>
                                                 <td className="border p-4 text-center">
                                                     <Button

@@ -21,7 +21,7 @@ class OrderController extends Controller
      */
     public function index($status)
 {
-    $allowedStatuses = ['belum-bayar', 'sedang-proses', 'proses','selesai', 'dibatalkan'];
+    $allowedStatuses = ['belum-bayar', 'sedang-proses', 'menunggu-konfirmasi', 'proses','selesai', 'dibatalkan'];
 
     if (!in_array($status, $allowedStatuses)) {
         abort(404);
@@ -33,11 +33,11 @@ class OrderController extends Controller
   $statusMap = [
     'belum-bayar' => ['menunggu pembayaran', 'pending', 'belum_bayar'],
     'sedang-proses' => ['diproses', 'processing', 'sedang_proses', 'confirmed'], // hanya status awal
-    'proses' => ['menunggu pengambilan', 'diantar'], // status proses pengambilan/pengiriman
+    'menunggu-konfirmasi' => ['menunggu konfirmasi'], // hanya status awal
+    'proses' => ['menunggu pengambilan', 'diproses'], // status proses pengambilan/pengiriman
     'selesai' => ['selesai', 'completed'],
     'dibatalkan' => ['dibatalkan', 'cancelled']
 ];
-
 
     $dbStatuses = $statusMap[$status] ?? [$status];
 
@@ -329,7 +329,7 @@ class OrderController extends Controller
             $pickupStatus = PickupOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
             if ($pickupStatus) {
                 $pickupStatus->update([
-                    'status' => 'diproses',
+                    'status' => 'menunggu konfirmasi',
                     'updated_by' => $user->id
                 ]);
             }

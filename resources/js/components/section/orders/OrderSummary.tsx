@@ -123,8 +123,9 @@ export default function OrderSummarySection() {
         const statusMap: { [key: string]: string } = {
             'menunggu pembayaran': 'Belum Bayar',
             pending: 'Belum Bayar',
+            'menunggu konfirmasi': 'Menunggu Konfirmasi',
             belum_bayar: 'Belum Bayar',
-            diproses: 'Menunggu Konfirmasi',
+            diproses: 'Diproses',
             sedang_proses: 'Menunggu Konfirmasi',
             processing: 'Menunggu Konfirmasi',
             confirmed: 'Dikonfirmasi',
@@ -141,7 +142,7 @@ export default function OrderSummarySection() {
     const getStatusColor = (status: string) => {
         const completedStatuses = ['selesai', 'completed'];
         const cancelledStatuses = ['dibatalkan', 'cancelled'];
-        const processingStatuses = ['diproses', 'sedang_proses', 'processing', 'confirmed', 'menunggu pengambilan', 'diantar'];
+        const processingStatuses = ['diproses', 'sedang_proses', 'processing', 'confirmed', 'menunggu pengambilan', 'diantar', 'menunggu konfirmasi'];
         const pendingStatuses = ['menunggu pembayaran', 'pending', 'belum_bayar'];
 
         if (completedStatuses.includes(status)) return 'text-green-600';

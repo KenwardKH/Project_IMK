@@ -12,7 +12,7 @@ export default function CartNavigationSection() {
 
     const navigationItems: NavigationItem[] = [
         { id: 'belum-bayar', label: 'Belum Bayar', href: '/order/belum-bayar' },
-        { id: 'sedang-proses', label: 'Menunggu Konfirmasi', href: '/order/sedang-proses' },
+        { id: 'menunggu-konfirmasi', label: 'Menunggu Konfirmasi', href: '/order/menunggu-konfirmasi' },
         { id: 'proses', label: 'Proses', href: '/order/proses' },
         { id: 'selesai', label: 'Selesai', href: '/order/selesai' },
         { id: 'dibatalkan', label: 'Dibatalkan', href: '/order/dibatalkan' },

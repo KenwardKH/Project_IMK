@@ -36,7 +36,7 @@ export function NavbarSection({ isDropdownOpen, setIsDropdownOpen }: NavbarProps
     const { props } = usePage<PageProps>();
     const user = props.auth?.user;
     const currentUrl = usePage().url;
-    
+
     const navLinks = [
         { title: 'Beranda', href: '/', icon: Home },
         { title: 'Produk', href: '/products', icon: Package },
@@ -83,7 +83,7 @@ const routeMap: Record<string, { label: string; icon: React.ReactNode; href?: st
     'password': { label: 'Password', icon: <CgPassword className="h-4 w-4" /> },
     'order': { label: 'Pesanan', icon: <ShoppingBag className="h-4 w-4" /> },
     'belum-bayar': { label: 'Belum Bayar', icon: <FileText className="h-4 w-4" /> },
-    'sedang-proses': { label: 'Sedang Proses', icon: <Clock className="h-4 w-4" /> },
+    'menunggu-konfirmasi': { label: 'Menunggu Konfirmasi', icon: <Clock className="h-4 w-4" /> },
     'selesai': { label: 'Selesai', icon: <CheckCircle className="h-4 w-4" /> },
     'dibatalkan': { label: 'Dibatalkan', icon: <XCircle className="h-4 w-4" /> },
     'login': { label: 'Masuk', icon: <User className="h-4 w-4" /> },

@@ -213,29 +213,42 @@ export default function OrderList() {
 
     const handleConfirm = async (orderId: number) => {
         try {
-            await router.post(
-                `/cashier/confirm/${orderId}`,
-                {},
-                {
-                    onSuccess: async () => {
-                        await Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: 'Pesanan berhasil dikonfirmasi!',
-                        });
-                        // Optional: reload atau refresh data
-                        router.reload({ only: ['orders'] });
+            const result = await Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin mengonfirmasi pesanan ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Konfirmasi!',
+                cancelButtonText: 'Batal',
+            });
+
+            if (result.isConfirmed) {
+                await router.post(
+                    `/cashier/confirm/${orderId}`,
+                    {},
+                    {
+                        onSuccess: async () => {
+                            await Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Pesanan berhasil dikonfirmasi!',
+                            });
+                            // Optional: reload atau refresh data
+                            router.reload({ only: ['orders'] });
+                        },
+                        onError: async (errors) => {
+                            console.error('Gagal mengonfirmasi pesanan:', errors);
+                            await Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: 'Terjadi kesalahan saat mengonfirmasi pesanan.',
+                            });
+                        },
                     },
-                    onError: async (errors) => {
-                        console.error('Gagal mengonfirmasi pesanan:', errors);
-                        await Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            text: 'Terjadi kesalahan saat mengonfirmasi pesanan.',
-                        });
-                    },
-                },
-            );
+                );
+            } else {
+                console.log('Aksi konfirmasi dibatalkan oleh pengguna.');
+            }
         } catch (err) {
             console.error('Unexpected error:', err);
             await Swal.fire({
@@ -254,7 +267,7 @@ export default function OrderList() {
         (order) =>
             typeof order.name === 'string' &&
             order.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            ((Array.isArray(order.pickup) && order.pickup.some((p) => p.status === 'diproses')) ||
+            ((Array.isArray(order.pickup) && order.pickup.some((p) => p.status === 'menunggu konfirmasi')) ||
                 (Array.isArray(order.delivery) && order.delivery.some((d) => d.status === 'diproses'))),
     );
 

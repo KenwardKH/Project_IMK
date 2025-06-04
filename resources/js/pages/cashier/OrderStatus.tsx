@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/cashier-layout';
 import { Head, router, usePage } from '@inertiajs/react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Check } from 'lucide-react';
 import { useState } from 'react';
 import Swal from 'sweetalert2';
 
@@ -84,7 +84,7 @@ export default function OrderList() {
     const [modalImage, setModalImage] = useState<string | null>(null);
     const { orders } = usePage<Props>().props;
     const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
-    const pickupStatuses = ['diproses', 'menunggu pengambilan', 'selesai'];
+    const pickupStatuses = ['diproses', 'menunggu pengambilan'];
     const deliveryStatuses = ['diproses', 'diantar', 'selesai'];
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'pickup' | 'delivery'>('pickup');
@@ -149,6 +149,53 @@ export default function OrderList() {
     const handleDelete = (id: number) => {
         if (confirm('Yakin ingin menghapus produk ini?')) {
             router.delete(`/cashier/orders/${id}`);
+        }
+    };
+
+    const handleConfirm = async (orderId: number) => {
+        try {
+            const result = await Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin menyelesaikan pesanan ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Selesaikan!',
+                cancelButtonText: 'Batal',
+            });
+
+            if (result.isConfirmed) {
+                await router.post(
+                    `/cashier/success/${orderId}`,
+                    {},
+                    {
+                        onSuccess: async () => {
+                            await Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Pesanan berhasil diselesaikan!',
+                            });
+                            router.reload({ only: ['orders'] });
+                        },
+                        onError: async (errors) => {
+                            console.error('Gagal menyelesaikan pesanan:', errors);
+                            await Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: 'Terjadi kesalahan saat menyelesaikan pesanan.',
+                            });
+                        },
+                    },
+                );
+            } else {
+                console.log('Aksi dibatalkan oleh pengguna.');
+            }
+        } catch (err) {
+            console.error('Unexpected error:', err);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Kesalahan Tak Terduga',
+                text: 'Terjadi kesalahan tak terduga saat menyelesaikan pesanan.',
+            });
         }
     };
 
@@ -251,7 +298,7 @@ export default function OrderList() {
         (order) =>
             typeof order.name === 'string' &&
             order.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            ((Array.isArray(order.pickup) && order.pickup.some((p) => p.status !== 'menunggu pembayaran' && p.status !== 'diproses')) ||
+            ((Array.isArray(order.pickup) && order.pickup.some((p) => p.status !== 'menunggu pembayaran' && p.status !== 'menunggu konfirmasi')) ||
                 (Array.isArray(order.delivery) && order.delivery.some((d) => d.status !== 'menunggu pembayaran' && d.status !== 'diproses'))),
     );
 
@@ -439,8 +486,8 @@ export default function OrderList() {
                                     {/* <th className="border border-gray-300 px-4 py-3 text-center">Alamat</th> */}
                                     <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pembayaran</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Cetak Invoice</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">Selesaikan</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Batalkan</th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
                                 </tr>
@@ -493,25 +540,15 @@ export default function OrderList() {
                                                         Detail
                                                     </Button>
                                                 </td>
-                                                <td className="border border-gray-200 px-4 py-3 text-center">
-                                                    {item.delivery?.some((d) => d.status === 'selesai') ||
-                                                    item.pickup?.some((p) => p.status === 'selesai') ? (
-                                                        item.invoice_id ? (
-                                                            <Button
-                                                                className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600"
-                                                                onClick={() => handlePrintInvoice(item.invoice_id)}
-                                                            >
-                                                                Cetak Invoice
-                                                            </Button>
-                                                        ) : (
-                                                            'Tidak tersedia!'
-                                                        )
-                                                    ) : (
-                                                        'Tidak tersedia!'
-                                                    )}
-                                                </td>
-
                                                 <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    <Button
+                                                        className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600"
+                                                        onClick={() => handleConfirm(item.id)}
+                                                    >
+                                                        <Check className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
                                                 <td className="border border-gray-200 px-4 py-3 text-center">
                                                     <Button
                                                         onClick={() => handleOpenCancelModal(item)}
@@ -604,11 +641,10 @@ export default function OrderList() {
                                 <button
                                     onClick={() => setCurrentPage(1)}
                                     disabled={currentPage === 1}
-                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                                        currentPage === 1
-                                            ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                                            : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-                                    }`}
+                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${currentPage === 1
+                                        ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                                        : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
                                     title="Halaman Pertama"
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -620,11 +656,10 @@ export default function OrderList() {
                                 <button
                                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
-                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                                        currentPage === 1
-                                            ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                                            : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-                                    }`}
+                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${currentPage === 1
+                                        ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                                        : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
                                     title="Halaman Sebelumnya"
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -674,11 +709,10 @@ export default function OrderList() {
                                                 <button
                                                     key={i}
                                                     onClick={() => setCurrentPage(i)}
-                                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                                                        currentPage === i
-                                                            ? 'scale-105 transform bg-blue-600 text-white shadow-md'
-                                                            : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-                                                    }`}
+                                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${currentPage === i
+                                                        ? 'scale-105 transform bg-blue-600 text-white shadow-md'
+                                                        : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                                                        }`}
                                                 >
                                                     {i}
                                                 </button>,
@@ -713,11 +747,10 @@ export default function OrderList() {
                                 <button
                                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(totalItems / itemsPerPage)))}
                                     disabled={currentPage === Math.ceil(totalItems / itemsPerPage)}
-                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                                        currentPage === Math.ceil(totalItems / itemsPerPage)
-                                            ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                                            : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-                                    }`}
+                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${currentPage === Math.ceil(totalItems / itemsPerPage)
+                                        ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                                        : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
                                     title="Halaman Selanjutnya"
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -729,11 +762,10 @@ export default function OrderList() {
                                 <button
                                     onClick={() => setCurrentPage(Math.ceil(totalItems / itemsPerPage))}
                                     disabled={currentPage === Math.ceil(totalItems / itemsPerPage)}
-                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                                        currentPage === Math.ceil(totalItems / itemsPerPage)
-                                            ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                                            : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-                                    }`}
+                                    className={`rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${currentPage === Math.ceil(totalItems / itemsPerPage)
+                                        ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                                        : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
                                     title="Halaman Terakhir"
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

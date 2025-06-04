@@ -143,7 +143,7 @@ class ConfirmOrderController extends Controller
             $pickupStatus = PickupOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
             if ($pickupStatus) {
                 $pickupStatus->update([
-                    'status' => 'menunggu pengambilan',
+                    'status' => 'diproses',
                     'updated_by' => $cashier?->id_kasir ?? null,
                 ]);
             }

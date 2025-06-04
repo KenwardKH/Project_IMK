@@ -117,6 +117,36 @@ class OrderStatusController extends Controller
         //
     }
 
+    public function successOrder(Request $request, $id)
+    {
+        // Ambil invoice beserta relasi pickup/delivery
+        $invoice = Invoice::with(['pickup_order_statuses', 'delivery_order_statuses'])
+            ->where('InvoiceID', $id)
+            ->firstOrFail();
+
+        // Optional: Jika kamu tetap ingin validasi agar hanya invoice yang memiliki customer yang valid
+        if (!$invoice->CustomerID) {
+            return redirect()->back()->withErrors('Invoice tidak memiliki CustomerID.');
+        }
+
+        // Tentukan tipe order
+        $isPickup = $invoice->type === 'pickup' || $invoice->pickup_order_statuses->count() > 0;
+
+        $user = Auth::user(); // Pastikan user ada, atau bisa gunakan user default
+        $cashier = $user->kasirs;
+        
+        
+            $pickupStatus = PickupOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
+            if ($pickupStatus) {
+                $pickupStatus->update([
+                    'status' => 'selesai',
+                    'updated_by' => $cashier?->id_kasir ?? null,
+                ]);
+            }
+
+        return redirect()->back()->with('success', 'Pesanan berhasil dikonfirmasi.');
+    }
+
     /**
      * Store a newly created resource in storage.
      */

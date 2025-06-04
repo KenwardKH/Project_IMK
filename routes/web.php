@@ -87,6 +87,7 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
     //Order Status
     Route::get('/orders/status', [OrderStatusController::class, 'index'])->name('order.index');
     Route::post('/update-status/{id}', [OrderStatusController::class, 'updateStatus'])->name('order.update');
+    Route::post('/success/{id}', [OrderStatusController::class, 'successOrder'])->name('order.success');
 
     //Stock Product
     Route::get('/stock', [StockProductController::class, 'index'])->name('order.confirm');

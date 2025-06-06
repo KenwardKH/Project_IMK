@@ -69,16 +69,10 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     {/* Header */}
                     <div className="space-y-2 text-center">
                         <h1 className="text-3xl font-bold text-[#1e293b]">Selamat datang 👋</h1>
-                        <p className="text-sm text-[#64748b]">
-                            Silahkan daftar jika anda belum memiliki akun
-                        </p>
+                        <p className="text-sm text-[#64748b]">Silahkan daftar jika anda belum memiliki akun</p>
                     </div>
 
-                    {status && (
-                        <div className="text-center text-sm font-medium text-green-600">
-                            {status}
-                        </div>
-                    )}
+                    {status && <div className="text-center text-sm font-medium text-green-600">{status}</div>}
 
                     <form className="space-y-5" onSubmit={submit}>
                         {/* Email */}
@@ -106,14 +100,11 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     Password
                                 </Label>
                                 {/* Uncomment jika ingin fitur reset password */}
-                                {/* {canResetPassword && (
-                                    <TextLink
-                                        href={route('password.request')}
-                                        className="text-sm text-[#2563eb] hover:underline"
-                                    >
+                                {canResetPassword && (
+                                    <TextLink href={route('password.request')} className="text-sm text-[#2563eb] hover:underline">
                                         Lupa Password?
                                     </TextLink>
-                                )} */}
+                                )}
                             </div>
                             <Input
                                 id="password"

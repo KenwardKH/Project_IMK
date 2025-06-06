@@ -177,26 +177,16 @@ class OrderStatusController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:diproses,diantar,selesai,dibatalkan',
-            'type' => 'required|in:pickup,delivery',
+            'status' => 'required|in:diproses,menunggu pengambilan',
+            'type' => 'required|in:pickup',
         ]);
-
-        if ($request->type === 'pickup') {
             $pickup = PickupOrderStatus::where('invoice_id', $id)->first();
             if ($pickup) {
                 $pickup->status = $request->input('status');
                 $pickup->updated_by = auth()->id();
                 $pickup->save();
             }
-        } elseif ($request->type === 'delivery') {
-            $delivery = DeliveryOrderStatus::where('invoice_id', $id)->first();
-            if ($delivery) {
-                $delivery->status = $request->input('status');
-                $delivery->updated_by = auth()->id();
-                $delivery->save();
-            }
-        }
-
+            Log::info('Update status request', $request->all());
         return back();
     }
 

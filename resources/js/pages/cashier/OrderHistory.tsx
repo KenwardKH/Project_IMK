@@ -502,20 +502,6 @@ export default function OrderHistory() {
                                             </td> */}
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 {item.type === 'pickup' ? item.pickup?.[0]?.status : item.delivery?.[0]?.status}
-                                                {/* <select
-                                                    value={item.type === 'pickup'
-                                                        ? item.pickup?.[0]?.status
-                                                        : item.delivery?.[0]?.status
-                                                    }
-                                                    onChange={e => handleStatusChange(item.id, e.target.value, item.type as 'pickup' | 'delivery')}
-                                                    className="border rounded px-2 py-1"
-                                                >
-                                                    {(item.type === 'pickup' ? pickupStatuses : deliveryStatuses).map(status => (
-                                                        <option key={status} value={status}>
-                                                            {status}
-                                                        </option>
-                                                    ))}
-                                                </select> */}
                                             </td>
                                         </tr>
                                     ))

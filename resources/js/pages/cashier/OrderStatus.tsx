@@ -85,7 +85,7 @@ export default function OrderList() {
     const { orders } = usePage<Props>().props;
     const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
     const pickupStatuses = ['diproses', 'menunggu pengambilan'];
-    const deliveryStatuses = ['diproses', 'diantar', 'selesai'];
+    // const deliveryStatuses = ['diproses', 'diantar', 'selesai'];
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'pickup' | 'delivery'>('pickup');
     const [isUploading, setIsUploading] = useState(false);
@@ -144,12 +144,6 @@ export default function OrderList() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedOrder(null);
-    };
-
-    const handleDelete = (id: number) => {
-        if (confirm('Yakin ingin menghapus produk ini?')) {
-            router.delete(`/cashier/orders/${id}`);
-        }
     };
 
     const handleConfirm = async (orderId: number) => {
@@ -213,11 +207,13 @@ export default function OrderList() {
                         icon: 'success',
                         title: 'Status Diperbarui',
                         text: `Status berhasil diubah menjadi "${capitalize(newStatus)}"`,
-                        timer: 2000,
-                        showConfirmButton: false,
+                        // timer: 2000,
+                        showConfirmButton: true,
                     });
                     router.reload({ only: ['orders'] }); // refresh data jika diperlukan
                 },
+                // const data = await response.json();
+                // console.error('Response error:', data);
                 onError: () => {
                     Swal.fire({
                         icon: 'error',
@@ -339,32 +335,6 @@ export default function OrderList() {
                 <div className="flex w-full flex-col px-6">
                     <h1 className="mt-5 mb-10 text-center text-3xl font-bold">Status Pesanan</h1>
                     <div className="mb-6 rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
-                        {/* Top Row - Status Tabs */}
-                        {/* <div className="mb-6 flex flex-wrap gap-3">
-                            <div className="flex rounded-lg border bg-gray-50 p-1">
-                                <button
-                                    onClick={() => setActiveTab('pickup')}
-                                    className={`cursor-pointer rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
-                                        activeTab === 'pickup'
-                                            ? 'scale-105 transform bg-blue-600 text-white shadow-md'
-                                            : 'text-gray-600 hover:bg-white hover:text-blue-600'
-                                    }`}
-                                >
-                                    Ambil di Toko
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('delivery')}
-                                    className={`cursor-pointer rounded-md px-6 py-2.5 font-medium transition-all duration-200 ${
-                                        activeTab === 'delivery'
-                                            ? 'scale-105 transform bg-blue-600 text-white shadow-md'
-                                            : 'text-gray-600 hover:bg-white hover:text-red-600'
-                                    }`}
-                                >
-                                    Diantar
-                                </button>
-                            </div>
-                        </div> */}
-
                         {/* Bottom Row - Search and Filters */}
                         <div className="flex flex-col items-center justify-between gap-4 lg:flex-row">
                             {/* Left Side - Filters */}
@@ -559,23 +529,22 @@ export default function OrderList() {
                                                     </Button>
                                                 </td>
                                                 <td className="border border-gray-200 px-4 py-3 text-center">
-                                                    {item.delivery?.[0]?.status === 'dibatalkan' ? (
+                                                    {/* {item.delivery?.[0]?.status === 'dibatalkan' ? (
                                                         <span className="text-gray-400 italic">Telah dibatalkan</span>
-                                                    ) : (
+                                                    ) : ( */}
                                                         <select
-                                                            value={item.type === 'pickup' ? item.pickup?.[0]?.status : item.delivery?.[0]?.status}
+                                                            value={item.pickup?.[0]?.status}
                                                             onChange={(e) =>
                                                                 handleStatusChange(item.id, e.target.value, item.type as 'pickup' | 'delivery')
                                                             }
                                                             className="rounded border bg-white px-3 py-1 text-sm shadow-sm transition focus:ring-2 focus:ring-blue-400 focus:outline-none"
                                                         >
-                                                            {(item.type === 'pickup' ? pickupStatuses : deliveryStatuses).map((status) => (
+                                                            {(pickupStatuses).map((status) => (
                                                                 <option key={status} value={status}>
                                                                     {capitalize(status)}
                                                                 </option>
                                                             ))}
                                                         </select>
-                                                    )}
                                                 </td>
                                             </tr>
                                         ))
@@ -588,23 +557,6 @@ export default function OrderList() {
                                 )}
                             </tbody>
                         </table>
-                        {/* <div className="mt-4 flex justify-center gap-2">
-                            <button
-                                onClick={() => goToPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-                            >
-                                Prev
-                            </button>
-                            <span>Halaman {currentPage} dari {totalPages}</span>
-                            <button
-                                onClick={() => goToPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-                            >
-                                Next
-                            </button>
-                        </div> */}
                     </div>
                     {/* Pagination */}
                     <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg">

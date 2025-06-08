@@ -140,6 +140,88 @@ class CashierController extends Controller
         }
     }
 
+    public function batchUpdateCart(Request $request)
+{
+    $request->validate([
+        'updates' => 'required|array',
+        'updates.*.product_id' => 'required|exists:products,ProductID',
+        'updates.*.quantity' => 'required|integer|min:0',
+    ]);
+
+    $user = Auth::user();
+    $cashier = $user->kasirs()->first();
+
+    if (!$cashier) {
+        return response()->json(['error' => 'Kasir tidak ditemukan'], 400);
+    }
+
+    try {
+        DB::beginTransaction();
+
+        foreach ($request->updates as $update) {
+            $productId = $update['product_id'];
+            $newQuantity = $update['quantity'];
+
+            $product = Product::where('ProductID', $productId)->firstOrFail();
+            $cartItem = CashierCart::where('ProductID', $productId)
+                                  ->where('CashierID', $cashier->id_kasir)
+                                  ->first();
+
+            // Validasi stock
+            if ($newQuantity > $product->CurrentStock) {
+                DB::rollBack();
+                return response()->json([
+                    'error' => "Stok tidak mencukupi untuk produk {$product->ProductName}! Stok tersedia: {$product->CurrentStock}"
+                ], 400);
+            }
+
+            if ($newQuantity <= 0) {
+                // Hapus item jika quantity 0 atau kurang
+                if ($cartItem) {
+                    $cartItem->delete();
+                }
+            } else {
+                if ($cartItem) {
+                    // Update existing cart item
+                    $cartItem->Quantity = $newQuantity;
+                    $cartItem->save();
+                } else {
+                    // Create new cart item
+                    CashierCart::create([
+                        'ProductID' => $productId,
+                        'Quantity' => $newQuantity,
+                        'CashierID' => $cashier->id_kasir,
+                    ]);
+                }
+            }
+        }
+
+        DB::commit();
+
+        // Return updated cart data
+        $updatedCartItems = CashierCart::with('product')
+                                      ->where('CashierID', $cashier->id_kasir)
+                                      ->get();
+
+        $total = $updatedCartItems->sum(function ($item) {
+            return $item->Quantity * $item->product->Price;
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Keranjang berhasil diperbarui!',
+            'cart_items' => $updatedCartItems,
+            'total' => $total,
+            'subtotal' => $total
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error batch updating cart: ' . $e->getMessage());
+        return response()->json(['error' => 'Terjadi kesalahan saat memperbarui keranjang.'], 500);
+    }
+}
+
     /**
      * Remove specific item from cart
      */

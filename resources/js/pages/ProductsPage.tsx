@@ -361,94 +361,98 @@ const ProductsPage = () => {
                         <>
                             {viewMode === 'grid' ? (
                                 <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                    {currentProducts.map((product) => (
-                                        <Link
-                                            key={product.ProductID}
-                                            href={`/product/${product.ProductID}`}
-                                            className="block rounded-lg border shadow transition hover:shadow-lg"
-                                        >
-                                            <Card key={product.ProductID} className="overflow-hidden transition-shadow hover:shadow-lg">
-                                                <div className="bg-muted aspect-square overflow-hidden">
-                                                    <img
-                                                        src={`storage/${product.image}`}
-                                                        alt={product.ProductName}
-                                                        className="h-full w-full object-cover transition-transform duration-200 hover:scale-105"
-                                                    />
-                                                </div>
-                                                <CardDescription className="line-clamp-2 px-6">
-                                                    {product.Description
-                                                        ? product.Description.length > 40
-                                                            ? `${product.Description.slice(0, 42)}...`
-                                                            : product.Description
-                                                        : 'Tidak ada deskripsi'}
-                                                </CardDescription>
-                                                <CardContent className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-muted-foreground text-sm">Stok:</span>
-                                                        <div className="flex items-center gap-2">
-                                                            <Badge variant={getStockBadgeVariant(product.CurrentStock)} className="text-xs">
-                                                                {getStockLabel(product.CurrentStock)}
-                                                            </Badge>
-                                                            <span className="text-sm font-medium">
-                                                                {product.CurrentStock} {product.ProductUnit}
-                                                            </span>
+                                    {currentProducts
+                                        .filter((product) => product.CurrentStock > 0)
+                                        .map((product) => (
+                                            <Link
+                                                key={product.ProductID}
+                                                href={`/product/${product.ProductID}`}
+                                                className="block rounded-lg border shadow transition hover:shadow-lg"
+                                            >
+                                                <Card key={product.ProductID} className="overflow-hidden transition-shadow hover:shadow-lg">
+                                                    <div className="bg-muted aspect-square overflow-hidden">
+                                                        <img
+                                                            src={`storage/${product.image}`}
+                                                            alt={product.ProductName}
+                                                            className="h-full w-full object-cover transition-transform duration-200 hover:scale-105"
+                                                        />
+                                                    </div>
+                                                    <CardDescription className="line-clamp-2 px-6">
+                                                        {product.Description
+                                                            ? product.Description.length > 40
+                                                                ? `${product.Description.slice(0, 42)}...`
+                                                                : product.Description
+                                                            : 'Tidak ada deskripsi'}
+                                                    </CardDescription>
+                                                    <CardContent className="space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-muted-foreground text-sm">Stok:</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <Badge variant={getStockBadgeVariant(product.CurrentStock)} className="text-xs">
+                                                                    {getStockLabel(product.CurrentStock)}
+                                                                </Badge>
+                                                                <span className="text-sm font-medium">
+                                                                    {product.CurrentStock} {product.ProductUnit}
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-price text-2xl font-bold">{formatPrice(product.ProductPrice)}</span>
-                                                        <span className="text-muted-foreground text-xs">per {product.ProductUnit}</span>
-                                                    </div>
-                                                </CardContent>
-                                                <CardFooter>
-                                                    <Button className="w-full bg-[#153e98] hover:bg-[#0f2e73]">Lihat Detail</Button>
-                                                </CardFooter>
-                                            </Card>
-                                        </Link>
-                                    ))}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-price text-2xl font-bold">{formatPrice(product.ProductPrice)}</span>
+                                                            <span className="text-muted-foreground text-xs">per {product.ProductUnit}</span>
+                                                        </div>
+                                                    </CardContent>
+                                                    <CardFooter>
+                                                        <Button className="w-full bg-[#153e98] hover:bg-[#0f2e73]">Lihat Detail</Button>
+                                                    </CardFooter>
+                                                </Card>
+                                            </Link>
+                                        ))}
                                 </div>
                             ) : (
                                 <div className="mb-8 space-y-4">
-                                    {currentProducts.map((product) => (
-                                        <Link
-                                            key={product.ProductID}
-                                            href={`/product/${product.ProductID}`}
-                                            className="block rounded-lg border shadow transition hover:shadow-lg"
-                                        >
-                                            <Card>
-                                                <CardContent className="p-4">
-                                                    <div className="flex gap-4">
-                                                        <div className="bg-muted h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
-                                                            <img
-                                                                src={`storage/${product.image}`}
-                                                                alt={product.ProductName}
-                                                                className="h-full w-full object-cover transition-transform duration-200 hover:scale-105"
-                                                            />
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="mb-2 flex items-start justify-between">
-                                                                <h3 className="font-semibold">{product.ProductName}</h3>
-                                                                <span className="text-primary text-price text-xl font-bold">
-                                                                    {formatPrice(product.ProductPrice)}
-                                                                </span>
+                                    {currentProducts
+                                        .filter((product) => product.CurrentStock > 0)
+                                        .map((product) => (
+                                            <Link
+                                                key={product.ProductID}
+                                                href={`/product/${product.ProductID}`}
+                                                className="block rounded-lg border shadow transition hover:shadow-lg"
+                                            >
+                                                <Card>
+                                                    <CardContent className="p-4">
+                                                        <div className="flex gap-4">
+                                                            <div className="bg-muted h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
+                                                                <img
+                                                                    src={`storage/${product.image}`}
+                                                                    alt={product.ProductName}
+                                                                    className="h-full w-full object-cover transition-transform duration-200 hover:scale-105"
+                                                                />
                                                             </div>
-                                                            <p className="text-muted-foreground mb-3 text-sm">{product.Description}</p>
-                                                            <div className="flex items-center justify-between">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Badge variant={getStockBadgeVariant(product.CurrentStock)}>
-                                                                        {getStockLabel(product.CurrentStock)}
-                                                                    </Badge>
-                                                                    <span className="text-sm">
-                                                                        {product.CurrentStock} {product.ProductUnit}
+                                                            <div className="flex-1">
+                                                                <div className="mb-2 flex items-start justify-between">
+                                                                    <h3 className="font-semibold">{product.ProductName}</h3>
+                                                                    <span className="text-primary text-price text-xl font-bold">
+                                                                        {formatPrice(product.ProductPrice)}
                                                                     </span>
                                                                 </div>
-                                                                <Button className="bg-[#153e98] hover:bg-[#0f2e73]">Lihat Detail</Button>
+                                                                <p className="text-muted-foreground mb-3 text-sm">{product.Description}</p>
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Badge variant={getStockBadgeVariant(product.CurrentStock)}>
+                                                                            {getStockLabel(product.CurrentStock)}
+                                                                        </Badge>
+                                                                        <span className="text-sm">
+                                                                            {product.CurrentStock} {product.ProductUnit}
+                                                                        </span>
+                                                                    </div>
+                                                                    <Button className="bg-[#153e98] hover:bg-[#0f2e73]">Lihat Detail</Button>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        </Link>
-                                    ))}
+                                                    </CardContent>
+                                                </Card>
+                                            </Link>
+                                        ))}
                                 </div>
                             )}
 

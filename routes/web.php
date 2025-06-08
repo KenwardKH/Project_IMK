@@ -67,6 +67,7 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
 
     // Cart operations
     Route::post('/cart/update', [CashierController::class, 'updateCart'])->name('cart.update');
+    Route::post('/cart/batch-update', [CashierController::class, 'batchUpdateCart'])->name('cashier.cart.batch-update');
     Route::delete('/cart/remove/{productId}', [CashierController::class, 'removeFromCart'])->name('cart.remove');
     Route::delete('/cart/clear', [CashierController::class, 'clearCart'])->name('cart.clear');
 

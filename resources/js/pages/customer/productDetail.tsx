@@ -203,27 +203,32 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                                 <h3 className="mb-2 font-[Poppins] text-lg font-semibold text-[#1c283f]">Jumlah</h3>
                                 <div className="flex items-center">
                                     <button
-                                        onClick={handleDecrement}
+                                        onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
                                         disabled={quantity <= 1}
                                         className="rounded-l-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         -
                                     </button>
                                     <input
-                                        type="number"
-                                        value={quantity}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={quantity === 0 ? '' : quantity}
                                         onChange={(e) => {
-                                            const val = parseInt(e.target.value, 10);
-                                            if (!isNaN(val) && val >= 1 && val <= product.stock) {
-                                                setQuantity(val);
+                                            const val = e.target.value;
+                                            const parsed = parseInt(val, 10);
+                                            if (val === '') {
+                                                setQuantity(0);
+                                            } else if (!isNaN(parsed)) {
+                                                setQuantity(Math.min(Math.max(parsed, 1), product.stock));
                                             }
                                         }}
+                                        onBlur={() => {
+                                            if (!quantity || quantity < 1) setQuantity(1);
+                                        }}
                                         className="w-16 border-t border-b border-gray-200 py-2 text-center focus:ring-2 focus:ring-[#56b280] focus:outline-none"
-                                        min="1"
-                                        max={product.stock}
                                     />
                                     <button
-                                        onClick={handleIncrement}
+                                        onClick={() => setQuantity((prev) => Math.min(prev + 1, product.stock))}
                                         disabled={quantity >= product.stock}
                                         className="rounded-r-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                                     >

@@ -6,8 +6,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/cashier-layout';
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeft, Package, Truck, ShoppingCart, User, Receipt, CreditCard, CheckCircle, Banknote, DollarSign } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Banknote, CheckCircle, CreditCard, DollarSign, Package, Receipt, ShoppingCart, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
 // Interfaces
@@ -46,35 +46,67 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
     const [customerName, setCustomerName] = useState('');
     const [customerContact, setCustomerContact] = useState('');
 
+    // State untuk local cart quantities (tidak langsung sync ke backend)
+    const [localQuantities, setLocalQuantities] = useState<{ [key: number]: number }>({});
+
+    // Initialize local quantities dari cart items
+    useEffect(() => {
+        const initialQuantities: { [key: number]: number } = {};
+        cartItems.forEach((item) => {
+            initialQuantities[item.product_id] = item.quantity;
+        });
+        setLocalQuantities(initialQuantities);
+    }, [cartItems]);
+
+
     // Filter products berdasarkan search term
     const filteredProducts = products.filter(
         (product) => typeof product.name === 'string' && product.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
-    // Function untuk update quantity di cart
-    const updateCartQuantity = async (productId: number, action: 'increment' | 'decrement') => {
-        setLoading(productId);
+    // Function untuk update local quantity (tidak ke backend)
+    const updateLocalQuantity = (productId: number, newQuantity: number, maxStock: number) => {
+        // Validasi quantity
+        if (newQuantity < 0) newQuantity = 0;
+        if (newQuantity > maxStock) newQuantity = maxStock;
 
-        try {
-            await router.post(
-                '/cashier/cart/update',
-                {
-                    product_id: productId,
-                    action: action,
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    onFinish: () => setLoading(null),
-                },
-            );
-        } catch (error) {
-            console.error('Error updating cart:', error);
-            setLoading(null);
+        setLocalQuantities((prev) => ({
+            ...prev,
+            [productId]: newQuantity,
+        }));
+    };
+
+    // Function untuk increment local quantity
+    const incrementQuantity = (productId: number, maxStock: number) => {
+        const currentQty = localQuantities[productId] || 0;
+        if (currentQty < maxStock) {
+            updateLocalQuantity(productId, currentQty + 1, maxStock);
         }
     };
 
-    // Function untuk hapus item dari cart
+    // Function untuk decrement local quantity
+    const decrementQuantity = (productId: number, maxStock: number) => {
+        const currentQty = localQuantities[productId] || 0;
+        if (currentQty > 0) {
+            updateLocalQuantity(productId, currentQty - 1, maxStock);
+        }
+    };
+
+    // Function untuk handle input change quantity
+    const handleQuantityInputChange = (productId: number, value: string, maxStock: number) => {
+        const numValue = parseInt(value) || 0;
+        updateLocalQuantity(productId, numValue, maxStock);
+    };
+
+    // Function untuk remove dari local cart
+    const removeFromLocalCart = (productId: number) => {
+        setLocalQuantities((prev) => ({
+            ...prev,
+            [productId]: 0,
+        }));
+    };
+
+    // Function untuk hapus item dari cart (langsung ke backend)
     const removeFromCart = async (productId: number) => {
         setLoading(productId);
 
@@ -90,6 +122,44 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
         }
     };
 
+    // Function untuk sync local quantities ke backend saat checkout
+    const syncCartToBackend = async () => {
+        const updates: Array<{ product_id: number; quantity: number }> = [];
+
+        // Bandingkan local quantities dengan cart items
+        Object.keys(localQuantities).forEach((productIdStr) => {
+            const productId = parseInt(productIdStr);
+            const localQty = localQuantities[productId];
+            const cartItem = cartItems.find((item) => item.product_id === productId);
+            const currentQty = cartItem ? cartItem.quantity : 0;
+
+            // Jika quantity berbeda, tambahkan ke updates
+            if (localQty !== currentQty) {
+                updates.push({
+                    product_id: productId,
+                    quantity: localQty,
+                });
+            }
+        });
+
+        // Kirim batch updates ke backend
+        if (updates.length > 0) {
+            try {
+                await fetch('/cashier/cart/batch-update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    },
+                    body: JSON.stringify({ updates }),
+                });
+            } catch (error) {
+                console.error('Error syncing cart:', error);
+                throw error;
+            }
+        }
+    };
+
     const formatPrice = (price: number) => {
         return price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
     };
@@ -98,6 +168,55 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
     const handleCheckout = () => {
         setShowCheckout(true);
     };
+
+    // Calculate local totals berdasarkan local quantities
+    const calculateLocalTotals = () => {
+        let localSubtotal = 0;
+
+        Object.keys(localQuantities).forEach((productIdStr) => {
+            const productId = parseInt(productIdStr);
+            const quantity = localQuantities[productId];
+
+            if (quantity > 0) {
+                const product = products.find((p) => p.id === productId);
+                if (product) {
+                    localSubtotal += product.price * quantity;
+                }
+            }
+        });
+
+        return {
+            subtotal: localSubtotal,
+            total: localSubtotal, // Bisa ditambah pajak/ongkir jika ada
+        };
+    };
+
+    const { subtotal: localSubtotal, total: localTotal } = calculateLocalTotals();
+
+    // Get local cart items untuk display
+    const getLocalCartItems = () => {
+        const localItems: Array<{ id: number; product: Product; quantity: number }> = [];
+
+        Object.keys(localQuantities).forEach((productIdStr) => {
+            const productId = parseInt(productIdStr);
+            const quantity = localQuantities[productId];
+
+            if (quantity > 0) {
+                const product = products.find((p) => p.id === productId);
+                if (product) {
+                    localItems.push({
+                        id: productId,
+                        product,
+                        quantity,
+                    });
+                }
+            }
+        });
+
+        return localItems;
+    };
+
+    const localCartItems = getLocalCartItems();
 
     const processCheckout = async () => {
         if (shippingOption === 'diantar' && !alamat.trim()) {
@@ -108,10 +227,10 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
             });
             return;
         }
+
         const name = customerName.trim() === '' ? 'Pelanggan Umum' : customerName;
         const contact = customerContact.trim() === '' ? 'Tidak ada kontak' : customerContact;
 
-        // Validasi jika customerName atau contact diperlukan
         if (!name.trim() || !contact.trim()) {
             const result = await Swal.fire({
                 icon: 'warning',
@@ -128,6 +247,9 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
         setIsProcessingCheckout(true);
 
         try {
+            // Sync local quantities ke backend terlebih dahulu
+            await syncCartToBackend();
+
             const response = await fetch('/cashier/checkout', {
                 method: 'POST',
                 headers: {
@@ -173,26 +295,18 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
         }
     };
 
-    // Function untuk clear cart
-    const clearCart = async () => {
-        if (cartItems.length === 0) return;
+    // Function untuk clear local cart
+    const clearLocalCart = () => {
+        if (localCartItems.length === 0) return;
 
         if (confirm('Apakah Anda yakin ingin mengosongkan keranjang?')) {
-            try {
-                await router.delete('/cashier/cart/clear', {
-                    preserveState: true,
-                    preserveScroll: true,
-                });
-            } catch (error) {
-                console.error('Error clearing cart:', error);
-            }
+            setLocalQuantities({});
         }
     };
 
-    // Get quantity for specific product in cart
-    const getProductQuantityInCart = (productId: number): number => {
-        const cartItem = cartItems.find((item) => item.product_id === productId);
-        return cartItem ? cartItem.quantity : 0;
+    // Get quantity for specific product
+    const getProductQuantity = (productId: number): number => {
+        return localQuantities[productId] || 0;
     };
 
     if (showCheckout) {
@@ -205,9 +319,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                         <div className="mx-auto max-w-4xl">
                             {/* Header with Progress Indicator */}
                             <div className="mb-8 text-center">
-                                <h1 className="mb-4 font-[Poppins] text-3xl font-bold text-[#1c283f]">
-                                    Checkout Pesanan
-                                </h1>
+                                <h1 className="mb-4 font-[Poppins] text-3xl font-bold text-[#1c283f]">Checkout Pesanan</h1>
                                 <div className="flex items-center justify-center space-x-4">
                                     <div className="flex items-center">
                                         <CheckCircle className="h-6 w-6 text-green-500" />
@@ -239,14 +351,12 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                             <div className="mb-8">
                                                 <div className="mb-4 flex items-center">
                                                     <User className="mr-3 h-6 w-6 text-[#153e98]" />
-                                                    <h3 className="text-xl font-semibold text-[#1c283f]">
-                                                        Data Pelanggan
-                                                    </h3>
+                                                    <h3 className="text-xl font-semibold text-[#1c283f]">Data Pelanggan</h3>
                                                 </div>
                                                 <div className="rounded-lg bg-slate-50 p-6">
                                                     <div className="grid gap-4 md:grid-cols-2">
                                                         <div>
-                                                            <Label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-2">
+                                                            <Label htmlFor="customerName" className="mb-2 block text-sm font-medium text-gray-700">
                                                                 Nama Pelanggan
                                                             </Label>
                                                             <Input
@@ -259,7 +369,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                             />
                                                         </div>
                                                         <div>
-                                                            <Label htmlFor="customerContact" className="block text-sm font-medium text-gray-700 mb-2">
+                                                            <Label htmlFor="customerContact" className="mb-2 block text-sm font-medium text-gray-700">
                                                                 Kontak Pelanggan
                                                             </Label>
                                                             <Input
@@ -282,15 +392,13 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                             <div className="mb-8">
                                                 <div className="mb-4 flex items-center">
                                                     <CreditCard className="mr-3 h-6 w-6 text-[#153e98]" />
-                                                    <h3 className="text-xl font-semibold text-[#1c283f]">
-                                                        Metode Pembayaran
-                                                    </h3>
+                                                    <h3 className="text-xl font-semibold text-[#1c283f]">Metode Pembayaran</h3>
                                                 </div>
                                                 <RadioGroup value={paymentOption} onValueChange={setPaymentOption}>
                                                     <div className="space-y-3">
                                                         <div className="flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-4 transition-colors hover:border-[#153e98] hover:bg-blue-50">
                                                             <RadioGroupItem value="tunai" id="tunai" />
-                                                            <div className="flex items-center space-x-3 cursor-pointer">
+                                                            <div className="flex cursor-pointer items-center space-x-3">
                                                                 <div className="rounded-full bg-green-100 p-2">
                                                                     <Banknote className="h-5 w-5 text-green-600" />
                                                                 </div>
@@ -304,7 +412,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                         </div>
                                                         <div className="flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-4 transition-colors hover:border-[#153e98] hover:bg-blue-50">
                                                             <RadioGroupItem value="transfer" id="transfer" />
-                                                            <div className="flex items-center space-x-3 cursor-pointer">
+                                                            <div className="flex cursor-pointer items-center space-x-3">
                                                                 <div className="rounded-full bg-blue-100 p-2">
                                                                     <DollarSign className="h-5 w-5 text-blue-600" />
                                                                 </div>
@@ -370,7 +478,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                             {/* Cart Items List */}
                                             <div className="mb-6 max-h-64 overflow-y-auto">
                                                 <div className="space-y-3">
-                                                    {cartItems.map((item) => (
+                                                    {localCartItems.map((item) => (
                                                         <div key={item.id} className="flex items-start space-x-3 rounded-lg bg-gray-50 p-3">
                                                             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white">
                                                                 {item.product?.image ? (
@@ -383,11 +491,11 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                                     <Package className="h-6 w-6 text-gray-400" />
                                                                 )}
                                                             </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <h4 className="text-sm font-medium text-gray-900 truncate">
+                                                            <div className="min-w-0 flex-1">
+                                                                <h4 className="truncate text-sm font-medium text-gray-900">
                                                                     {item.product?.name ?? 'Produk tidak tersedia'}
                                                                 </h4>
-                                                                <div className="flex items-center justify-between mt-1">
+                                                                <div className="mt-1 flex items-center justify-between">
                                                                     <span className="text-xs text-gray-500">
                                                                         {formatPrice(item.product?.price || 0)} × {item.quantity}
                                                                     </span>
@@ -405,9 +513,9 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                             <div className="space-y-3 border-t pt-4">
                                                 <div className="flex justify-between text-sm">
                                                     <span className="text-gray-600">
-                                                        Subtotal ({cartItems.length} item{cartItems.length > 1 ? 's' : ''})
+                                                        Subtotal ({localCartItems.length} item{localCartItems.length > 1 ? 's' : ''})
                                                     </span>
-                                                    <span className="font-medium">{formatPrice(subtotal)}</span>
+                                                    <span className="font-medium">{formatPrice(localSubtotal)}</span>
                                                 </div>
                                                 <div className="flex justify-between text-sm">
                                                     <span className="text-gray-600">Pajak & Biaya Admin</span>
@@ -415,7 +523,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                 </div>
                                                 <div className="flex justify-between border-t pt-3 text-lg font-bold">
                                                     <span className="text-gray-900">Total Pembayaran</span>
-                                                    <span className="text-[#56b280]">{formatPrice(subtotal)}</span>
+                                                    <span className="text-[#56b280]">{formatPrice(localTotal)}</span>
                                                 </div>
                                             </div>
 
@@ -432,7 +540,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                 </Button>
                                                 <Button
                                                     onClick={processCheckout}
-                                                    className="w-full bg-gradient-to-r from-[#153e98] to-[#1a4cb8] text-white hover:from-[#0f2e73] hover:to-[#153e98] font-semibold py-3"
+                                                    className="w-full bg-gradient-to-r from-[#153e98] to-[#1a4cb8] py-3 font-semibold text-white hover:from-[#0f2e73] hover:to-[#153e98]"
                                                     disabled={isProcessingCheckout}
                                                 >
                                                     {isProcessingCheckout ? (
@@ -486,7 +594,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                 <div className="flex-1 overflow-y-auto">
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                                         {filteredProducts.map((product) => {
-                                            const quantityInCart = getProductQuantityInCart(product.id);
+                                            const quantityInCart = getProductQuantity(product.id);
                                             return (
                                                 <div
                                                     key={product.id}
@@ -512,22 +620,30 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                                     </p>
                                                     <p className="mb-3 text-sm text-gray-500">Stok: {product.stock}</p>
 
-                                                    {/* Quantity Controls */}
+                                                    {/* Quantity Controls - IMPROVED */}
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center space-x-2">
                                                             <button
-                                                                onClick={() => updateCartQuantity(product.id, 'decrement')}
-                                                                disabled={quantityInCart === 0 || loading === product.id}
+                                                                onClick={() => decrementQuantity(product.id, product.stock)}
+                                                                disabled={quantityInCart === 0}
                                                                 className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-red-500 text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-gray-300"
                                                             >
                                                                 -
                                                             </button>
-                                                            <span className="w-8 text-center font-medium">
-                                                                {loading === product.id ? '...' : quantityInCart}
-                                                            </span>
+
+                                                            {/* Input Number untuk quantity */}
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                max={product.stock}
+                                                                value={quantityInCart}
+                                                                onChange={(e) => handleQuantityInputChange(product.id, e.target.value, product.stock)}
+                                                                className="w-16 rounded border border-gray-300 px-2 py-1 text-center text-sm font-medium focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                                            />
+
                                                             <button
-                                                                onClick={() => updateCartQuantity(product.id, 'increment')}
-                                                                disabled={quantityInCart >= product.stock || loading === product.id}
+                                                                onClick={() => incrementQuantity(product.id, product.stock)}
+                                                                disabled={quantityInCart >= product.stock}
                                                                 className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-green-500 text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:bg-gray-300"
                                                             >
                                                                 +
@@ -536,8 +652,7 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
 
                                                         {quantityInCart > 0 && (
                                                             <button
-                                                                onClick={() => removeFromCart(product.id)}
-                                                                disabled={loading === product.id}
+                                                                onClick={() => removeFromLocalCart(product.id)}
                                                                 className="cursor-pointer text-sm font-medium text-red-500 hover:text-red-700"
                                                             >
                                                                 Remove
@@ -561,8 +676,11 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                             <div className="flex flex-col overflow-hidden rounded-lg bg-white p-6 shadow-sm">
                                 <div className="mb-6 flex items-center justify-between">
                                     <h2 className="text-xl font-semibold text-gray-800">Ringkasan Pesanan</h2>
-                                    {cartItems.length > 0 && (
-                                        <button onClick={clearCart} className="cursor-pointer text-sm font-medium text-red-500 hover:text-red-700">
+                                    {localCartItems.length > 0 && (
+                                        <button
+                                            onClick={clearLocalCart}
+                                            className="cursor-pointer text-sm font-medium text-red-500 hover:text-red-700"
+                                        >
                                             Clear All
                                         </button>
                                     )}
@@ -570,32 +688,26 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
 
                                 {/* Cart Items */}
                                 <div className="mb-6 flex-1 overflow-y-auto">
-                                    {cartItems.length === 0 ? (
+                                    {localCartItems.length === 0 ? (
                                         <div className="py-12 text-center">
                                             <p className="text-gray-500">Keranjang belanja kosong</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
-                                            {cartItems.map((item) => (
+                                            {localCartItems.map((item) => (
                                                 <div
                                                     key={item.id}
                                                     className="flex items-center justify-between rounded-lg border border-gray-200 p-3"
                                                 >
                                                     <div className="flex-1">
-                                                        <h4 className="text-sm font-medium text-gray-900">
-                                                            {item.product?.name ?? 'Nama produk tidak tersedia'}
-                                                        </h4>
+                                                        <h4 className="text-sm font-medium text-gray-900">{item.product.name}</h4>
                                                         <p className="text-sm text-gray-500">
-                                                            {item.product?.price !== undefined
-                                                                ? `Rp ${item.product.price.toLocaleString('id-ID')} x ${item.quantity}`
-                                                                : 'Harga tidak tersedia'}
+                                                            Rp {item.product.price.toLocaleString('id-ID')} x {item.quantity}
                                                         </p>
                                                     </div>
                                                     <div className="text-right">
                                                         <p className="font-semibold text-gray-900">
-                                                            {item.product?.price !== undefined
-                                                                ? `Rp ${(item.product.price * item.quantity).toLocaleString('id-ID')}`
-                                                                : 'Total tidak tersedia'}
+                                                            Rp {(item.product.price * item.quantity).toLocaleString('id-ID')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -608,26 +720,100 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
                                 <div className="space-y-3 border-t pt-4">
                                     <div className="flex items-center justify-between">
                                         <span className="text-gray-600">Subtotal:</span>
-                                        <span className="font-medium">Rp {subtotal.toLocaleString('id-ID')}</span>
+                                        <span className="font-medium">Rp {localSubtotal.toLocaleString('id-ID')}</span>
                                     </div>
 
                                     <div className="flex items-center justify-between text-lg font-semibold">
                                         <span>Total:</span>
-                                        <span className="text-blue-600">Rp {total.toLocaleString('id-ID')}</span>
+                                        <span className="text-blue-600">Rp {localTotal.toLocaleString('id-ID')}</span>
                                     </div>
 
                                     {/* Checkout Button */}
                                     <button
                                         onClick={handleCheckout}
-                                        disabled={cartItems.length === 0 || loading === -1}
+                                        disabled={localCartItems.length === 0 || isProcessingCheckout}
                                         className="w-full cursor-pointer rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                                     >
-                                        {loading === -1 ? 'Processing...' : 'Checkout'}
+                                        {isProcessingCheckout ? 'Processing...' : 'Checkout'}
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Checkout Modal/Form - tambahkan logic sesuai kebutuhan */}
+                    {showCheckout && (
+                        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+                            <div className="w-full max-w-md rounded-lg bg-white p-6">
+                                <h3 className="mb-4 text-lg font-semibold">Checkout</h3>
+
+                                {/* Customer Info */}
+                                <div className="mb-4">
+                                    <Label>Nama Pelanggan</Label>
+                                    <Input
+                                        value={customerName}
+                                        onChange={(e) => setCustomerName(e.target.value)}
+                                        placeholder="Masukkan nama pelanggan"
+                                    />
+                                </div>
+
+                                <div className="mb-4">
+                                    <Label>Kontak Pelanggan</Label>
+                                    <Input
+                                        value={customerContact}
+                                        onChange={(e) => setCustomerContact(e.target.value)}
+                                        placeholder="Nomor HP/Email"
+                                    />
+                                </div>
+
+                                {/* Shipping Options */}
+                                <div className="mb-4">
+                                    <Label>Opsi Pengiriman</Label>
+                                    <RadioGroup value={shippingOption} onValueChange={setShippingOption}>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="pickup" id="pickup" />
+                                            <Label htmlFor="pickup">Ambil di Toko</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="diantar" id="diantar" />
+                                            <Label htmlFor="diantar">Diantar</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
+
+                                {shippingOption === 'diantar' && (
+                                    <div className="mb-4">
+                                        <Label>Alamat Pengiriman</Label>
+                                        <Textarea value={alamat} onChange={(e) => setAlamat(e.target.value)} placeholder="Masukkan alamat lengkap" />
+                                    </div>
+                                )}
+
+                                {/* Payment Options */}
+                                <div className="mb-4">
+                                    <Label>Metode Pembayaran</Label>
+                                    <RadioGroup value={paymentOption} onValueChange={setPaymentOption}>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="tunai" id="tunai" />
+                                            <Label htmlFor="tunai">Tunai</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="transfer" id="transfer" />
+                                            <Label htmlFor="transfer">Transfer</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
+
+                                <div className="flex space-x-2">
+                                    <Button variant="outline" onClick={() => setShowCheckout(false)} className="flex-1">
+                                        Batal
+                                    </Button>
+                                    <Button onClick={processCheckout} disabled={isProcessingCheckout} className="flex-1">
+                                        {isProcessingCheckout ? 'Processing...' : 'Proses Checkout'}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
         </AppLayout>

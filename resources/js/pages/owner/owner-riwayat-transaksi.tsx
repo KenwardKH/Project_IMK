@@ -201,7 +201,9 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                                                 <td className="border p-4 text-center">{item.CustomerContact}</td>
                                                 <td className="border p-4 text-center">{item.PaymentOption}</td>
                                                 <td className="border p-4 text-center">{formatCurrency(item.TotalAmount)}</td>
-                                                <td className="border p-4 text-center">{formatDate(item.PaymentDate)}</td>
+                                                <td className="border p-4 text-center">
+                                                    {item.PaymentDate ? formatDate(item.PaymentDate) : 'Belum Dibayar'}
+                                                </td>
                                                 <td className="border p-4 text-center">{item.CashierName != null ? 'Offline' : 'Online'}</td>
                                                 <td className="border p-4 text-center">
                                                     <Button

@@ -1,5 +1,6 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Head } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -37,7 +38,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('Selesai');
     const [filteredKasirs, setFilteredKasirs] = useState<RiwayatData[]>(riwayatTransaksi);
 
     const [selectedRiwayat, setSelectedRiwayat] = useState<PesananData[]>([]);
@@ -93,6 +94,34 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
     const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
 
     const formatDate = (value: string) => new Date(value).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+    //PDF
+    const [currentFilters, setCurrentFilters] = useState({
+        period: 'month',
+        payment_filter: 'all',
+    });
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+    const handleFilterChange = (filterType, value) => {
+        const newFilters = {
+            ...currentFilters,
+            [filterType]: value,
+        };
+        setCurrentFilters(newFilters);
+    };
+
+    const generatePDF = () => {
+        setIsGeneratingPDF(true);
+        const params = new URLSearchParams(currentFilters);
+        const pdfUrl = `/report/generate-pdf?${params.toString()}`;
+        window.open(pdfUrl, '_blank');
+
+        setTimeout(() => {
+            setIsGeneratingPDF(false);
+            setIsDialogOpen(false);
+        }, 2000);
+    };
 
     return (
         <OwnerLayout>
@@ -165,6 +194,69 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                             </select>
                         </div>
                     </div>
+
+                    {/* Filter dan Generate PDF */}
+                    {statusFilter === 'Selesai' ? (
+                        <div className="my-6 flex justify-end">
+                            <Button onClick={() => setIsDialogOpen(true)} className="bg-blue-600 text-white hover:bg-blue-700">
+                                Cetak Laporan
+                            </Button>
+
+                            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                                <DialogContent className="sm:max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>Filter Laporan</DialogTitle>
+                                    </DialogHeader>
+
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col">
+                                            <label className="text-sm font-medium">Periode</label>
+                                            <select
+                                                value={currentFilters.period}
+                                                onChange={(e) => handleFilterChange('period', e.target.value)}
+                                                className="rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                            >
+                                                <option value="day">Hari Ini</option>
+                                                <option value="month">Bulan Ini</option>
+                                                <option value="year">Tahun Ini</option>
+                                                <option value="all">Semua Waktu</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <label className="text-sm font-medium">Metode Pembayaran</label>
+                                            <select
+                                                value={currentFilters.payment_filter}
+                                                onChange={(e) => handleFilterChange('payment_filter', e.target.value)}
+                                                className="rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                            >
+                                                <option value="all">Semua Metode</option>
+                                                <option value="tunai">Tunai</option>
+                                                <option value="transfer">Transfer</option>
+                                            </select>
+                                        </div>
+
+                                        <Button
+                                            onClick={generatePDF}
+                                            disabled={isGeneratingPDF}
+                                            className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                                        >
+                                            {isGeneratingPDF ? (
+                                                <>
+                                                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                                                    Membuat PDF...
+                                                </>
+                                            ) : (
+                                                <>Cetak Sekarang</>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                    ) : (
+                        ''
+                    )}
                 </section>
 
                 {/* Tabel Riwayat */}

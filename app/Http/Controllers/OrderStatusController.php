@@ -22,18 +22,19 @@ class OrderStatusController extends Controller
     public function index()
     {
         $orders = Invoice::select(
-        'InvoiceID as id',
-        'InvoiceID as invoice_id',
-        'CustomerID as custid',
-        'customerName as name',
-        'customerContact as contact',
-        'InvoiceDate as date',
-        'type as type',
-        'payment_option as payment',
-        'CashierID as cid',
-        'CashierName as cname',
-        )
-        ->paginate(100);
+    'InvoiceID as id',
+    'InvoiceID as invoice_id',
+    'CustomerID as custid',
+    'customerName as name',
+    'customerContact as contact',
+    'InvoiceDate as date',
+    'type as type',
+    'payment_option as payment',
+    'CashierID as cid',
+    'CashierName as cname',
+)
+// ->orderBy('InvoiceDate', 'desc') // <-- tambahkan ini
+->paginate(100);
 
         //Memanggil data InvoiceDetail
         foreach ($orders as $order) {
@@ -134,8 +135,8 @@ class OrderStatusController extends Controller
 
         $user = Auth::user(); // Pastikan user ada, atau bisa gunakan user default
         $cashier = $user->kasirs;
-        
-        
+
+
             $pickupStatus = PickupOrderStatus::where('invoice_id', $invoice->InvoiceID)->first();
             if ($pickupStatus) {
                 $pickupStatus->update([

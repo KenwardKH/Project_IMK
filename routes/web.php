@@ -58,7 +58,8 @@ Route::get('/faq', function (){
 
 Route::get('/order/{id}/invoice', [OrderController::class, 'generateInvoice'])->name('orders.invoice');
 Route::get('/order/{id}/invoice-other', [OrderController::class, 'generateInvoiceOther']);
-
+Route::get('/report/generate-pdf', [OrderController::class, 'generateReportPDF'])
+    ->name('report.generate-pdf');
 
 // Cashier-only routes
 Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name('cashier.')->group(function () {

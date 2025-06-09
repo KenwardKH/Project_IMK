@@ -113,7 +113,6 @@ export default function OrderHistory() {
         return '';
     };
 
-
     const handlePrintInvoice = (orderId: number) => {
         const invoiceUrl = `/order/${orderId}/invoice-other`;
         window.open(invoiceUrl, '_blank');
@@ -434,64 +433,66 @@ export default function OrderHistory() {
                             </thead>
                             <tbody className="bg-white text-gray-700">
                                 {activeOrders.length > 0 ? (
-                                    activeOrders.map((item, index) => (
-                                        <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{index + 1}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.id}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.contact}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.details.reduce((sum, detail) => sum + detail.quantity, 0)}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.payments.length > 0 ? (
-                                                    item.payments.map((detail, idx) => <span key={idx}>{detail.amount}</span>)
-                                                ) : (
-                                                    <span>
-                                                        {' '}
-                                                        Rp
-                                                        {item.details
-                                                            .reduce((total, detail) => total + detail.price * detail.quantity, 0)
-                                                            .toLocaleString('id-ID')}
-                                                    </span>
-                                                )}
-                                            </td>
-                                            {/* <td className="border border-gray-200 px-4 py-3 text-center">
+                                    activeOrders
+                                        // .sort((a, b) => new Date(b.date) - new Date(a.date))
+                                        .map((item, index) => (
+                                            <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{index + 1}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.id}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.contact}</td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {item.details.reduce((sum, detail) => sum + detail.quantity, 0)}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {item.payments.length > 0 ? (
+                                                        item.payments.map((detail, idx) => <span key={idx}>{detail.amount}</span>)
+                                                    ) : (
+                                                        <span>
+                                                            {' '}
+                                                            Rp
+                                                            {item.details
+                                                                .reduce((total, detail) => total + detail.price * detail.quantity, 0)
+                                                                .toLocaleString('id-ID')}
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                {/* <td className="border border-gray-200 px-4 py-3 text-center">
                                                 {item.delivery.length > 0 ? (
                                                     item.delivery.map((detail, idx) => <span key={idx}>{detail.alamat}</span>)
                                                 ) : (
                                                     <span>Diambil di Toko</span>
                                                 )}
                                             </td> */}
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
-                                            {/* <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td> */}
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                <Button
-                                                    onClick={() => handleOpenDetailModal(item)}
-                                                    className="rounded bg-green-500 px-3 py-1 text-white hover:bg-blue-600"
-                                                >
-                                                    Detail
-                                                </Button>
-                                            </td>
-                                              <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.delivery?.some((d) => d.status === 'selesai') ||
-                                                item.pickup?.some((p) => p.status === 'selesai') ? (
-                                                    item.invoice_id ? (
-                                                        <Button
-                                                            className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600"
-                                                            onClick={() => handlePrintInvoice(item.invoice_id)}
-                                                        >
-                                                            Cetak Invoice
-                                                        </Button>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.payment}</td>
+                                                {/* <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td> */}
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    <Button
+                                                        onClick={() => handleOpenDetailModal(item)}
+                                                        className="rounded bg-green-500 px-3 py-1 text-white hover:bg-blue-600"
+                                                    >
+                                                        Detail
+                                                    </Button>
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {item.delivery?.some((d) => d.status === 'selesai') ||
+                                                    item.pickup?.some((p) => p.status === 'selesai') ? (
+                                                        item.invoice_id ? (
+                                                            <Button
+                                                                className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600"
+                                                                onClick={() => handlePrintInvoice(item.invoice_id)}
+                                                            >
+                                                                Cetak Invoice
+                                                            </Button>
+                                                        ) : (
+                                                            'Tidak tersedia!'
+                                                        )
                                                     ) : (
                                                         'Tidak tersedia!'
-                                                    )
-                                                ) : (
-                                                    'Tidak tersedia!'
-                                                )}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
-                                            {/* <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    )}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
+                                                {/* <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
                                                     onClick={() => handleOpenCancelModal(item)}
                                                     className="rounded-full bg-red-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-red-600"
@@ -500,11 +501,11 @@ export default function OrderHistory() {
                                                     <X className="h-4 w-4" />
                                                 </Button>
                                             </td> */}
-                                            <td className="border border-gray-200 px-4 py-3 text-center">
-                                                {item.type === 'pickup' ? item.pickup?.[0]?.status : item.delivery?.[0]?.status}
-                                            </td>
-                                        </tr>
-                                    ))
+                                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {item.type === 'pickup' ? item.pickup?.[0]?.status : item.delivery?.[0]?.status}
+                                                </td>
+                                            </tr>
+                                        ))
                                 ) : (
                                     <tr>
                                         <td colSpan={13} className="border border-gray-200 px-4 py-6 text-center text-gray-500">

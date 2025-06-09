@@ -9,6 +9,7 @@ use App\Models\DeliveryOrderStatus;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Customer;
+use App\Models\CancelledTransaction;
 use Carbon\Carbon;
 
 use Illuminate\Http\Request;
@@ -139,6 +140,13 @@ class OrderController extends Controller
             return (float)$detail->price * $detail->Quantity;
         });
 
+        // If cancelled, get cancellation reason
+        $cancellationReason = null;
+        if (in_array($currentStatus, ['dibatalkan', 'cancelled'])) {
+            $cancel = CancelledTransaction::where('InvoiceId', $invoice->InvoiceID)->first();
+            $cancellationReason = $cancel?->cancellation_reason;
+        }
+
         return [
             'invoice_id' => $invoice->InvoiceID,
             'customer_name' => $invoice->customerName,
@@ -148,6 +156,8 @@ class OrderController extends Controller
             'payment_option' => $invoice->payment_option,
             'cashier_name' => $invoice->CashierName,
             'status' => $currentStatus,
+            'payment_deadline' => $invoice->PaymentDeadline,
+            'cancellation_reason' => $cancellationReason,
             'delivery_address' => $deliveryAddress,
             'total_amount' => $totalAmount,
             'items' => $invoice->invoicedetails->map(function($detail) {

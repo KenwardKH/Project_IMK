@@ -243,7 +243,15 @@ export default function CashierCart({ products, cartItems, total, subtotal }: Pr
 
             if (!result.isConfirmed) return;
         }
-
+        const confirmResult = await Swal.fire({
+            icon: 'question',
+            title: 'Konfirmasi Pesanan',
+            text: 'Apakah pesanan Anda sudah benar? Pastikan semua item sudah sesuai.',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Checkout',
+            cancelButtonText: 'Batal',
+        });
+        if (!confirmResult.isConfirmed) return;
         setIsProcessingCheckout(true);
 
         try {

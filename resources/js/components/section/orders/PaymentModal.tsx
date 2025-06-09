@@ -63,6 +63,21 @@ export default function PaymentModal({ order, onClose }: PaymentModalProps) {
             return;
         }
 
+        const confirm = await Swal.fire ({
+            title: 'Konfirmasi Upload',
+            text: 'Apakah Anda yakin bukti pembayaran ini telah sesuai?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Upload',
+            cancelButtonText: 'Batal',
+        })
+
+        if (!confirm.isConfirmed) {
+            return;
+        }
+
         setIsUploading(true);
         setError(null);
 

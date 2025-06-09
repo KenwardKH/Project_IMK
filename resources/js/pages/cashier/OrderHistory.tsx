@@ -20,6 +20,7 @@ interface OrderData {
     payments: PaymentData[];
     pickup: PickupData[];
     delivery: DeliveryData[];
+    cancellation_reason?: string;
 }
 
 interface DetailData {
@@ -233,10 +234,13 @@ export default function OrderHistory() {
     // const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
     // Step 3: Ambil hanya pesanan yang belum dikonfirmasi
     const sortedOrder = filteredOrders.sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+
         if (sortOrder === 'asc') {
-            return a.name.localeCompare(b.name);
+            return dateA - dateB;
         } else {
-            return b.name.localeCompare(a.name);
+            return dateB - dateA;
         }
     });
     const sortedByDate = sortedOrder.filter((order) => {
@@ -425,7 +429,9 @@ export default function OrderHistory() {
                                     <th className="border border-gray-300 px-4 py-3 text-center">Opsi Pembayaran</th>
                                     {/* <th className="border border-gray-300 px-4 py-3 text-center">Tipe Pesanan</th> */}
                                     <th className="border border-gray-300 px-4 py-3 text-center">Detail</th>
-                                    <th className="border border-gray-300 px-4 py-3 text-center">Cetak Invoice</th>
+                                    <th className="border border-gray-300 px-4 py-3 text-center">
+                                        {activeTab === 'selesai' ? 'Cetak Invoice' : 'Alasan Pembatalan'}
+                                    </th>
                                     <th className="border border-gray-300 px-4 py-3 text-center">Tanggal Pemesanan</th>
                                     {/* <th className="border border-gray-300 px-4 py-3 text-center">Hapus</th> */}
                                     <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
@@ -474,24 +480,34 @@ export default function OrderHistory() {
                                                         Detail
                                                     </Button>
                                                 </td>
-                                                <td className="border border-gray-200 px-4 py-3 text-center">
-                                                    {item.delivery?.some((d) => d.status === 'selesai') ||
-                                                    item.pickup?.some((p) => p.status === 'selesai') ? (
-                                                        item.invoice_id ? (
-                                                            <Button
-                                                                className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600"
-                                                                onClick={() => handlePrintInvoice(item.invoice_id)}
-                                                            >
-                                                                Cetak Invoice
-                                                            </Button>
-                                                        ) : (
-                                                            'Tidak tersedia!'
-                                                        )
-                                                    ) : (
-                                                        'Tidak tersedia!'
-                                                    )}
+                                              <td className="border border-gray-200 px-4 py-3 text-center">
+                                                    {(() => {
+                                                    if (
+                                                        item.delivery?.some((d) => d.status === 'dibatalkan') ||
+                                                        item.pickup?.some((p) => p.status === 'dibatalkan')
+                                                    ) {
+                                                        return item.cancellation_reason || 'Tidak tersedia!';
+                                                    } else if (
+                                                        item.delivery?.some((d) => d.status === 'selesai') ||
+                                                            item.pickup?.some((p) => p.status === 'selesai')
+                                                    ) {
+                                                            return item.invoice_id ? (
+                                                                <Button
+                                                                    className="h-8 rounded-md bg-blue-500 px-4 text-xs font-medium text-white hover:bg-blue-600"
+                                                                    onClick={() => handlePrintInvoice(item.invoice_id)}
+                                                                >
+                                                                    Cetak Invoice
+                                                                </Button>
+                                                            ) : (
+                                                                'Tidak tersedia!'
+                                                            );
+                                                        } else {
+                                                            return 'Tidak tersedia!';
+                                                        }
+                                                })()}
                                                 </td>
-                                                <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
+
+                                            <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
                                                 {/* <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <Button
                                                     onClick={() => handleOpenCancelModal(item)}

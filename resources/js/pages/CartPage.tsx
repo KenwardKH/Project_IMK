@@ -171,6 +171,19 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
             return;
         }
 
+        const confirm = await Swal.fire({
+            title: 'Konfimasi Checkout',
+            text: 'Apakah pesanan Anda sudah benar? Pastikan semua item sudah sesuai.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Checkout',
+            cancelButtonText: 'Batal',
+        })
+
+        if (!confirm.isConfirmed) {
+            return;
+        }
+
         setIsProcessingCheckout(true);
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         console.log(csrfToken);

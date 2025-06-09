@@ -3,6 +3,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { Box, ClipboardList, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import Swal from 'sweetalert2';
 
 interface FinancialData {
     month: string;
@@ -47,7 +48,16 @@ const OwnerDashboard = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('owner.update-timeout'));
+        post(route('owner.update-timeout'), {
+            onSuccess: () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Timeout berhasil diperbarui.',
+                    confirmButtonColor: '#3085d6',
+                });
+            },
+        });
     };
 
     return (
@@ -59,7 +69,7 @@ const OwnerDashboard = () => {
                     {stats.map((stat, index) => (
                         <div
                             key={index}
-                            className="flex flex-col items-center justify-between rounded-2xl bg-gray-400 p-4 text-black shadow-md ring-1 transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                            className="flex cursor-pointer flex-col items-center justify-between rounded-2xl bg-gray-400 p-4 text-black shadow-md ring-1 transition-all duration-300 hover:scale-[1.02]"
                         >
                             <p className="text-lg font-semibold sm:text-xl">{stat.title}</p>
                             <div className="mt-2 flex w-full items-center justify-around gap-1 px-2 sm:px-4">

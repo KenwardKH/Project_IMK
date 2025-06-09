@@ -40,6 +40,7 @@ class Invoice extends Model
 	protected $casts = [
 		'CustomerID' => 'int',
 		'InvoiceDate' => 'datetime',
+		'PaymentDeadline' => 'datetime',
 		'CashierID' => 'int'
 	];
 
@@ -48,6 +49,7 @@ class Invoice extends Model
 		'customerName',
 		'customerContact',
 		'InvoiceDate',
+		'PaymentDeadline',
 		'type',
 		'payment_option',
 		'CashierID',

@@ -31,6 +31,7 @@ class ConfirmOrderController extends Controller
         'InvoiceDate as date',
         'type as type',
         'payment_option as payment',
+        'paymentDeadline as payment_deadline',
         'CashierID as cid',
         'CashierName as cname',
         )

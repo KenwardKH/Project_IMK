@@ -9,6 +9,9 @@ use App\Models\CustomerCart;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\User;
+use App\Models\Invoice;
+use App\Models\CancellationTime;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -236,6 +239,22 @@ class CustomerCartController extends Controller
                 $request->payment_option,
                 $request->alamat
             ]);
+
+            // Get the latest invoice created for this customer
+            $latestInvoice = Invoice::where('CustomerID', $customer->CustomerID)
+                ->orderBy('InvoiceDate', 'desc')
+                ->first();
+
+            if ($latestInvoice && !$latestInvoice->PaymentDeadline) {
+                // Set payment deadline based on cancellation time settings
+                $timeoutHours = CancellationTime::getCurrentTimeoutHours();
+                $paymentDeadline = Carbon::parse($latestInvoice->InvoiceDate)->addHours($timeoutHours);
+                
+                // Update the invoice with payment deadline
+                $latestInvoice->update([
+                    'PaymentDeadline' => $paymentDeadline
+                ]);
+            }
 
             return response()->json(['success' => 'Checkout completed successfully']);
         } catch (\Exception $e) {

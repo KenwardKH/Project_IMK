@@ -1,8 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import { Lock, LogOut, Menu, User } from 'lucide-react';
 import { useState } from 'react';
+import Swal from 'sweetalert2';
 
 type PageProps = {
     auth: {
@@ -18,6 +19,7 @@ const Navbar = () => {
     const { props } = usePage<PageProps>();
     const user = props.auth?.user;
     const [showMobileMenu, setShowMobileMenu] = useState(false);
+    const { post } = useForm();
 
     const toggleMobileMenu = () => {
         setShowMobileMenu(!showMobileMenu);
@@ -31,6 +33,23 @@ const Navbar = () => {
             .join('')
             .toUpperCase()
             .slice(0, 2);
+    };
+
+    const handleLogout = () => {
+        Swal.fire({
+            title: 'Apakah Anda yakin ingin keluar?',
+            text: 'Anda akan keluar dari akun saat ini.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, keluar',
+            cancelButtonText: 'Batal',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                post('/logout');
+            }
+        });
     };
 
     return (
@@ -129,15 +148,19 @@ const Navbar = () => {
 
                                         <div className="p-2">
                                             <DropdownMenuItem className="rounded-lg transition-colors hover:bg-red-50">
-                                                <Link method="post" href="/logout" className="flex w-full items-center space-x-3 px-3 py-2 cursor-pointer">
-                                                    <div className="rounded-lg bg-red-100 p-2">
-                                                        <LogOut className="h-4 w-4 text-red-600" />
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="flex w-full items-center gap-3 px-2 py-3 text-red-600 hover:text-red-700"
+                                                    id="logoutdrop"
+                                                >
+                                                    <div className="rounded-xl bg-red-100 p-2 shadow-sm" id="buttonlogout">
+                                                        <LogOut className="h-4 w-4 text-red-500" />
                                                     </div>
-                                                    <div>
-                                                        <p className="text-left font-medium text-red-600">Logout</p>
-                                                        {/* <p className="text-xs text-gray-500">Sign out of account</p> */}
+                                                    <div className="flex flex-col">
+                                                        <span className="text-left text-sm font-semibold">Logout</span>
+                                                        <span className="text-xs text-red-400">Keluar dari akun</span>
                                                     </div>
-                                                </Link>
+                                                </button>
                                             </DropdownMenuItem>
                                         </div>
                                     </DropdownMenuContent>

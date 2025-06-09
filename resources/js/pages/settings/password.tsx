@@ -5,6 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
+import Swal from 'sweetalert2';
 
 import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
@@ -33,7 +34,16 @@ export default function Password() {
 
         put(route('password.update'), {
             preserveScroll: true,
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                reset();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Password berhasil diperbarui.',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK',
+                });
+            },
             onError: (errors) => {
                 if (errors.password) {
                     // reset('password', 'password_confirmation');
@@ -54,7 +64,10 @@ export default function Password() {
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Perbarui Kata Sandi" description="Pastikan akun Anda menggunakan kata sandi yang panjang dan acak untuk menjaga keamanan." />
+                    <HeadingSmall
+                        title="Perbarui Kata Sandi"
+                        description="Pastikan akun Anda menggunakan kata sandi yang panjang dan acak untuk menjaga keamanan."
+                    />
 
                     <form onSubmit={updatePassword} className="space-y-6">
                         <div className="grid gap-2">

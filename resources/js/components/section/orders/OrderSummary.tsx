@@ -3,9 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import Swal from 'sweetalert2';
 import OrderDetailModal from './OrderDetailModal';
 import PaymentModal from './PaymentModal';
-import Swal from 'sweetalert2';
 
 interface OrderItem {
     product_id: number;
@@ -34,6 +34,8 @@ interface Order {
     payment_option: string;
     cashier_name?: string;
     status: string;
+    payment_deadline?: string;
+    cancellation_reason?: string;
     total_amount: number;
     items: OrderItem[];
     payments: Payment[];
@@ -47,7 +49,7 @@ interface PageProps {
 
 export default function OrderSummarySection() {
     const [showDetailModal, setShowDetailModal] = useState(false);
-    const [showCancelModal, setShowCancelModal] = useState(false);
+    // const [showCancelModal, setShowCancelModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(false);
@@ -73,7 +75,7 @@ export default function OrderSummarySection() {
                             text: 'Pesanan berhasil dibatalkan',
                             confirmButtonColor: '#3085d6',
                         });
-                        setShowCancelModal(false);
+                        // setShowCancelModal(false);
                         setSelectedOrder(null);
                         router.reload(); // Refresh halaman
                     },
@@ -224,8 +226,30 @@ export default function OrderSummarySection() {
                                         <span className="font-normal text-gray-600">{new Date(order.invoice_date).toLocaleDateString('id-ID')}</span>
                                     </p>
                                     <p className="text-sm font-semibold text-gray-700">
-                                        Status: <span className={`font-normal ${getStatusColor(order.status)}`}>{getStatusText(order.status)}</span>
+                                        Status:{' '}
+                                        <span className={`font-normal ${getStatusColor(order.status)}`}>
+                                            {getStatusText(order.status)} {order.cancellation_reason && 'oleh kasir'}{' '}
+                                        </span>
                                     </p>
+                                    {order.status === 'dibatalkan' && order.cancellation_reason && (
+                                        <p className="text-sm font-semibold text-gray-700">
+                                            Alasan Pembatalan: <span className="font-normal text-gray-600">{order.cancellation_reason}</span>
+                                        </p>
+                                    )}
+                                    {order.payment_deadline && order.status === 'menunggu pembayaran' &&(
+                                        <p className="text-sm font-semibold text-gray-700">
+                                            Batas Waktu Pembayaran:{' '}
+                                            <span className="font-normal text-gray-600">
+                                                {new Date(order.payment_deadline).toLocaleDateString('id-ID')}, jam{' '}
+                                                {new Date(order.payment_deadline).toLocaleTimeString('id-ID', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false,
+                                                })}
+                                            </span>
+                                        </p>
+                                    )}
+
                                     {order.payment_option && (
                                         <p className="text-sm font-semibold text-gray-700">
                                             Metode Pembayaran: <span className="font-normal text-gray-600">{order.payment_option}</span>
@@ -288,9 +312,25 @@ export default function OrderSummarySection() {
                                     {canCancel(order.status) && (
                                         <Button
                                             className="h-10 rounded-md bg-red-500 px-5 text-sm font-medium text-white transition hover:bg-red-600 sm:w-auto"
+                                            // onClick={() => {
+                                            //     setSelectedOrder(order);
+                                            //     setShowCancelModal(true);
+                                            // }}
                                             onClick={() => {
-                                                setSelectedOrder(order);
-                                                setShowCancelModal(true);
+                                                Swal.fire({
+                                                    title: 'Konfirmasi Pembatalan',
+                                                    text: `Apakah Anda yakin ingin membatalkan pesanan #${order.invoice_id}?`,
+                                                    icon: 'warning',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#d33',
+                                                    cancelButtonColor: '#aaa',
+                                                    confirmButtonText: 'Ya, Batalkan',
+                                                    cancelButtonText: 'Batal',
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        handleCancelOrder(order.invoice_id);
+                                                    }
+                                                });
                                             }}
                                             disabled={loading}
                                         >
@@ -333,7 +373,7 @@ export default function OrderSummarySection() {
             )}
 
             {/* Modal Konfirmasi Batalkan */}
-            {showCancelModal && selectedOrder && (
+            {/* {showCancelModal && selectedOrder && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
                     <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
                         <h3 className="text-lg font-semibold text-red-600">Konfirmasi Pembatalan</h3>
@@ -360,7 +400,7 @@ export default function OrderSummarySection() {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
 
             {/* Modal Upload Pembayaran */}
             {showPaymentModal && selectedOrder && (

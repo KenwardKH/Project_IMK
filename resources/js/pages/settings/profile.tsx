@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import Swal from 'sweetalert2';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -37,6 +38,15 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
         patch(route('profile.update'), {
             preserveScroll: true,
+            onSuccess: () => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Profil Diperbarui',
+                text: 'Perubahan profil berhasil disimpan.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK',
+            });
+        },
         });
     };
 

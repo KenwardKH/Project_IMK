@@ -15,6 +15,7 @@ interface OrderData {
     date: string;
     type: string;
     payment: string;
+    payment_deadline: string;
     cid: number;
     cname: string;
     details: DetailData[];
@@ -272,12 +273,16 @@ export default function OrderList() {
     );
 
     const sortedOrder = filteredOrders.sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+
         if (sortOrder === 'asc') {
-            return a.name.localeCompare(b.name);
+            return dateA - dateB;
         } else {
-            return b.name.localeCompare(a.name);
+            return dateB - dateA;
         }
     });
+
     const sortedByDate = sortedOrder.filter((order) => {
         const orderDate = new Date(order.date).getTime();
 
@@ -301,14 +306,14 @@ export default function OrderList() {
     });
     const activeOrders = sortedByDate.filter((order) => order.cid == null);
 
-    const deadlineDates = activeOrders.map((item) => {
-        const itemDate = new Date(item.date).getTime();
-        const paymentTimeInMs = (cancellations?.paymentTime ?? 0) * 60 * 60 * 1000;
+    // const deadlineDates = activeOrders.map((item) => {
+    //     const itemDate = new Date(item.date).getTime();
+    //     const paymentTimeInMs = (cancellations?.paymentTime ?? 0) * 60 * 60 * 1000;
 
-        const deadlineDate = new Date(itemDate + paymentTimeInMs);
+    //     const deadlineDate = new Date(itemDate + paymentTimeInMs);
 
-        return deadlineDate.toLocaleString('id-ID');
-    });
+    //     return deadlineDate.toLocaleString('id-ID');
+    // });
     console.log('cancellations:', cancellations);
 
     return (
@@ -513,7 +518,9 @@ export default function OrderList() {
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.name}</td>
                                             {/* <td className="border border-gray-200 px-4 py-3 text-center">{item.type}</td> */}
                                             <td className="border border-gray-200 px-4 py-3 text-center">{item.date}</td>
-                                            <td className="border border-gray-200 px-4 py-3 text-center">{deadlineDates[index]}</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-center">
+                                                {item.payment_deadline ? item.payment_deadline : 'Tidak tersedia'}
+                                            </td>
                                             <td className="border border-gray-200 px-4 py-3 text-center">
                                                 <button
                                                     onClick={() => handleConfirm(item.id)}

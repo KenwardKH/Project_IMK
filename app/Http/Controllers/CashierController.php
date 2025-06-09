@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\CashierCart;
 use App\Models\Kasir;
+use App\Models\Invoice;
+use App\Models\Payment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -375,6 +378,15 @@ public function checkout(Request $request)
             return response()->json(['error' => 'Cart is empty'], 400);
         }
 
+        $cartItems = CashierCart::with('product')
+            ->where('CashierID', $cashier->id_kasir)
+            ->get();
+
+        $totalAmount = $cartItems->sum(function ($item) {
+            return $item->Quantity * $item->product->ProductPrice;
+        });
+
+
         try {
             // Call the stored procedure
             DB::statement('CALL CheckoutCashierCart(?, ?, ?, ?, ?, ?, ?)', [
@@ -387,6 +399,22 @@ public function checkout(Request $request)
                 $request->alamat
             ]);
 
+            // Get the latest invoice created for this cashier
+            $latestInvoice = Invoice::where('CashierID', $cashier->id_kasir)
+                ->orderBy('InvoiceID', 'desc')
+                ->first();
+
+            if ($latestInvoice) {
+                // Create payment record
+                $paymentData = [
+                    'InvoiceID' => $latestInvoice->InvoiceID,
+                    'PaymentDate' => Carbon::now(),
+                    'AmountPaid' => $totalAmount,
+                    'PaymentImage' => null // Will be null for cash payments, can be updated later for transfer
+                ];
+
+                Payment::create($paymentData);
+            }
             return response()->json(['success' => 'Checkout completed successfully']);
         } catch (\Exception $e) {
             // Check if it's a stock error or other database error

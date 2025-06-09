@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Invoicedetail;
 use App\Models\DeliveryOrderStatus;
 use App\Models\PickupOrderStatus;
+use App\Models\CancelledTransaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -102,6 +103,11 @@ class OrderHistoryController extends Controller
             ->get()
             ->toArray();
             $order->delivery = $deliveryStatus;
+        }
+
+        foreach ($orders as $order) {
+            $cancellation = CancelledTransaction::where('InvoiceId', $order->id)->first();
+            $order->cancellation_reason = $cancellation?->cancellation_reason ?? null;
         }
 
         return Inertia::render('cashier/OrderHistory', [

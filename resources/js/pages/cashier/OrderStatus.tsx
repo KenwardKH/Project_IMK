@@ -299,10 +299,13 @@ export default function OrderList() {
     );
 
     const sortedOrder = filteredOrders.sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+
         if (sortOrder === 'asc') {
-            return a.name.localeCompare(b.name);
+            return dateA - dateB;
         } else {
-            return b.name.localeCompare(a.name);
+            return dateB - dateA;
         }
     });
     const sortedByDate = sortedOrder.filter((order) => {

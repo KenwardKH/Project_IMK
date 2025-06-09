@@ -18,31 +18,23 @@ return new class extends Migration
             ON COMPLETION NOT PRESERVE 
             ENABLE 
             DO BEGIN
-                DECLARE timeout_hours DECIMAL(5,2) DEFAULT 48.0;
-                
-                -- Get timeout from cancellationtime table (direct float/decimal value)
-                SELECT COALESCE(paymentTime, 48.0) INTO timeout_hours 
-                FROM cancellationtime 
-                ORDER BY id DESC 
-                LIMIT 1;
-                
-                -- Update delivery orders
+                -- Update delivery orders using PaymentDeadline column
                 UPDATE delivery_order_status dos
                 JOIN invoices i ON dos.invoice_id = i.InvoiceID
                 LEFT JOIN payments p ON i.InvoiceID = p.InvoiceID
                 SET dos.status = 'dibatalkan'
                 WHERE dos.status = 'menunggu pembayaran' 
-                  AND p.PaymentID IS NULL 
-                  AND i.InvoiceDate < NOW() - INTERVAL timeout_hours HOUR;
-                  
-                -- Update pickup orders  
+                AND p.PaymentID IS NULL 
+                AND i.PaymentDeadline < NOW();
+                
+                -- Update pickup orders using PaymentDeadline column
                 UPDATE pickup_order_status pos
                 JOIN invoices i ON pos.invoice_id = i.InvoiceID
                 LEFT JOIN payments p ON i.InvoiceID = p.InvoiceID
                 SET pos.status = 'dibatalkan'
                 WHERE pos.status = 'menunggu pembayaran' 
-                  AND p.PaymentID IS NULL 
-                  AND i.InvoiceDate < NOW() - INTERVAL timeout_hours HOUR;
+                AND p.PaymentID IS NULL 
+                AND i.PaymentDeadline < NOW();
             END
         ");
     }

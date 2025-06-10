@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -8,8 +9,39 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle, CreditCard, DollarSign, Minus, Package, Plus, Receipt, ShoppingBag, ShoppingCart, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
+
+const bankOptions = [
+    {
+        value: 'bri',
+        label: 'BRI',
+        logo: '/images/bank/logo_bri.png',
+        norek: '1234 5678 9012 3456',
+        atasNama: 'Toko ATK Sinar Pelangi',
+    },
+    {
+        value: 'mandiri',
+        label: 'Mandiri',
+        logo: '/images/bank/logo_mandiri.png',
+        norek: '9876 5432 1098 7654',
+        atasNama: 'Toko ATK Sinar Pelangi',
+    },
+    {
+        value: 'bca',
+        label: 'BCA',
+        logo: '/images/bank/logo_bca.png',
+        norek: '1111 2222 3333 4444',
+        atasNama: 'Toko ATK Sinar Pelangi',
+    },
+    {
+        value: 'dana',
+        label: 'DANA',
+        logo: '/images/bank/logo_dana.png',
+        norek: '0812 3456 7890',
+        atasNama: 'Toko ATK Sinar Pelangi',
+    },
+];
 
 interface CartItem {
     id: number;
@@ -49,6 +81,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
     const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
     const hasStockIssues = cartItems.some((item) => item.quantity > item.product.stock);
     const stockIssueCount = cartItems.filter((item) => item.quantity > item.product.stock).length;
+    const [openModal, setOpenModal] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -281,6 +314,14 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
         }
     };
 
+    useEffect(() => {
+        if (paymentOption === 'transfer') {
+            setOpenModal(true);
+        } else {
+            setOpenModal(false);
+        }
+    }, [paymentOption]);
+
     if (!cartItems || cartItems.length === 0) {
         return (
             <AppLayout breadcrumbs={breadcrumbs}>
@@ -394,20 +435,6 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                                 </div>
                                                 <RadioGroup value={paymentOption} onValueChange={setPaymentOption}>
                                                     <div className="space-y-3">
-                                                        {/* <div className="flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-4 transition-colors hover:border-[#153e98] hover:bg-blue-50">
-                                                            <RadioGroupItem value="tunai" id="tunai" />
-                                                            <div className="flex items-center space-x-3 cursor-pointer">
-                                                                <div className="rounded-full bg-green-100 p-2">
-                                                                    <Package className="h-5 w-5 text-green-600" />
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <Label htmlFor="tunai" className="cursor-pointer text-lg font-medium">
-                                                                        Pembayaran Tunai
-                                                                    </Label>
-                                                                    <p className="text-sm text-gray-600">Bayar langsung saat transaksi</p>
-                                                                </div>
-                                                            </div>
-                                                        </div> */}
                                                         <div className="flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-4 transition-colors hover:border-[#153e98] hover:bg-blue-50">
                                                             <RadioGroupItem value="transfer" id="transfer" />
                                                             <div className="flex cursor-pointer items-center space-x-3">
@@ -426,6 +453,47 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                                         </div>
                                                     </div>
                                                 </RadioGroup>
+
+                                                <div className="flex justify-end mt-4">
+                                                    <Button
+                                                        className="bg-gradient-to-r from-[#153e98] to-[#1a4cb8] py-3 font-semibold text-white hover:from-[#0f2e73] hover:to-[#153e98]"
+                                                        onClick={() => setOpenModal(true)}
+                                                    >
+                                                        Lihat Metode Transfer
+                                                    </Button>
+
+                                                    <Dialog open={openModal} onOpenChange={setOpenModal}>
+                                                        <DialogTrigger asChild />
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Metode Transfer</DialogTitle>
+                                                                <DialogDescription>
+                                                                    Berikut nomor rekening untuk metode transfer yang tersedia:
+                                                                </DialogDescription>
+                                                            </DialogHeader>
+
+                                                            <div className="space-y-4">
+                                                                {bankOptions.map((bank) => (
+                                                                    <div
+                                                                        key={bank.label}
+                                                                        className="flex items-center space-x-4 rounded-lg border p-4 shadow-sm"
+                                                                    >
+                                                                        <img src={bank.logo} alt={bank.label} className="h-10 w-16 object-contain" />
+                                                                        <div>
+                                                                            <p className="text-base font-semibold">{bank.label}</p>
+                                                                            <p className="text-sm text-gray-700">
+                                                                                No. Rekening: <span className="font-medium">{bank.norek}</span>
+                                                                            </p>
+                                                                            <p className="text-sm text-gray-700">
+                                                                                Atas nama: <span className="font-medium">{bank.atasNama}</span>
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                </div>
                                             </div>
 
                                             {/* Delivery Address */}

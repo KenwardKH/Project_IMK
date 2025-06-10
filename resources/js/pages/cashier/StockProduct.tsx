@@ -1,8 +1,8 @@
 import AppLayout from '@/layouts/cashier-layout';
 import { Button } from '@/components/ui/button';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, Search, SquarePen, Trash2, X, Filter, Package } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, Search, SquarePen, Trash2, X, Filter, Package, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useState, useMemo } from 'react';
 
 interface ProductData {
     id: number;
@@ -50,7 +50,7 @@ export default function OrderList() {
     const [modalImage, setModalImage] = useState<string | null>(null);
     const { products } = usePage<Props>().props;
     const [selectedOrder, setSelectedOrder] = useState<ProductData | null>(null);
-    const itemsPerPage = 5;
+    const itemsPerPage = 10; // Jumlah item per halaman
     const [currentPage, setCurrentPage] = useState(1);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -68,16 +68,14 @@ export default function OrderList() {
         setIsModalOpen(false);
     };
 
-    // Step 1: Filter berdasarkan jenis pesanan (pickup/delivery)
-    // const typeOrders = orders.data.filter(order => order.type === activeTab);
-
-    // Step 2: Filter berdasarkan pencarian nama
+    // Step 1: Filter berdasarkan pencarian nama
     const filteredOrders = products.data.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Step 2: Filter berdasarkan stok
     const activeOrders = filteredOrders.filter((order) => {
-        const stock = order.stock; // misalnya order.stock = 12
+        const stock = order.stock;
 
         if (stockThreshold) {
             if (filterType === '>') {
@@ -87,8 +85,48 @@ export default function OrderList() {
             }
         }
 
-        return true; // kalau threshold kosong, tampilkan semua
+        return true;
     });
+
+    // Pagination logic
+    const totalPages = Math.ceil(activeOrders.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = activeOrders.slice(startIndex, endIndex);
+
+    // Reset to first page when filters change
+    const handleFilterChange = (callback: () => void) => {
+        callback();
+        setCurrentPage(1);
+    };
+
+    // Pagination handlers
+    const goToFirstPage = () => setCurrentPage(1);
+    const goToLastPage = () => setCurrentPage(totalPages);
+    const goToNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    const goToPrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
+    const goToPage = (page: number) => setCurrentPage(page);
+
+    // Generate page numbers for pagination
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            for (let i = startPage; i <= endPage; i++) {
+                pages.push(i);
+            }
+        }
+
+        return pages;
+    };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -97,6 +135,13 @@ export default function OrderList() {
             minimumFractionDigits: 0,
         }).format(amount);
     };
+
+    // Pagination info
+    const paginationInfo = useMemo(() => {
+        const start = startIndex + 1;
+        const end = Math.min(endIndex, activeOrders.length);
+        return { start, end, total: activeOrders.length };
+    }, [startIndex, endIndex, activeOrders.length]);
 
     return (
         <AppLayout>
@@ -129,7 +174,7 @@ export default function OrderList() {
                                     <div className="relative">
                                         <select
                                             value={filterType}
-                                            onChange={(e) => setFilterType(e.target.value)}
+                                            onChange={(e) => handleFilterChange(() => setFilterType(e.target.value))}
                                             className="appearance-none bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl px-4 py-3 pr-10 text-gray-700 font-medium focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md"
                                         >
                                             <option value=">">📈 Lebih dari</option>
@@ -144,10 +189,10 @@ export default function OrderList() {
                                     <div className="relative">
                                         <input
                                             type="number"
-                                            placeholder="🔢 -Masukkan jumlah..."
+                                            placeholder="🔢 Masukkan jumlah..."
                                             value={stockThreshold}
                                             min="0"
-                                            onChange={(e) => setStockThreshold(e.target.value)}
+                                            onChange={(e) => handleFilterChange(() => setStockThreshold(e.target.value))}
                                             className="w-52 px-4 py-3 bg-gradient-to-r from-gray-50 to-slate-50 border-2 border-gray-200 rounded-xl text-gray-700 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md placeholder-gray-400"
                                         />
                                     </div>
@@ -165,13 +210,12 @@ export default function OrderList() {
                                     className="w-full h-12 pl-12 pr-12 text-gray-700 bg-gradient-to-r from-gray-50 to-slate-50 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white transition-all duration-200 placeholder-gray-400 shadow-sm hover:shadow-md"
                                     value={searchTerm}
                                     onChange={(e) => {
-                                        setSearchTerm(e.target.value);
-                                        setCurrentPage(1);
+                                        handleFilterChange(() => setSearchTerm(e.target.value));
                                     }}
                                 />
                                 {searchTerm && (
                                     <button
-                                        onClick={() => setSearchTerm('')}
+                                        onClick={() => handleFilterChange(() => setSearchTerm(''))}
                                         className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-red-500 transition-colors duration-200"
                                     >
                                         <X className="h-4 w-4" />
@@ -219,10 +263,12 @@ export default function OrderList() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-gray-700">
-                                    {activeOrders.length > 0 ? (
-                                        activeOrders.map((item, index) => (
+                                    {currentItems.length > 0 ? (
+                                        currentItems.map((item, index) => (
                                             <tr key={item.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border-b border-gray-100">
-                                                <td className="border border-gray-200 px-4 py-4 text-center font-medium">{index + 1}</td>
+                                                <td className="border border-gray-200 px-4 py-4 text-center font-medium">
+                                                    {startIndex + index + 1}
+                                                </td>
                                                 <td className="border border-gray-200 px-4 py-4 text-center">
                                                     <div className="flex justify-center">
                                                         <img
@@ -276,6 +322,103 @@ export default function OrderList() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Pagination Section */}
+                        {activeOrders.length > 0 && (
+                            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                                    {/* Pagination Info */}
+                                    <div className="text-sm text-gray-600">
+                                        Menampilkan <span className="font-medium">{paginationInfo.start}</span> sampai{' '}
+                                        <span className="font-medium">{paginationInfo.end}</span> dari{' '}
+                                        <span className="font-medium">{paginationInfo.total}</span> produk
+                                    </div>
+
+                                    {/* Pagination Controls */}
+                                    {totalPages > 1 && (
+                                        <div className="flex items-center gap-2">
+                                            {/* First Page */}
+                                            <button
+                                                onClick={goToFirstPage}
+                                                disabled={currentPage === 1}
+                                                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                                title="Halaman Pertama"
+                                            >
+                                                <ChevronsLeft className="h-4 w-4" />
+                                            </button>
+
+                                            {/* Previous Page */}
+                                            <button
+                                                onClick={goToPrevPage}
+                                                disabled={currentPage === 1}
+                                                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                                title="Halaman Sebelumnya"
+                                            >
+                                                <ChevronLeft className="h-4 w-4" />
+                                            </button>
+
+                                            {/* Page Numbers */}
+                                            <div className="flex items-center gap-1">
+                                                {getPageNumbers().map((pageNum) => (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => goToPage(pageNum)}
+                                                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                                                            currentPage === pageNum
+                                                                ? 'bg-blue-500 text-white border border-blue-500'
+                                                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {/* Next Page */}
+                                            <button
+                                                onClick={goToNextPage}
+                                                disabled={currentPage === totalPages}
+                                                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                                title="Halaman Berikutnya"
+                                            >
+                                                <ChevronRight className="h-4 w-4" />
+                                            </button>
+
+                                            {/* Last Page */}
+                                            <button
+                                                onClick={goToLastPage}
+                                                disabled={currentPage === totalPages}
+                                                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                                title="Halaman Terakhir"
+                                            >
+                                                <ChevronsRight className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Items per page selector */}
+                                <div className="flex items-center justify-center sm:justify-end gap-2 mt-4 sm:mt-0">
+                                    <span className="text-sm text-gray-600">Item per halaman:</span>
+                                    <select
+                                        value={itemsPerPage}
+                                        onChange={(e) => {
+                                            const newItemsPerPage = Number(e.target.value);
+                                            // Update itemsPerPage state if you want to make it dynamic
+                                            // For now, it's hardcoded to 10
+                                            setCurrentPage(1);
+                                        }}
+                                        className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                                    >
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option>
+                                        <option value={25}>25</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Summary Card */}
@@ -291,32 +434,6 @@ export default function OrderList() {
                                 </div>
                             </div>
                         </div>
-                        {/* <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-green-100 rounded-lg">
-                                    <span className="text-green-600 font-bold">✓</span>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">📈 Stok Aman</p>
-                                    <p className="text-xl font-bold text-gray-800">
-                                        {activeOrders.filter(item => item.stock >= 50).length}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-red-100 rounded-lg">
-                                    <span className="text-red-600 font-bold">⚠</span>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">📉 Stok Rendah</p>
-                                    <p className="text-xl font-bold text-gray-800">
-                                        {activeOrders.filter(item => item.stock < 10).length}
-                                    </p>
-                                </div>
-                            </div>
-                        </div> */}
                     </div>
                 </div>
 

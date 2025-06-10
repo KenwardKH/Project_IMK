@@ -301,7 +301,7 @@ export default function OrderList() {
         if (order.payments.length > 0) {
             return parseFloat(order.payments[0].amount.replace(/[^\d]/g, '')) || 0;
         }
-        return order.details.reduce((total, detail) => total + (detail.price * detail.quantity), 0);
+        return order.details.reduce((total, detail) => total + detail.price * detail.quantity, 0);
     };
 
     // Step 1: Filter berdasarkan jenis pesanan (pickup/delivery)
@@ -321,8 +321,7 @@ export default function OrderList() {
         const orderDate = new Date(order.date).getTime();
 
         if (startDate && endDate) {
-            return orderDate >= new Date(startDate).getTime() &&
-                   orderDate <= new Date(endDate).getTime();
+            return orderDate >= new Date(startDate).getTime() && orderDate <= new Date(endDate).getTime();
         }
 
         if (startDate) {
@@ -403,11 +402,16 @@ export default function OrderList() {
                                         }`}
                                     >
                                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                            />
                                         </svg>
                                         Tanggal {sortBy === 'date' && `(${sortOrder.toUpperCase()})`}
                                     </button>
-                                    <button
+                                    {/* <button
                                         onClick={() => handleSortChange('name')}
                                         className={`flex transform cursor-pointer items-center gap-2 rounded-lg px-4 py-2.5 font-medium shadow-md transition-all duration-200 hover:scale-105 hover:shadow-lg ${
                                             sortBy === 'name'
@@ -416,7 +420,12 @@ export default function OrderList() {
                                         }`}
                                     >
                                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                            />
                                         </svg>
                                         Nama {sortBy === 'name' && `(${sortOrder.toUpperCase()})`}
                                     </button>
@@ -429,17 +438,27 @@ export default function OrderList() {
                                         }`}
                                     >
                                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                            />
                                         </svg>
                                         Harga {sortBy === 'price' && `(${sortOrder.toUpperCase()})`}
-                                    </button>
+                                    </button> */}
                                 </div>
 
                                 {/* Date Range Picker */}
                                 <div className="flex items-center gap-2 rounded-lg border bg-gray-50 p-2">
                                     <div className="flex items-center gap-2">
                                         <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                            />
                                         </svg>
                                         <input
                                             type="date"
@@ -486,15 +505,20 @@ export default function OrderList() {
                             </div>
                         </div>
 
-                        {/* Price Filter Row */}
+                        {/* Price Filter Row
                         <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t pt-4">
                             {/* Price Filters */}
-                            <div className="flex items-center gap-4">
+                            {/* <div className="flex items-center gap-4">
                                 <span className="text-sm font-medium text-gray-600">Filter Harga:</span>
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-2 rounded-lg border bg-gray-50 p-2">
                                         <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                            />
                                         </svg>
                                         <input
                                             type="number"
@@ -510,7 +534,6 @@ export default function OrderList() {
                                         <input
                                             type="number"
                                             min={1}
-
                                             placeholder="Max"
                                             value={maxPrice}
                                             onChange={(e) => setMaxPrice(e.target.value)}
@@ -518,19 +541,24 @@ export default function OrderList() {
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Clear Filters Button */}
-                            <button
+                            {/* <button
                                 onClick={clearAllFilters}
-                                className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition-colors duration-200 hover:bg-red-100 hover:border-red-300"
+                                className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition-colors duration-200 hover:border-red-300 hover:bg-red-100"
                             >
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                    />
                                 </svg>
                                 Reset Filter
-                            </button>
-                        </div>
+                            </button> */}
+                        {/* </div>  */}
 
                         {/* Active Filters Display */}
                         {(searchTerm || startDate || endDate || minPrice || maxPrice) && (
@@ -539,31 +567,41 @@ export default function OrderList() {
                                 {searchTerm && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
                                         Customer: {searchTerm}
-                                        <button onClick={() => setSearchTerm('')} className="ml-1 hover:text-blue-600">×</button>
+                                        <button onClick={() => setSearchTerm('')} className="ml-1 hover:text-blue-600">
+                                            ×
+                                        </button>
                                     </span>
                                 )}
                                 {startDate && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
                                         Dari: {startDate}
-                                        <button onClick={() => setStartDate('')} className="ml-1 hover:text-green-600">×</button>
+                                        <button onClick={() => setStartDate('')} className="ml-1 hover:text-green-600">
+                                            ×
+                                        </button>
                                     </span>
                                 )}
                                 {endDate && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
                                         Sampai: {endDate}
-                                        <button onClick={() => setEndDate('')} className="ml-1 hover:text-green-600">×</button>
+                                        <button onClick={() => setEndDate('')} className="ml-1 hover:text-green-600">
+                                            ×
+                                        </button>
                                     </span>
                                 )}
                                 {minPrice && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-800">
                                         Min: Rp{parseInt(minPrice).toLocaleString('id-ID')}
-                                        <button onClick={() => setMinPrice('')} className="ml-1 hover:text-purple-600">×</button>
+                                        <button onClick={() => setMinPrice('')} className="ml-1 hover:text-purple-600">
+                                            ×
+                                        </button>
                                     </span>
                                 )}
                                 {maxPrice && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-800">
                                         Max: Rp{parseInt(maxPrice).toLocaleString('id-ID')}
-                                        <button onClick={() => setMaxPrice('')} className="ml-1 hover:text-purple-600">×</button>
+                                        <button onClick={() => setMaxPrice('')} className="ml-1 hover:text-purple-600">
+                                            ×
+                                        </button>
                                     </span>
                                 )}
                             </div>

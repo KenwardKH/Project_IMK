@@ -97,7 +97,7 @@ export default function OrderHistory() {
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [jumpToPage, setJumpToPage] = useState('');
     const [totalItems, setTotalItems] = useState(0); // Total data dari API/database
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 

@@ -23,6 +23,7 @@ class ownerDaftarCustomer extends Controller
                 'email' => $customer->user->email,
                 'kontak' => $customer->CustomerContact ?? '',
                 'alamat' => $customer->CustomerAddress ?? '',
+                'status' => $customer->user->role === 'blocked',
                 'userId' => $customer->user_id
             ];
         });
@@ -30,6 +31,22 @@ class ownerDaftarCustomer extends Controller
         return Inertia::render('owner/owner-daftar-pelanggan', [
             'customerData' => $customers
         ]);
+    }
+
+    public function toggleStatus(string $id)
+    {
+        $customer = Customer::findOrFail($id);
+        $user = User::findOrFail($customer->user_id);
+
+        // Toggle status
+        $user->role = $user->role === 'blocked' ? 'customer' : 'blocked';
+        $user->save();
+
+        $message = $user->role === 'blocked'
+            ? 'Pelanggan berhasil diblokir.'
+            : 'Pelanggan berhasil diaktifkan kembali.';
+
+        return redirect()->back()->with('success', $message);
     }
 
     /**

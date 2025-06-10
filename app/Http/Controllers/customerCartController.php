@@ -28,6 +28,7 @@ class CustomerCartController extends Controller
 
         $user = Auth::user();
         $customer = $user->customer;
+        // dd($user->role);
 
         // if (!$customer) {
         //     return redirect()->route('dashboard')->with('error', 'Customer profile not found');
@@ -64,6 +65,7 @@ class CustomerCartController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'role' => $user->role,
                 ] : null
             ]
         ]);

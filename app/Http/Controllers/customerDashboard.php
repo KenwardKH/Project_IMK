@@ -51,6 +51,7 @@ class CustomerDashboard extends Controller
                     'id' => auth()->user()->id,
                     'name' => auth()->user()->name,
                     'email' => auth()->user()->email,
+                    'role' => auth()->user()->role,
                 ] : null
             ],
             'search' => $request->input('search'), // penting!
@@ -98,6 +99,7 @@ class CustomerDashboard extends Controller
                     'id' => auth()->user()->id,
                     'name' => auth()->user()->name,
                     'email' => auth()->user()->email,
+                    'role' => auth()->user()->role,
                 ] : null
             ]
         ]);

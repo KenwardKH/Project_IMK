@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle, CreditCard, DollarSign, Minus, Package, Plus, Receipt, ShoppingBag, ShoppingCart, Trash2, Truck } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, DollarSign, Minus, Package, Plus, Receipt, ShoppingBag, ShoppingCart, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import Swal from 'sweetalert2';
 
@@ -34,6 +34,7 @@ interface CartProps {
             id: number;
             name: string;
             email: string;
+            role: string;
         } | null;
     };
 }
@@ -46,8 +47,8 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
     const [alamat, setAlamat] = useState('');
     const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
     const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
-    const hasStockIssues = cartItems.some(item => item.quantity > item.product.stock);
-    const stockIssueCount = cartItems.filter(item => item.quantity > item.product.stock).length;
+    const hasStockIssues = cartItems.some((item) => item.quantity > item.product.stock);
+    const stockIssueCount = cartItems.filter((item) => item.quantity > item.product.stock).length;
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -163,53 +164,62 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
         }
     };
 
-const handleCheckout = async () => {
-    // Check if cart is empty
-    if (!cartItems || cartItems.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Keranjang Kosong',
-            text: 'Keranjang belanja Anda kosong. Silakan tambahkan produk terlebih dahulu.',
-        });
-        return;
-    }
+    const handleCheckout = async () => {
+        // Check if cart is empty
+        if (!cartItems || cartItems.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Keranjang Kosong',
+                text: 'Keranjang belanja Anda kosong. Silakan tambahkan produk terlebih dahulu.',
+            });
+            return;
+        }
 
-    // Check stock for each item in cart
-    const stockIssues = cartItems.filter(item => 
-        item.quantity > item.product.stock
-    );
+        // Check stock for each item in cart
+        const stockIssues = cartItems.filter((item) => item.quantity > item.product.stock);
 
-    if (stockIssues.length > 0) {
-        const itemNames = stockIssues.map(item => 
-            `${item.product.nama_produk} (stok: ${item.product.stock}, diminta: ${item.quantity})`
-        ).join('\n');
-        
-        await Swal.fire({
-            icon: 'error',
-            title: 'Stok Tidak Mencukupi',
-            html: `
+        if (stockIssues.length > 0) {
+            const itemNames = stockIssues
+                .map((item) => `${item.product.nama_produk} (stok: ${item.product.stock}, diminta: ${item.quantity})`)
+                .join('\n');
+
+            await Swal.fire({
+                icon: 'error',
+                title: 'Stok Tidak Mencukupi',
+                html: `
                 <p>Produk berikut melebihi stok yang tersedia:</p>
                 <div style="text-align: left; margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                    ${stockIssues.map(item => 
-                        `<div style="margin-bottom: 5px;">
+                    ${stockIssues
+                        .map(
+                            (item) =>
+                                `<div style="margin-bottom: 5px;">
                             <strong>${item.product.nama_produk}</strong><br>
                             <small>Stok tersedia: ${item.product.stock} | Jumlah diminta: ${item.quantity}</small>
-                        </div>`
-                    ).join('')}
+                        </div>`,
+                        )
+                        .join('')}
                 </div>
                 <p style="margin-top: 10px;">Silakan sesuaikan jumlah produk di keranjang Anda.</p>
             `,
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#153e98'
-        });
-        return;
-    }
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#153e98',
+            });
+            return;
+        }
 
-    // If all checks pass, show checkout modal
-    setShowCheckout(true);
-};
+        // If all checks pass, show checkout modal
+        setShowCheckout(true);
+    };
 
     const processCheckout = async () => {
+        if (auth.user.role === 'blocked') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Akun Anda Diblokir',
+                text: 'Akun Anda telah diblokir',
+            });
+            return;
+        }
         if (shippingOption === 'diantar' && !alamat.trim()) {
             alert('Mohon masukkan alamat pengiriman');
             return;
@@ -222,7 +232,7 @@ const handleCheckout = async () => {
             showCancelButton: true,
             confirmButtonText: 'Ya, Checkout',
             cancelButtonText: 'Batal',
-        })
+        });
 
         if (!confirm.isConfirmed) {
             return;
@@ -563,140 +573,152 @@ const handleCheckout = async () => {
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Cart Items */}
                     <div className="lg:col-span-2">
-                    <Card className="rounded-2xl bg-white shadow-lg">
-                        <CardContent className="p-6">
-                            <h1 className="mb-6 font-[Poppins] text-2xl font-bold text-[#1c283f]">
-                                Keranjang Belanja ({cartItems.length} item)
-                            </h1>
+                        <Card className="rounded-2xl bg-white shadow-lg">
+                            <CardContent className="p-6">
+                                <h1 className="mb-6 font-[Poppins] text-2xl font-bold text-[#1c283f]">Keranjang Belanja ({cartItems.length} item)</h1>
 
-                            <div className="space-y-4">
-                                {cartItems.map((item) => {
-                                    const isStockInsufficient = item.quantity > item.product.stock;
-                                    const stockDifference = item.quantity - item.product.stock;
-                                    
-                                    return (
-                                        <div key={item.id} className={`rounded-lg border p-4 ${isStockInsufficient ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
-                                            <div className="flex items-center gap-4">
-                                                {/* Product Image */}
-                                                <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                                                    {item.product.gambar_produk ? (
-                                                        <img
-                                                            src={`/storage/${item.product.gambar_produk}`}
-                                                            alt={item.product.nama_produk}
-                                                            className="h-full w-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="flex h-full w-full items-center justify-center">
-                                                            <span className="text-xs text-gray-400">No Image</span>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                <div className="space-y-4">
+                                    {cartItems.map((item) => {
+                                        const isStockInsufficient = item.quantity > item.product.stock;
+                                        const stockDifference = item.quantity - item.product.stock;
 
-                                                {/* Product Details */}
-                                                <div className="flex-1">
-                                                    <h3 className="mb-1 font-medium text-[#1c283f]">{item.product.nama_produk}</h3>
-                                                    <p className="mb-2 font-bold text-[#56b280]">{formatPrice(item.product.harga_jual)}</p>
-                                                    <p className={`text-sm ${isStockInsufficient ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-                                                        Stok: {item.product.stock} {item.product.satuan}
-                                                        {isStockInsufficient && (
-                                                            <span className="ml-2 text-red-600">
-                                                                (Tidak mencukupi!)
-                                                            </span>
+                                        return (
+                                            <div
+                                                key={item.id}
+                                                className={`rounded-lg border p-4 ${isStockInsufficient ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    {/* Product Image */}
+                                                    <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                                                        {item.product.gambar_produk ? (
+                                                            <img
+                                                                src={`/storage/${item.product.gambar_produk}`}
+                                                                alt={item.product.nama_produk}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-full w-full items-center justify-center">
+                                                                <span className="text-xs text-gray-400">No Image</span>
+                                                            </div>
                                                         )}
-                                                    </p>
-                                                </div>
+                                                    </div>
 
-                                                {/* Quantity Controls */}
-                                                <div className="flex items-center gap-2">
+                                                    {/* Product Details */}
+                                                    <div className="flex-1">
+                                                        <h3 className="mb-1 font-medium text-[#1c283f]">{item.product.nama_produk}</h3>
+                                                        <p className="mb-2 font-bold text-[#56b280]">{formatPrice(item.product.harga_jual)}</p>
+                                                        <p
+                                                            className={`text-sm ${isStockInsufficient ? 'font-medium text-red-600' : 'text-gray-500'}`}
+                                                        >
+                                                            Stok: {item.product.stock} {item.product.satuan}
+                                                            {isStockInsufficient && <span className="ml-2 text-red-600">(Tidak mencukupi!)</span>}
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Quantity Controls */}
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                            disabled={loadingItems.has(item.id) || item.quantity <= 1}
+                                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        >
+                                                            <Minus className="h-4 w-4" />
+                                                        </button>
+
+                                                        <Input
+                                                            type="number"
+                                                            min="1"
+                                                            max={item.product.stock}
+                                                            value={quantityInputs[item.id] !== undefined ? quantityInputs[item.id] : item.quantity}
+                                                            onChange={(e) => handleQuantityInputChange(item.id, e.target.value)}
+                                                            onBlur={() => handleQuantityInputBlur(item.id, item)}
+                                                            onKeyPress={(e) => handleQuantityInputKeyPress(e, item.id, item)}
+                                                            className={`w-16 text-center ${isStockInsufficient ? 'border-red-300 bg-red-50' : ''}`}
+                                                            disabled={loadingItems.has(item.id)}
+                                                        />
+
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                            disabled={loadingItems.has(item.id) || item.quantity >= item.product.stock}
+                                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        >
+                                                            <Plus className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Subtotal */}
+                                                    <div className="text-right">
+                                                        <p className="font-bold text-[#1c283f]">{formatPrice(item.subtotal)}</p>
+                                                    </div>
+
+                                                    {/* Remove Button */}
                                                     <button
-                                                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                        disabled={loadingItems.has(item.id) || item.quantity <= 1}
-                                                        className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    >
-                                                        <Minus className="h-4 w-4" />
-                                                    </button>
-
-                                                    <Input
-                                                        type="number"
-                                                        min="1"
-                                                        max={item.product.stock}
-                                                        value={quantityInputs[item.id] !== undefined ? quantityInputs[item.id] : item.quantity}
-                                                        onChange={(e) => handleQuantityInputChange(item.id, e.target.value)}
-                                                        onBlur={() => handleQuantityInputBlur(item.id, item)}
-                                                        onKeyPress={(e) => handleQuantityInputKeyPress(e, item.id, item)}
-                                                        className={`w-16 text-center ${isStockInsufficient ? 'border-red-300 bg-red-50' : ''}`}
+                                                        onClick={() => removeItem(item.id)}
                                                         disabled={loadingItems.has(item.id)}
-                                                    />
-
-                                                    <button
-                                                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                        disabled={loadingItems.has(item.id) || item.quantity >= item.product.stock}
-                                                        className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        className="rounded-lg p-2 text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        title="Hapus item"
                                                     >
-                                                        <Plus className="h-4 w-4" />
+                                                        <Trash2 className="h-4 w-4" />
                                                     </button>
                                                 </div>
 
-                                                {/* Subtotal */}
-                                                <div className="text-right">
-                                                    <p className="font-bold text-[#1c283f]">{formatPrice(item.subtotal)}</p>
-                                                </div>
-
-                                                {/* Remove Button */}
-                                                <button
-                                                    onClick={() => removeItem(item.id)}
-                                                    disabled={loadingItems.has(item.id)}
-                                                    className="rounded-lg p-2 text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    title="Hapus item"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-
-                                            {/* Stock Insufficient Notification */}
-                                            {isStockInsufficient && (
-                                                <div className="mt-3 rounded-lg bg-red-100 border border-red-200 p-3">
-                                                    <div className="flex items-start gap-2">
-                                                        <div className="flex-shrink-0">
-                                                            <svg className="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                            </svg>
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <h4 className="text-sm font-medium text-red-800">
-                                                                Stok Tidak Mencukupi
-                                                            </h4>
-                                                            <p className="mt-1 text-sm text-red-700">
-                                                                Anda meminta <strong>{item.quantity} {item.product.satuan}</strong> tetapi stok yang tersedia hanya <strong>{item.product.stock} {item.product.satuan}</strong>. 
-                                                                Silakan kurangi jumlah sebanyak <strong>{stockDifference} {item.product.satuan}</strong> atau hapus item ini dari keranjang.
-                                                            </p>
-                                                            <div className="mt-2 flex gap-2">
-                                                                <button
-                                                                    onClick={() => updateQuantity(item.id, item.product.stock)}
-                                                                    className="text-xs bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors"
-                                                                    disabled={loadingItems.has(item.id)}
-                                                                >
-                                                                    Sesuaikan ke Stok ({item.product.stock})
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => removeItem(item.id)}
-                                                                    className="text-xs bg-gray-600 text-white px-3 py-1 rounded-md hover:bg-gray-700 transition-colors"
-                                                                    disabled={loadingItems.has(item.id)}
-                                                                >
-                                                                    Hapus Item
-                                                                </button>
+                                                {/* Stock Insufficient Notification */}
+                                                {isStockInsufficient && (
+                                                    <div className="mt-3 rounded-lg border border-red-200 bg-red-100 p-3">
+                                                        <div className="flex items-start gap-2">
+                                                            <div className="flex-shrink-0">
+                                                                <svg className="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path
+                                                                        fillRule="evenodd"
+                                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                                        clipRule="evenodd"
+                                                                    />
+                                                                </svg>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <h4 className="text-sm font-medium text-red-800">Stok Tidak Mencukupi</h4>
+                                                                <p className="mt-1 text-sm text-red-700">
+                                                                    Anda meminta{' '}
+                                                                    <strong>
+                                                                        {item.quantity} {item.product.satuan}
+                                                                    </strong>{' '}
+                                                                    tetapi stok yang tersedia hanya{' '}
+                                                                    <strong>
+                                                                        {item.product.stock} {item.product.satuan}
+                                                                    </strong>
+                                                                    . Silakan kurangi jumlah sebanyak{' '}
+                                                                    <strong>
+                                                                        {stockDifference} {item.product.satuan}
+                                                                    </strong>{' '}
+                                                                    atau hapus item ini dari keranjang.
+                                                                </p>
+                                                                <div className="mt-2 flex gap-2">
+                                                                    <button
+                                                                        onClick={() => updateQuantity(item.id, item.product.stock)}
+                                                                        className="rounded-md bg-red-600 px-3 py-1 text-xs text-white transition-colors hover:bg-red-700"
+                                                                        disabled={loadingItems.has(item.id)}
+                                                                    >
+                                                                        Sesuaikan ke Stok ({item.product.stock})
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => removeItem(item.id)}
+                                                                        className="rounded-md bg-gray-600 px-3 py-1 text-xs text-white transition-colors hover:bg-gray-700"
+                                                                        disabled={loadingItems.has(item.id)}
+                                                                    >
+                                                                        Hapus Item
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                     {/* Order Summary */}
                     <div className="lg:col-span-1">
                         <Card className="sticky top-8 rounded-2xl bg-white shadow-lg">
@@ -705,17 +727,20 @@ const handleCheckout = async () => {
 
                                 {/* Stock Issues Warning */}
                                 {hasStockIssues && (
-                                    <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-4">
+                                    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
                                         <div className="flex items-center gap-2">
-                                            <svg className="h-5 w-5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                            <svg className="h-5 w-5 flex-shrink-0 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                    clipRule="evenodd"
+                                                />
                                             </svg>
                                             <div>
-                                                <h3 className="text-sm font-medium text-red-800">
-                                                    Masalah Stok Terdeteksi
-                                                </h3>
-                                                <p className="text-sm text-red-700 mt-1">
-                                                    {stockIssueCount} produk melebihi stok yang tersedia. Silakan sesuaikan jumlah produk sebelum checkout.
+                                                <h3 className="text-sm font-medium text-red-800">Masalah Stok Terdeteksi</h3>
+                                                <p className="mt-1 text-sm text-red-700">
+                                                    {stockIssueCount} produk melebihi stok yang tersedia. Silakan sesuaikan jumlah produk sebelum
+                                                    checkout.
                                                 </p>
                                             </div>
                                         </div>
@@ -738,16 +763,18 @@ const handleCheckout = async () => {
                                     <Button
                                         onClick={handleCheckout}
                                         className={`w-full rounded-lg py-3 font-bold text-white transition-colors ${
-                                            hasStockIssues 
-                                                ? 'bg-gray-400 cursor-not-allowed' 
-                                                : 'bg-[#153e98] hover:bg-[#0f2e73]'
+                                            hasStockIssues ? 'cursor-not-allowed bg-gray-400' : 'bg-[#153e98] hover:bg-[#0f2e73]'
                                         }`}
                                         disabled={hasStockIssues}
                                     >
                                         {hasStockIssues ? (
                                             <div className="flex items-center justify-center gap-2">
                                                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.366zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.366zM18 10a8 8 0 11-16 0 8 8 0 0116 0z"
+                                                        clipRule="evenodd"
+                                                    />
                                                 </svg>
                                                 Checkout Tidak Tersedia
                                             </div>
@@ -757,7 +784,7 @@ const handleCheckout = async () => {
                                     </Button>
 
                                     {hasStockIssues && (
-                                        <p className="text-xs text-red-600 text-center">
+                                        <p className="text-center text-xs text-red-600">
                                             Sesuaikan jumlah produk yang melebihi stok untuk melanjutkan checkout
                                         </p>
                                     )}

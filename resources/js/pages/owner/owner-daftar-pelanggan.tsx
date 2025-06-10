@@ -1,8 +1,9 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Head, router, usePage } from '@inertiajs/react';
-import { Search} from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 interface Props {
     flash: {
@@ -15,10 +16,34 @@ const OwnerDaftarPelanggan = ({ customerData }) => {
     const { flash = {} } = usePage<Props>().props;
     const [searchTerm, setSearchTerm] = useState<string>('');
 
-    const handleDeleteCustomer = (id) => {
-        if (confirm('Anda yakin ingin menghapus pelanggan ini?')) {
-            router.delete(`/owner-daftar-pelanggan/${id}`);
-        }
+    const handleToggleStatus = (id: number, currentStatus: boolean) => {
+        const action = currentStatus ? 'aktifkan kembali' : 'blokir';
+        const successMessage = currentStatus ? 'Pelanggan telah diaktifkan kembali.' : 'Pelanggan telah diblokir.';
+
+        Swal.fire({
+            title: `Yakin ingin ${action} pelanggan ini?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: `Ya, ${action}`,
+            cancelButtonText: 'Batal',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.patch(
+                    `/owner-daftar-pelanggan/${id}/status`,
+                    {},
+                    {
+                        onSuccess: () => {
+                            Swal.fire('Berhasil!', successMessage, 'success');
+                        },
+                        onError: () => {
+                            Swal.fire('Gagal!', 'Terjadi kesalahan saat memperbarui status.', 'error');
+                        },
+                    },
+                );
+            }
+        });
     };
 
     useEffect(() => {
@@ -62,6 +87,8 @@ const OwnerDaftarPelanggan = ({ customerData }) => {
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Email</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Kontak</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Alamat</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Status</th>
+                                        <th className="border border-gray-300 p-4 text-center font-semibold">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
@@ -73,9 +100,28 @@ const OwnerDaftarPelanggan = ({ customerData }) => {
                                                 <td className="border border-gray-200 p-4 text-center">{item.email}</td>
                                                 <td className="border border-gray-200 p-4 text-center">{item.kontak}</td>
                                                 <td className="border border-gray-200 p-4 text-center">{item.alamat}</td>
+                                                <td className="border border-gray-200 p-4 text-center">
+                                                    {item.status ? (
+                                                        <span className="text-red-500">Diblokir</span>
+                                                    ) : (
+                                                        <span className="text-green-500">Aktif</span>
+                                                    )}
+                                                </td>
+                                                <td className="border border-gray-200 p-4 text-center">
+                                                    <button
+                                                        onClick={() => handleToggleStatus(item.id, item.status)}
+                                                        className={`rounded-md px-4 py-2 font-medium transition-colors duration-200 ${
+                                                            item.status
+                                                                ? 'border border-green-500 bg-green-100 text-green-700 hover:cursor-pointer hover:bg-green-200'
+                                                                : 'border border-red-500 bg-red-100 text-red-700 hover:cursor-pointer hover:bg-red-200'
+                                                        }`}
+                                                    >
+                                                        {item.status ? 'Aktifkan' : 'Blokir'}
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
-                                        {filteredCustomers.length === 0 && (
+                                    {filteredCustomers.length === 0 && (
                                         <tr>
                                             <td colSpan={10} className="border border-gray-200 p-8 text-center text-gray-500">
                                                 Tidak ada pelanggan yang ditemukan

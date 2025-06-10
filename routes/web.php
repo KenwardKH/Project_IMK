@@ -193,6 +193,8 @@ Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
 
     // Customer and Cashier Management
     Route::resource('owner-daftar-pelanggan', ownerDaftarCustomer::class);
+    Route::patch('/owner-daftar-pelanggan/{id}/status', [ownerDaftarCustomer::class, 'toggleStatus']);
+
     Route::resource('owner-daftar-kasir', ownerDaftarKasir::class);
 
     // Reports and History

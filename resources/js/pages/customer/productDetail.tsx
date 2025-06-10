@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import Swal from 'sweetalert2';
 interface ProductDetailProps {
@@ -25,12 +25,16 @@ interface ProductDetailProps {
             id: number;
             name: string;
             email: string;
+            role: string;
         } | null;
     };
 }
 
 export default function ProductDetail({ product, auth }: ProductDetailProps) {
     const [quantity, setQuantity] = useState(1);
+    const { peran } = usePage().props;
+
+    console.log('Auth data:', peran); // Debug auth data
     const [isLoading, setIsLoading] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -63,6 +67,14 @@ export default function ProductDetail({ product, auth }: ProductDetailProps) {
                 data: {
                     intended: window.location.pathname,
                 },
+            });
+            return;
+        }
+        if (auth.user.role === 'blocked') {
+            Swal.fire({
+                title: 'Akun Diblokir',
+                text: 'Akun anda telah diblokir',
+                icon: 'error',
             });
             return;
         }

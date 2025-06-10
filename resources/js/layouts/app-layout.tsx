@@ -28,13 +28,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     return (
         <>
-            <div className="flex w-full flex-col items-center">
-                <div className="relative w-full max-w-[1440px]">
+            {/* <div className="flex w-full flex-col items-center"> */}
+                <div className="relative w-full">
                     <TutorialTour isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} />
                     <NavbarSection isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} />
                     <main className="min-h-screen p-4">{children}</main>
                 </div>
-            </div>
+            {/* </div> */}
             {/* <Footer /> */}
         </>
     );

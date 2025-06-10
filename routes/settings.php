@@ -5,7 +5,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::middleware(['auth', 'verified', 'role:customer'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:customer,blocked'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
     // Regular profile routes

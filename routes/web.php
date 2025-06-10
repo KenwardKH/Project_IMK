@@ -98,30 +98,60 @@ Route::middleware(['auth', 'verified', 'role:cashier'])->prefix('cashier')->name
 
 });
 
-// Customer-only routes
-Route::middleware(['auth', 'verified', 'role:customer'])->group(function () {
+// // Customer-only routes
+// Route::middleware(['auth', 'verified', 'role:customer'])->group(function () {
+//     // Customer Dashboard
+//     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
+//     Route::get('products', [customerDashboard::class, 'indexProducts'])->name('products.index');
+//     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
+//     Route::get('/order', function () {
+//         return redirect('/order/belum-bayar'); // Ganti dengan halaman tujuanmu
+//     });
+//     // Cart management
+//     Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
+//     Route::post('/cart', [CustomerCartController::class, 'store'])->name('cart.store');
+//     Route::put('/cart/{id}', [CustomerCartController::class, 'update'])->name('cart.update');
+//     Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
+//     Route::get('/cart/count', [CustomerCartController::class, 'getCartCount'])->name('cart.count');
+//     Route::post('/checkout', [CustomerCartController::class, 'checkout'])->name('cart.checkout');
+
+//     // Order management
+//     Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
+//     Route::get('/order/{id}/detail', [OrderController::class, 'show'])->name('orders.show');
+//     Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+//     Route::post('/order/{id}/upload-payment', [OrderController::class, 'uploadPaymentProof'])->name('orders.upload-payment');
+// });
+
+
+// Routes for ALL customers (including blocked) - viewing only
+Route::middleware(['auth', 'verified', 'role:customer,blocked'])->group(function () {
     // Customer Dashboard
     Route::get('/', [customerDashboard::class, 'index'])->name('dashboard');
     Route::get('products', [customerDashboard::class, 'indexProducts'])->name('products.index');
     Route::get('/product/{id}', [CustomerDashboard::class, 'showProduct'])->name('product.show');
-Route::get('/order', function () {
-    return redirect('/order/belum-bayar'); // Ganti dengan halaman tujuanmu
-});
-    // Cart management
-    Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
-    Route::post('/cart', [CustomerCartController::class, 'store'])->name('cart.store');
-    Route::put('/cart/{id}', [CustomerCartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
-    Route::get('/cart/count', [CustomerCartController::class, 'getCartCount'])->name('cart.count');
-    Route::post('/checkout', [CustomerCartController::class, 'checkout'])->name('cart.checkout');
+    Route::get('/order', function () {
+        return redirect('/order/belum-bayar');
+    });
 
-    // Order management
+    // Cart viewing and count - accessible to all customers (including blocked)
+    Route::get('/cart', [CustomerCartController::class, 'index'])->name('cart.index');
+    Route::get('/cart/count', [CustomerCartController::class, 'getCartCount'])->name('cart.count');
+
+    // Order management - accessible to all customers (including blocked)
     Route::get('order/{status}', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/order/{id}/detail', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     Route::post('/order/{id}/upload-payment', [OrderController::class, 'uploadPaymentProof'])->name('orders.upload-payment');
 });
 
+// Routes ONLY for NON-BLOCKED customers (cart operations and checkout)
+Route::middleware(['auth', 'verified', 'role:customer'])->group(function () {
+    // Cart management - only for active customers
+    Route::post('/cart', [CustomerCartController::class, 'store'])->name('cart.store');
+    Route::put('/cart/{id}', [CustomerCartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
+    Route::post('/checkout', [CustomerCartController::class, 'checkout'])->name('cart.checkout');
+});
 // Owner-only routes
 Route::middleware(['auth', 'verified', 'role:owner'])->group(function () {
     // Owner Dashboard

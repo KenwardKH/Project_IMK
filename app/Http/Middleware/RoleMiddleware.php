@@ -41,6 +41,8 @@ class RoleMiddleware
         switch ($role) {
             case 'customer':
                 return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+            case 'blocked':
+                return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
             case 'cashier':
                 return redirect()->route('cashier.index')->with('error', 'You do not have permission to access this page.');
             case 'owner':

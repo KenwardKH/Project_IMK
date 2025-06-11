@@ -23,7 +23,7 @@ const OwnerProfile = () => {
     const updatePassword: FormEventHandler = (e) => {
         e.preventDefault();
 
-        put(route('password.update'), {
+        put(route('owner.password.update'), {
             preserveScroll: true,
             onSuccess: () => {
                 reset();
@@ -77,6 +77,7 @@ const OwnerProfile = () => {
                                     className="mt-1 block w-full"
                                     autoComplete="current-password"
                                     placeholder="Kata sandi saat ini"
+                                    required
                                 />
 
                                 <InputError message={errors.current_password} />
@@ -94,6 +95,7 @@ const OwnerProfile = () => {
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
                                     placeholder="Kata sandi baru"
+                                    required
                                 />
 
                                 <InputError message={errors.password} />
@@ -110,6 +112,7 @@ const OwnerProfile = () => {
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
                                     placeholder="Konfirmasi kata sandi"
+                                    required
                                 />
 
                                 <InputError message={errors.password_confirmation} />

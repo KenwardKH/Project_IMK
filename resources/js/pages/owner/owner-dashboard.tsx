@@ -90,10 +90,10 @@ const OwnerDashboard = () => {
                                 type="number"
                                 name="hours"
                                 value={data.hours}
-                                onChange={(e) => setData('hours', parseFloat(e.target.value))}
                                 min={1}
                                 max={168}
-                                step="0.1"
+                                onChange={(e) => setData('hours', parseInt(e.target.value, 10))}
+                                step="1"
                                 className="mt-1 w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200"
                                 placeholder="Contoh: 24"
                                 required

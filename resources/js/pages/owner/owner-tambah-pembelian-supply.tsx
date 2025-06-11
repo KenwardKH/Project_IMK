@@ -537,20 +537,19 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                                     <td className="w-1/17 border px-2 py-1">
                                                         <div className="flex gap-2">
                                                             <input
-                                                                type="number"
+                                                                type="text"
+                                                                inputMode="numeric"
+                                                                pattern="\d*"
                                                                 name={`jumlah-${index}`}
                                                                 className="w-full rounded border p-1"
                                                                 value={row.jumlah}
-                                                                onChange={(e) => handleChange(index, 'jumlah', e.target.value)}
-                                                                min="1"
-                                                                max="10000"
-                                                                required
-                                                                onInput={(e) => {
-                                                                    if (e.target.value.length > 5) {
-                                                                        e.target.value = e.target.value.slice(0, 5); // maksimal 5 digit
-                                                                    }
+                                                                onChange={(e) => {
+                                                                    const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                                                                    handleChange(index, 'jumlah', value);
                                                                 }}
+                                                                required
                                                             />
+
                                                             {row.unit && <span className="flex items-center text-sm text-gray-600">{row.unit}</span>}
                                                         </div>
                                                         {errors[`produk.${index}.jumlah`] && (
@@ -559,18 +558,16 @@ const OwnerTambahPembelianSupply = ({ suppliers, products }) => {
                                                     </td>
                                                     <td className="w-1/17 border px-2 py-1">
                                                         <input
-                                                            type="number"
+                                                            type="text"
+                                                            inputMode="numeric"
+                                                            pattern="\d*"
                                                             className="w-full rounded border p-1"
                                                             value={row.harga}
-                                                            onChange={(e) => handleChange(index, 'harga', e.target.value)}
-                                                            min="1"
-                                                            max="1000000000"
-                                                            required
-                                                            onInput={(e) => {
-                                                                if (e.target.value.length > 10) {
-                                                                    e.target.value = e.target.value.slice(0, 10); // maksimal 10 digit
-                                                                }
+                                                            onChange={(e) => {
+                                                                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                                handleChange(index, 'harga', value);
                                                             }}
+                                                            required
                                                         />
                                                         {errors[`produk.${index}.harga`] && (
                                                             <div className="text-xs text-red-500">{errors[`produk.${index}.harga`]}</div>

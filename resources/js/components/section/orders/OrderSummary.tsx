@@ -121,6 +121,43 @@ export default function OrderSummarySection() {
         }).format(amount);
     };
 
+    // Helper function untuk format tanggal dan waktu yang benar
+    // const formatDateTime = (dateString) => {
+    //     let date;
+
+    //     // Tambahkan offset jika belum ada 'T' atau offset zona waktu
+    //     if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateString)) {
+    //         const isoWithOffset = dateString.replace(' ', 'T') + '+07:00'; // pakai offset Jakarta
+    //         date = new Date(isoWithOffset);
+    //     } else {
+    //         date = new Date(dateString);
+    //     }
+
+    //     if (isNaN(date.getTime())) {
+    //         return { dateFormatted: 'Invalid Date', timeFormatted: 'Invalid Time' };
+    //     }
+
+    //     const dateFormatted = date.toLocaleDateString('id-ID', {
+    //         day: 'numeric',
+    //         month: 'numeric',
+    //         year: 'numeric',
+    //         timeZone: 'Asia/Jakarta',
+    //     });
+
+    //     const timeFormatted = date.toLocaleTimeString('id-ID', {
+    //         hour: '2-digit',
+    //         minute: '2-digit',
+    //         hour12: false,
+    //         timeZone: 'Asia/Jakarta',
+    //     });
+
+    //     return { dateFormatted, timeFormatted };
+    // };
+
+    // // Contoh penggunaan:
+    // const testDate = '2025-06-11 19:11:50';
+    // console.log(formatDateTime(testDate));
+
     const getStatusText = (status: string) => {
         const statusMap: { [key: string]: string } = {
             'menunggu pembayaran': 'Belum Bayar',
@@ -236,15 +273,18 @@ export default function OrderSummarySection() {
                                             Alasan Pembatalan: <span className="font-normal text-gray-600">{order.cancellation_reason}</span>
                                         </p>
                                     )}
-                                    {order.payment_deadline && order.status === 'menunggu pembayaran' &&(
+                                    {order.payment_deadline && order.status === 'menunggu pembayaran' && (
                                         <p className="text-sm font-semibold text-gray-700">
                                             Batas Waktu Pembayaran:{' '}
                                             <span className="font-normal text-gray-600">
-                                                {new Date(order.payment_deadline).toLocaleDateString('id-ID')}, jam{' '}
-                                                {new Date(order.payment_deadline).toLocaleTimeString('id-ID', {
+                                                {new Date(order.payment_deadline).toLocaleString('id-ID', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
                                                     hour: '2-digit',
                                                     minute: '2-digit',
                                                     hour12: false,
+                                                    timeZone: 'UTC', // agar waktu tetap UTC
                                                 })}
                                             </span>
                                         </p>

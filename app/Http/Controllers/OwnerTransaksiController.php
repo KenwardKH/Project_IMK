@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Http\Controllers\Controller;
 use App\Models\TransactionList;
 use App\Models\Invoice;
 use App\Models\InvoiceDetail;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class OwnerTransaksiController extends Controller
 {
@@ -36,14 +37,16 @@ class OwnerTransaksiController extends Controller
             ]);
         }
 
-        $riwayatTransaksi = $query->orderBy('InvoiceDate', 'desc')->get();
+        // Add pagination with 10 items per page (you can adjust this number)
+        $perPage = $request->input('per_page', 10);
+        $riwayatTransaksi = $query->orderBy('InvoiceDate', 'desc')->paginate($perPage);
 
         // Debug: Log available statuses
         $availableStatuses = TransactionList::distinct()->pluck('OrderStatus')->filter()->values();
         \Log::info('Available Order Statuses:', $availableStatuses->toArray());
 
-        // Tambahkan detail pesanan untuk setiap transaksi
-        $riwayatTransaksi = $riwayatTransaksi->map(function ($transaksi) {
+        // Transform paginated data to add detail pesanan
+        $riwayatTransaksi->getCollection()->transform(function ($transaksi) {
             // Ambil invoice berdasarkan InvoiceID
             $invoice = Invoice::where('InvoiceID', $transaksi->InvoiceID)->first();
             
@@ -74,6 +77,7 @@ class OwnerTransaksiController extends Controller
         return Inertia::render('owner/owner-riwayat-transaksi', [
             'riwayatTransaksi' => $riwayatTransaksi,
             'availableStatuses' => $availableStatuses,
+            'filters' => $request->only(['search', 'status', 'start_date', 'end_date', 'per_page']),
         ]);
     }
 }

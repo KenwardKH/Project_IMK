@@ -1,8 +1,8 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Head } from '@inertiajs/react';
-import { Search, X } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface PesananData {
@@ -30,16 +30,45 @@ interface RiwayatData {
     [key: string]: any;
 }
 
-interface Props {
-    riwayatTransaksi: RiwayatData[];
+interface PaginationLinks {
+    url: string | null;
+    label: string;
+    active: boolean;
 }
 
-const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [statusFilter, setStatusFilter] = useState('Selesai');
-    const [filteredKasirs, setFilteredKasirs] = useState<RiwayatData[]>(riwayatTransaksi);
+interface PaginatedData {
+    data: RiwayatData[];
+    current_page: number;
+    from: number;
+    to: number;
+    total: number;
+    per_page: number;
+    last_page: number;
+    first_page_url: string;
+    last_page_url: string;
+    next_page_url: string | null;
+    prev_page_url: string | null;
+    links: PaginationLinks[];
+}
+
+interface Props {
+    riwayatTransaksi: PaginatedData;
+    availableStatuses?: string[];
+    filters?: {
+        search?: string;
+        status?: string;
+        start_date?: string;
+        end_date?: string;
+        per_page?: number;
+    };
+}
+
+const OwnerRiwayatTransaksi = ({ riwayatTransaksi, availableStatuses = [], filters = {} }: Props) => {
+    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [startDate, setStartDate] = useState(filters.start_date || '');
+    const [endDate, setEndDate] = useState(filters.end_date || '');
+    const [statusFilter, setStatusFilter] = useState(filters.status);
+    const [perPage, setPerPage] = useState(filters.per_page || 10);
 
     const [selectedRiwayat, setSelectedRiwayat] = useState<PesananData[]>([]);
     const [selectedInvoiceData, setSelectedInvoiceData] = useState<RiwayatData | null>(null);
@@ -47,32 +76,42 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
 
     const statusOptions = ['Menunggu Pembayaran', 'Diproses', 'Menunggu Pengambilan', 'Diantar', 'Selesai', 'Dibatalkan'];
 
-    useEffect(() => {
-        let result = riwayatTransaksi;
+    // PERBAIKAN: Fungsi applyFilters yang include semua filter termasuk status
+    const applyFilters = () => {
+        const params = new URLSearchParams();
 
         if (searchTerm.trim()) {
-            result = result.filter(
-                (item) =>
-                    item.CustomerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    item.CashierName?.toLowerCase().includes(searchTerm.toLowerCase()),
-            );
+            params.append('search', searchTerm.trim());
         }
-
+        if (startDate) {
+            params.append('start_date', startDate);
+        }
+        if (endDate) {
+            params.append('end_date', endDate);
+        }
+        // PENTING: Include status filter dalam pagination
         if (statusFilter) {
-            result = result.filter((item) => item.OrderStatus?.toLowerCase().trim() === statusFilter.toLowerCase().trim());
+            params.append('status', statusFilter);
+        }
+        if (perPage && perPage !== 10) {
+            params.append('per_page', perPage.toString());
         }
 
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            result = result.filter((item) => {
-                const tanggal = new Date(item.InvoiceDate);
-                return tanggal >= start && tanggal <= end;
-            });
-        }
+        // Reset to first page when filtering
+        router.get(window.location.pathname, Object.fromEntries(params), {
+            preserveState: true,
+            replace: true,
+        });
+    };
 
-        setFilteredKasirs(result);
-    }, [searchTerm, startDate, endDate, statusFilter, riwayatTransaksi]);
+    // Auto-apply filters with debounce
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            applyFilters();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, startDate, endDate, statusFilter, perPage]);
 
     const openDetailModal = (transaksi: RiwayatData) => {
         if (!transaksi.pesananData || transaksi.pesananData.length === 0) {
@@ -94,6 +133,78 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
     const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
 
     const formatDate = (value: string) => new Date(value).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+
+    // PERBAIKAN: handlePageChange dengan preserve semua filter
+    const handlePageChange = (url: string | null) => {
+        if (!url) return;
+
+        try {
+            const urlObj = new URL(url, window.location.origin);
+
+            // Preserve current filters when changing pages
+            if (searchTerm.trim()) {
+                urlObj.searchParams.set('search', searchTerm.trim());
+            }
+            if (statusFilter) {
+                urlObj.searchParams.set('status', statusFilter);
+            }
+            if (startDate) {
+                urlObj.searchParams.set('start_date', startDate);
+            }
+            if (endDate) {
+                urlObj.searchParams.set('end_date', endDate);
+            }
+            if (perPage && perPage !== 10) {
+                urlObj.searchParams.set('per_page', perPage.toString());
+            }
+
+            router.get(
+                urlObj.pathname + urlObj.search,
+                {},
+                {
+                    preserveState: true,
+                    replace: true,
+                },
+            );
+        } catch (error) {
+            console.error('Invalid URL:', url);
+        }
+    };
+
+    // PERBAIKAN: goToPage function yang lebih konsisten
+    const goToPage = (page: number) => {
+        const params = new URLSearchParams();
+
+        // Set page parameter
+        params.set('page', page.toString());
+
+        // Preserve all current filters
+        if (searchTerm.trim()) {
+            params.set('search', searchTerm.trim());
+        }
+        if (statusFilter) {
+            params.set('status', statusFilter);
+        }
+        if (startDate) {
+            params.set('start_date', startDate);
+        }
+        if (endDate) {
+            params.set('end_date', endDate);
+        }
+        if (perPage && perPage !== 10) {
+            params.set('per_page', perPage.toString());
+        }
+
+        router.get(
+            window.location.pathname + '?' + params.toString(),
+            {},
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
+
     //PDF
     const [currentFilters, setCurrentFilters] = useState({
         period: 'month',
@@ -103,7 +214,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
-    const handleFilterChange = (filterType, value) => {
+    const handleFilterChange = (filterType: string, value: string) => {
         const newFilters = {
             ...currentFilters,
             [filterType]: value,
@@ -121,6 +232,106 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
             setIsGeneratingPDF(false);
             setIsDialogOpen(false);
         }, 2000);
+    };
+
+    // Fixed Pagination Component
+    const PaginationComp = ({ paginationData }: { paginationData: PaginatedData }) => {
+        if (paginationData.last_page <= 1) return null;
+
+        const generatePageNumbers = () => {
+            const current = paginationData.current_page;
+            const total = paginationData.last_page;
+            const pages: (number | string)[] = [];
+
+            if (total <= 7) {
+                // Show all pages if total is 7 or less
+                for (let i = 1; i <= total; i++) {
+                    pages.push(i);
+                }
+            } else {
+                // Show first page
+                pages.push(1);
+
+                if (current > 4) {
+                    pages.push('...');
+                }
+
+                // Show pages around current page
+                const start = Math.max(2, current - 1);
+                const end = Math.min(total - 1, current + 1);
+
+                for (let i = start; i <= end; i++) {
+                    if (!pages.includes(i)) {
+                        pages.push(i);
+                    }
+                }
+
+                if (current < total - 3) {
+                    pages.push('...');
+                }
+
+                // Show last page
+                if (!pages.includes(total)) {
+                    pages.push(total);
+                }
+            }
+
+            return pages;
+        };
+
+        const pageNumbers = generatePageNumbers();
+
+        return (
+            <div className="mt-6 flex flex-col items-center gap-4">
+                {/* Pagination Info */}
+                <div className="text-sm text-gray-600">
+                    Menampilkan {paginationData.from || 0} sampai {paginationData.to || 0} dari {paginationData.total} hasil
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                    {/* Previous Button */}
+                    <Button
+                        onClick={() => handlePageChange(paginationData.prev_page_url)}
+                        disabled={!paginationData.prev_page_url}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1"
+                    >
+                        <ChevronLeft size={16} />
+                        Sebelumnya
+                    </Button>
+
+                    {/* Page Numbers */}
+                    <div className="flex flex-wrap items-center gap-1">
+                        {pageNumbers.map((page, index) => (
+                            <Button
+                                key={index}
+                                onClick={() => (typeof page === 'number' ? goToPage(page) : undefined)}
+                                variant={page === paginationData.current_page ? 'default' : 'outline'}
+                                size="sm"
+                                className={`min-w-[40px] ${page === paginationData.current_page ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}`}
+                                disabled={typeof page !== 'number'}
+                            >
+                                {page}
+                            </Button>
+                        ))}
+                    </div>
+
+                    {/* Next Button */}
+                    <Button
+                        onClick={() => handlePageChange(paginationData.next_page_url)}
+                        disabled={!paginationData.next_page_url}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1"
+                    >
+                        Selanjutnya
+                        <ChevronRight size={16} />
+                    </Button>
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -285,8 +496,8 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
-                                    {filteredKasirs.length > 0 ? (
-                                        filteredKasirs.map((item) => (
+                                    {riwayatTransaksi.data && riwayatTransaksi.data.length > 0 ? (
+                                        riwayatTransaksi.data.map((item) => (
                                             <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
                                                 <td className="border p-4 text-center">{item.InvoiceID}</td>
                                                 <td className="border p-4 text-center">{item.CustomerName}</td>
@@ -328,7 +539,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={11} className="p-4 text-center text-gray-500">
+                                            <td colSpan={10} className="p-4 text-center text-gray-500">
                                                 Data tidak ditemukan
                                             </td>
                                         </tr>
@@ -338,6 +549,9 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi }: Props) => {
                         </div>
                     </div>
                 </section>
+
+                {/* Pagination */}
+                <PaginationComp paginationData={riwayatTransaksi} />
             </div>
 
             {/* Modal Detail */}

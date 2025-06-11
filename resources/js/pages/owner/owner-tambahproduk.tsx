@@ -103,7 +103,19 @@ const OwnerTambahProduk = () => {
                                 type="number"
                                 name="harga_jual"
                                 value={form.harga_jual}
-                                onChange={handleChange}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    // Cek apakah hanya angka
+                                    if (/^\d*$/.test(value)) {
+                                        handleChange(e);
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    // Mencegah karakter non-angka seperti e, +, -
+                                    if (['e', 'E', '+', '-'].includes(e.key)) {
+                                        e.preventDefault();
+                                    }
+                                }}
                                 className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 placeholder="Harga Produk"
                                 required

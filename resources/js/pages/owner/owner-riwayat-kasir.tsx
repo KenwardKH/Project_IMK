@@ -1,7 +1,7 @@
 import OwnerLayout from '@/components/owner/owner-layout';
 import { Button } from '@/components/ui/button';
-import { Head, usePage } from '@inertiajs/react';
-import { Search, X } from 'lucide-react';
+import { Head, usePage, router } from '@inertiajs/react';
+import { Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface PesananData {
@@ -29,41 +29,86 @@ interface RiwayatData {
     [key: string]: any;
 }
 
+interface PaginationData {
+    current_page: number;
+    data: RiwayatData[];
+    first_page_url: string;
+    from: number;
+    last_page: number;
+    last_page_url: string;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number;
+    total: number;
+}
 
+interface Props {
+    riwayatData: PaginationData;
+    filters: {
+        search?: string;
+        start_date?: string;
+        end_date?: string;
+        status?: string;
+    };
+}
 
 const OwnerRiwayatKasir = () => {
-    const { props } = usePage<{ riwayatData: RiwayatData[] }>();
-    const riwayatKasir = props.riwayatData;
-    const [searchTerm, setSearchTerm] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [filteredKasirs, setFilteredKasirs] = useState<RiwayatData[]>(riwayatKasir);
+    const { props } = usePage<Props>();
+    const { riwayatData, filters } = props;
+    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [startDate, setStartDate] = useState(filters.start_date || '');
+    const [endDate, setEndDate] = useState(filters.end_date || '');
     const [selectedRiwayat, setSelectedRiwayat] = useState<PesananData[]>([]);
     const [selectedNamaProduk, setSelectedNamaProduk] = useState<string>('');
     const [showPriceModal, setShowPriceModal] = useState(false);
     const [pemesanInfo, setPemesanInfo] = useState<{ nama_pemesan: string; kontak_pemesan: string }>({ nama_pemesan: '', kontak_pemesan: '' });
 
-    useEffect(() => {
-        let result = riwayatKasir;
-
+    // Function to handle search and filter
+    const handleFilter = () => {
+        const params = new URLSearchParams();
+        
         if (searchTerm.trim()) {
-            result = result.filter(
-                (item) =>
-                    item.cashier_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    item.cashier_name?.toLowerCase().includes(searchTerm.toLowerCase()),
-            );
+            params.append('search', searchTerm.trim());
+        }
+        if (startDate) {
+            params.append('start_date', startDate);
+        }
+        if (endDate) {
+            params.append('end_date', endDate);
         }
 
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            result = result.filter((item) => {
-                const tanggal = new Date(item.updated_at);
-                return tanggal >= start && tanggal <= end;
-            });
-        }
-        setFilteredKasirs(result);
-    }, [searchTerm, startDate, endDate, riwayatKasir]);
+        // Reset to first page when filtering
+        router.get(window.location.pathname, Object.fromEntries(params), {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    // Function to handle pagination
+    const handlePageChange = (url: string) => {
+        if (!url) return;
+        
+        router.get(url, {}, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    // Auto-filter with debounce
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            handleFilter();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, startDate, endDate]);
 
     const openDetailModal = (pesananData: PemesanData[], invoice_id: string) => {
         setSelectedRiwayat(pesananData[0].pesananData);
@@ -84,6 +129,65 @@ const OwnerRiwayatKasir = () => {
     const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
 
     const formatDate = (value: string) => new Date(value).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+
+    // Pagination component
+    const PaginationComponent = ({ paginationData }: { paginationData: PaginationData }) => {
+        if (paginationData.last_page <= 1) return null;
+
+        return (
+            <div className="flex flex-col items-center gap-4 mt-6">
+                {/* Pagination Info */}
+                <div className="text-sm text-gray-600">
+                    Menampilkan {paginationData.from} sampai {paginationData.to} dari {paginationData.total} hasil
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center gap-2">
+                    {/* Previous Button */}
+                    <Button
+                        onClick={() => handlePageChange(paginationData.prev_page_url || '')}
+                        disabled={!paginationData.prev_page_url}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1"
+                    >
+                        <ChevronLeft size={16} />
+                        Sebelumnya
+                    </Button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-1">
+                        {paginationData.links
+                            .filter(link => link.label !== '&laquo; Previous' && link.label !== 'Next &raquo;')
+                            .map((link, index) => (
+                                <Button
+                                    key={index}
+                                    onClick={() => handlePageChange(link.url || '')}
+                                    variant={link.active ? "default" : "outline"}
+                                    size="sm"
+                                    className={`min-w-[40px] ${link.active ? 'bg-blue-500 text-white' : ''}`}
+                                    disabled={!link.url}
+                                >
+                                    {link.label.includes('...') ? '...' : link.label}
+                                </Button>
+                            ))}
+                    </div>
+
+                    {/* Next Button */}
+                    <Button
+                        onClick={() => handlePageChange(paginationData.next_page_url || '')}
+                        disabled={!paginationData.next_page_url}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1"
+                    >
+                        Selanjutnya
+                        <ChevronRight size={16} />
+                    </Button>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <OwnerLayout>
@@ -150,7 +254,6 @@ const OwnerRiwayatKasir = () => {
                                 <thead className="bg-gray-700 text-sm text-gray-100">
                                     <tr>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Invoice ID</th>
-                                        {/* <th className="border border-gray-300 p-4 text-center font-semibold">Opsi Pengiriman</th> */}
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Status Sebelum</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Status Sesudah</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Nama Kasir</th>
@@ -159,11 +262,10 @@ const OwnerRiwayatKasir = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white text-sm text-gray-700">
-                                    {filteredKasirs.length > 0 ? (
-                                        filteredKasirs.map((item) => (
+                                    {riwayatData.data.length > 0 ? (
+                                        riwayatData.data.map((item) => (
                                             <tr key={item.id} className="transition duration-200 hover:bg-gray-100">
                                                 <td className="border border-gray-200 p-4 text-center">{item.invoice_id}</td>
-                                                {/* <td className="border border-gray-200 p-4 text-center">{item.order_type}</td> */}
                                                 <td className="border border-gray-200 p-4 text-center">{item.previous_status}</td>
                                                 <td className="border border-gray-200 p-4 text-center">{item.new_status}</td>
                                                 <td className="border border-gray-200 p-4 text-center">{item.cashier_name}</td>
@@ -180,8 +282,8 @@ const OwnerRiwayatKasir = () => {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={7} className="border border-gray-200 p-4 text-center">
-                                                {searchTerm ? 'Data tidak ditemukan' : 'Belum ada riwayat kasir'}
+                                            <td colSpan={6} className="border border-gray-200 p-4 text-center">
+                                                {searchTerm || startDate || endDate ? 'Data tidak ditemukan' : 'Belum ada riwayat kasir'}
                                             </td>
                                         </tr>
                                     )}
@@ -189,6 +291,9 @@ const OwnerRiwayatKasir = () => {
                             </table>
                         </div>
                     </div>
+
+                    {/* Pagination Component */}
+                    <PaginationComponent paginationData={riwayatData} />
                 </section>
             </div>
 

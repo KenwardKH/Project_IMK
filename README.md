@@ -52,9 +52,3 @@ Sistem ini mendukung tiga level pengguna dengan hak akses dan fitur yang berbeda
 - **Backend**: Laravel
 - **Database**: MySQL
 - **Tools & Libraries**: Axios, ShadcnUI dll
-
-## 🚀 Cara Menjalankan Proyek
-
-1. Clone repository:
-   ```bash
-   git clone https://github.com/namakamu/nama-repo.git

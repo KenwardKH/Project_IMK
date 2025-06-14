@@ -162,9 +162,18 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
     };
 
     const removeItem = async (cartId: number) => {
-        if (!confirm('Apakah Anda yakin ingin menghapus item ini dari keranjang?')) {
-            return;
-        }
+        const result = await Swal.fire({
+            title: 'Yakin hapus item ini?',
+            text: 'Item akan dihapus dari keranjang.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal',
+        });
+
+        if (!result.isConfirmed) return;
 
         setLoadingItems((prev) => new Set(prev).add(cartId));
 
@@ -180,14 +189,20 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
             const data = await response.json();
 
             if (response.ok) {
-                // Reload the page to update cart data
+                await Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Item berhasil dihapus dari keranjang.',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
                 router.reload();
             } else {
-                alert(data.error || 'Gagal menghapus item dari keranjang');
+                Swal.fire('Gagal', data.error || 'Gagal menghapus item dari keranjang', 'error');
             }
         } catch (error) {
             console.error('Error removing item:', error);
-            alert('Terjadi kesalahan saat menghapus item');
+            Swal.fire('Kesalahan', 'Terjadi kesalahan saat menghapus item', 'error');
         } finally {
             setLoadingItems((prev) => {
                 const newSet = new Set(prev);
@@ -454,7 +469,7 @@ export default function Cart({ cartItems, totalAmount, auth }: CartProps) {
                                                     </div>
                                                 </RadioGroup>
 
-                                                <div className="flex justify-end mt-4">
+                                                <div className="mt-4 flex justify-end">
                                                     <Button
                                                         className="bg-gradient-to-r from-[#153e98] to-[#1a4cb8] py-3 font-semibold text-white hover:from-[#0f2e73] hover:to-[#153e98]"
                                                         onClick={() => setOpenModal(true)}

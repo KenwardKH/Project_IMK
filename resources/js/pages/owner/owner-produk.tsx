@@ -251,7 +251,7 @@ const OwnerProduct = () => {
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Satuan</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Deskripsi</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Riwayat Harga</th>
-                                        <th className="border border-gray-300 p-4 text-center font-semibold">Barcode</th>
+                                        {/* <th className="border border-gray-300 p-4 text-center font-semibold">Barcode</th> */}
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Edit</th>
                                         <th className="border border-gray-300 p-4 text-center font-semibold">Hapus</th>
                                     </tr>
@@ -290,7 +290,7 @@ const OwnerProduct = () => {
                                                         : 'Tidak Ada Riwayat'}
                                                 </Button>
                                             </td>
-                                            <td className="border border-gray-200 p-4 text-center">
+                                            {/* <td className="border border-gray-200 p-4 text-center">
                                                 <Button
                                                     onClick={() => openBarcodeModal(item.id)}
                                                     className="rounded-full bg-green-500 p-2 text-white shadow transition hover:cursor-pointer hover:bg-green-600"
@@ -298,7 +298,7 @@ const OwnerProduct = () => {
                                                 >
                                                     <Barcode className="h-4 w-4" />
                                                 </Button>
-                                            </td>
+                                            </td> */}
                                             <td className="border border-gray-200 p-4 text-center">
                                                 <Link href={`/owner-produk/edit/${item.id}`}>
                                                     <Button

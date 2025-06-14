@@ -198,6 +198,7 @@ export default function OrderSummarySection() {
             'dibatalkan',
             'cancelled',
             'sedang_proses',
+            'diproses',
             'processing',
             'confirmed',
             'menunggu pengambilan',

@@ -205,21 +205,21 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi, availableStatuses = [], filte
         );
     };
 
-    //PDF
     const [currentFilters, setCurrentFilters] = useState({
         period: 'month',
         payment_filter: 'all',
+        start_date: '',
+        end_date: '',
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
-    const handleFilterChange = (filterType: string, value: string) => {
-        const newFilters = {
-            ...currentFilters,
-            [filterType]: value,
-        };
-        setCurrentFilters(newFilters);
+    const handleFilterChange = (field: string, value: string) => {
+        setCurrentFilters((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
     };
 
     const generatePDF = () => {
@@ -430,9 +430,35 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi, availableStatuses = [], filte
                                                 <option value="day">Hari Ini</option>
                                                 <option value="month">Bulan Ini</option>
                                                 <option value="year">Tahun Ini</option>
+                                                <option value="custom">Pilih Tanggal</option>
                                                 <option value="all">Semua Waktu</option>
                                             </select>
                                         </div>
+
+                                        {/* Custom Date Range Fields */}
+                                        {currentFilters.period === 'custom' && (
+                                            <div className="space-y-3">
+                                                <div className="flex flex-col">
+                                                    <label className="text-sm font-medium">Tanggal Mulai</label>
+                                                    <input
+                                                        type="date"
+                                                        value={currentFilters.start_date || ''}
+                                                        onChange={(e) => handleFilterChange('start_date', e.target.value)}
+                                                        className="rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <label className="text-sm font-medium">Tanggal Selesai</label>
+                                                    <input
+                                                        type="date"
+                                                        value={currentFilters.end_date || ''}
+                                                        onChange={(e) => handleFilterChange('end_date', e.target.value)}
+                                                        min={currentFilters.start_date || ''}
+                                                        className="rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
 
                                         <div className="flex flex-col">
                                             <label className="text-sm font-medium">Metode Pembayaran</label>
@@ -449,8 +475,11 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi, availableStatuses = [], filte
 
                                         <Button
                                             onClick={generatePDF}
-                                            disabled={isGeneratingPDF}
-                                            className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                                            disabled={
+                                                isGeneratingPDF ||
+                                                (currentFilters.period === 'custom' && (!currentFilters.start_date || !currentFilters.end_date))
+                                            }
+                                            className="w-full bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                                         >
                                             {isGeneratingPDF ? (
                                                 <>
@@ -461,6 +490,11 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi, availableStatuses = [], filte
                                                 <>Cetak Sekarang</>
                                             )}
                                         </Button>
+
+                                        {/* Validation Message */}
+                                        {currentFilters.period === 'custom' && (!currentFilters.start_date || !currentFilters.end_date) && (
+                                            <p className="text-center text-sm text-red-500">Pilih tanggal mulai dan selesai untuk periode custom</p>
+                                        )}
                                     </div>
                                 </DialogContent>
                             </Dialog>

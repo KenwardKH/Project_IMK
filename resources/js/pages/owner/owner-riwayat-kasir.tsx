@@ -73,7 +73,7 @@ const OwnerRiwayatKasir = () => {
     // Function to handle search and filter
     const handleFilter = () => {
         const params = new URLSearchParams();
-        
+
         if (searchTerm.trim()) {
             params.append('search', searchTerm.trim());
         }
@@ -94,7 +94,7 @@ const OwnerRiwayatKasir = () => {
     // Function to handle pagination
     const handlePageChange = (url: string) => {
         if (!url) return;
-        
+
         router.get(url, {}, {
             preserveState: true,
             replace: true,

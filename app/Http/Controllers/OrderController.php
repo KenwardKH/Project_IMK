@@ -521,103 +521,116 @@ class OrderController extends Controller
         ]);
     }
 
-        public function generateReportPDF(Request $request)
-    {
-        Carbon::setLocale('id');
-        $query = Invoice::select(
-            'InvoiceID as id',
-            'InvoiceID as invoice_id',
-            'CustomerID as custid',
-            'customerName as name',
-            'customerContact as contact',
-            'InvoiceDate as date',
-            'type as type',
-            'payment_option as payment',
-            'CashierID as cid',
-            'CashierName as cname',
-        );
+    public function generateReportPDF(Request $request)
+{
+    Carbon::setLocale('id');
+    $query = Invoice::select(
+        'InvoiceID as id',
+        'InvoiceID as invoice_id',
+        'CustomerID as custid',
+        'customerName as name',
+        'customerContact as contact',
+        'InvoiceDate as date',
+        'type as type',
+        'payment_option as payment',
+        'CashierID as cid',
+        'CashierName as cname',
+    );
 
-        // Filter berdasarkan periode
-        $period = $request->get('period', 'month');
-        $paymentFilter = $request->get('payment_filter', 'all');
+    // Filter berdasarkan periode
+    $period = $request->get('period', 'month');
+    $paymentFilter = $request->get('payment_filter', 'all');
+    $startDate = $request->get('start_date');
+    $endDate = $request->get('end_date');
 
-        switch ($period) {
-            case 'day':
-                $query->whereDate('InvoiceDate', Carbon::today());
-                $periodText = 'Hari Ini (' . Carbon::today()->format('d F Y') . ')';
-                break;
-            case 'month':
+    switch ($period) {
+        case 'day':
+            $query->whereDate('InvoiceDate', Carbon::today());
+            $periodText = 'Hari Ini (' . Carbon::today()->format('d F Y') . ')';
+            break;
+        case 'month':
+            $query->whereMonth('InvoiceDate', Carbon::now()->month)
+                  ->whereYear('InvoiceDate', Carbon::now()->year);
+            $periodText = Carbon::now()->format('F Y');
+            break;
+        case 'year':
+            $query->whereYear('InvoiceDate', Carbon::now()->year);
+            $periodText = 'Tahun ' . Carbon::now()->year;
+            break;
+        case 'custom':
+            if ($startDate && $endDate) {
+                $query->whereDate('InvoiceDate', '>=', Carbon::parse($startDate))
+                      ->whereDate('InvoiceDate', '<=', Carbon::parse($endDate));
+                $periodText = Carbon::parse($startDate)->format('d F Y') . ' - ' . Carbon::parse($endDate)->format('d F Y');
+            } else {
+                // Fallback jika tanggal tidak lengkap
                 $query->whereMonth('InvoiceDate', Carbon::now()->month)
                       ->whereYear('InvoiceDate', Carbon::now()->year);
-                $periodText = Carbon::now()->format('F Y');
-                break;
-            case 'year':
-                $query->whereYear('InvoiceDate', Carbon::now()->year);
-                $periodText = 'Tahun ' . Carbon::now()->year;
-                break;
-            case 'all':
-                $periodText = 'Semua Waktu';
-                break;
-        }
-
-        // Filter berdasarkan metode pembayaran
-        if ($paymentFilter !== 'all') {
-            $query->where('payment_option', $paymentFilter);
-        }
-
-        $orders = $query->get();
-
-        // Memanggil data InvoiceDetail
-        foreach ($orders as $order) {
-            $details = Invoicedetail::where('InvoiceID', $order->id)
-                ->select(
-                    'InvoiceID',
-                    'DetailID as id',
-                    'productName as name',
-                    'productImage as gambar',
-                    'Quantity as quantity',
-                    'productUnit as unit',
-                    'price'
-                )
-                ->get()
-                ->toArray();
-
-            $order->details = $details;
-        }
-
-        // Hitung statistik
-        $totalOrders = $orders->count();
-        $totalRevenue = 0;
-        $totalProducts = 0;
-        $paymentMethods = [];
-
-        foreach ($orders as $order) {
-            // Hitung payment methods
-            if (!isset($paymentMethods[$order->payment])) {
-                $paymentMethods[$order->payment] = 0;
+                $periodText = Carbon::now()->format('F Y') . ' (Default)';
             }
-            $paymentMethods[$order->payment]++;
-
-            foreach ($order->details as $detail) {
-                $totalRevenue += $detail['price'] * $detail['quantity'];
-                $totalProducts += $detail['quantity'];
-            }
-        }
-
-        $statistics = [
-            'total_orders' => $totalOrders,
-            'total_revenue' => $totalRevenue,
-            'total_products' => $totalProducts,
-            'payment_methods' => $paymentMethods,
-            'period_text' => $periodText,
-            'payment_filter_text' => $paymentFilter === 'all' ? 'Semua Metode' : ucfirst($paymentFilter)
-        ];
-
-        $pdf = PDF::loadView('report', compact('orders', 'statistics'));
-
-        $fileName = 'laporan-pesanan-' . date('Y-m-d-His') . '.pdf';
-
-        return $pdf->stream($fileName);
+            break;
+        case 'all':
+            $periodText = 'Semua Waktu';
+            break;
     }
 
+    // Filter berdasarkan metode pembayaran
+    if ($paymentFilter !== 'all') {
+        $query->where('payment_option', $paymentFilter);
+    }
+
+    $orders = $query->orderBy('InvoiceDate', 'desc')->get();
+
+    // Memanggil data InvoiceDetail
+    foreach ($orders as $order) {
+        $details = Invoicedetail::where('InvoiceID', $order->id)
+            ->select(
+                'InvoiceID',
+                'DetailID as id',
+                'productName as name',
+                'productImage as gambar',
+                'Quantity as quantity',
+                'productUnit as unit',
+                'price'
+            )
+            ->get()
+            ->toArray();
+
+        $order->details = $details;
+    }
+
+    // Hitung statistik
+    $totalOrders = $orders->count();
+    $totalRevenue = 0;
+    $totalProducts = 0;
+    $paymentMethods = [];
+
+    foreach ($orders as $order) {
+        // Hitung payment methods
+        if (!isset($paymentMethods[$order->payment])) {
+            $paymentMethods[$order->payment] = 0;
+        }
+        $paymentMethods[$order->payment]++;
+
+        foreach ($order->details as $detail) {
+            $totalRevenue += $detail['price'] * $detail['quantity'];
+            $totalProducts += $detail['quantity'];
+        }
+    }
+
+    $statistics = [
+        'total_orders' => $totalOrders,
+        'total_revenue' => $totalRevenue,
+        'total_products' => $totalProducts,
+        'payment_methods' => $paymentMethods,
+        'period_text' => $periodText,
+        'payment_filter_text' => $paymentFilter === 'all' ? 'Semua Metode' : ucfirst($paymentFilter)
+    ];
+
+    $pdf = PDF::loadView('report', compact('orders', 'statistics'));
+
+    $fileName = 'laporan-pesanan-' . date('Y-m-d-His') . '.pdf';
+
+    return $pdf->stream($fileName);
+}
 }

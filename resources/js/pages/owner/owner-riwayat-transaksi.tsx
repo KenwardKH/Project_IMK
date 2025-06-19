@@ -74,7 +74,7 @@ const OwnerRiwayatTransaksi = ({ riwayatTransaksi, availableStatuses = [], filte
     const [selectedInvoiceData, setSelectedInvoiceData] = useState<RiwayatData | null>(null);
     const [showPriceModal, setShowPriceModal] = useState(false);
 
-    const statusOptions = ['Menunggu Pembayaran', 'Diproses', 'Menunggu Pengambilan', 'Diantar', 'Selesai', 'Dibatalkan'];
+    const statusOptions = ['Menunggu Pembayaran', 'Diproses', 'Menunggu Pengambilan', 'Selesai', 'Dibatalkan'];
 
     // PERBAIKAN: Fungsi applyFilters yang include semua filter termasuk status
     const applyFilters = () => {

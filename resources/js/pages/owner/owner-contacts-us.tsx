@@ -404,10 +404,10 @@ export default function CustomerIndex({ customers, stats, filters }: CustomerPag
                                                 <Label className="text-sm font-medium text-gray-700">Email</Label>
                                                 <p className="mt-1 text-gray-900">{selectedCustomer.email}</p>
                                             </div>
-                                            <div>
+                                            {/* <div>
                                                 <Label className="text-sm font-medium text-gray-700">Status</Label>
                                                 <div className="mt-1">{getStatusBadge(selectedCustomer.status)}</div>
-                                            </div>
+                                            </div> */}
                                             <div>
                                                 <Label className="text-sm font-medium text-gray-700">Tanggal</Label>
                                                 <p className="mt-1 text-gray-900">

@@ -193,7 +193,7 @@ const OwnerRiwayatKasir = () => {
         <OwnerLayout>
             <Head title="Riwayat" />
             <div className="flex w-full flex-col gap-6 px-6 py-4">
-                <h1 className="flex w-full justify-center text-3xl font-bold">Riwayat Aktifitas Kasir</h1>
+                <h1 className="flex w-full justify-center text-3xl font-bold">Riwayat Aktivitas Kasir</h1>
                 <section className="mb-6 w-full rounded-xl bg-[#F8FAFC] p-4 shadow-md">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         {/* Start Date */}
